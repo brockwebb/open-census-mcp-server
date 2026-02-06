@@ -1,0 +1,103 @@
+name: Systems Engineering
+description: |
+  Standard systems/software engineering artifacts. Use for projects with
+  formal requirements, architecture specs, and design documents.
+  Lifecycle model (waterfall, incremental, spiral) is orthogonal — this
+  template defines artifact types and relationships, not process.
+version: "1.0"
+
+artifact_types:
+  - id: conops
+    name: Concept of Operations
+    description: Stakeholder needs, operational scenarios, system context
+    file_patterns: ["**/conops*.md", "**/concept_of_operations*.md"]
+
+  - id: requirement
+    name: Requirement
+    description: System or software requirements specification
+    file_patterns: ["**/srs*.md", "**/requirements*.md", "**/*_requirements_*.md"]
+
+  - id: architecture
+    name: Architecture
+    description: System or software architecture specification
+    file_patterns: ["**/*architecture*.md", "**/arch_*.md"]
+
+  - id: decision
+    name: Decision Record
+    description: Architecture decision record, trade study, design decision
+    file_patterns: ["**/*decision*.md", "**/adr*.md"]
+
+  - id: design
+    name: Design
+    description: Detailed design specification, module design
+    file_patterns: ["**/*design*.md"]
+
+  - id: test
+    name: Test
+    description: Unit test, integration test, system test
+    file_patterns: ["**/test_*.py", "**/*_test.py", "**/*.test.js", "**/*.spec.ts"]
+
+  - id: module
+    name: Code Module
+    description: Source code file implementing design
+    file_patterns: ["**/*.py", "**/*.js", "**/*.ts", "**/*.go", "**/*.rs"]
+
+  - id: verification
+    name: Verification Report
+    description: Test results, V&V report, compliance matrix
+    file_patterns: ["**/verification*.md", "**/test_report*.md"]
+
+relationship_chains:
+  - source_type: requirement
+    target_type: conops
+    relationship: derives_from
+    description: Requirements derived from operational needs
+
+  - source_type: architecture
+    target_type: requirement
+    relationship: implements
+    description: Architecture addresses requirements
+
+  - source_type: design
+    target_type: architecture
+    relationship: implements
+    description: Design realizes architecture
+
+  - source_type: module
+    target_type: design
+    relationship: implements
+    description: Code implements design
+
+  - source_type: test
+    target_type: module
+    relationship: verifies
+    description: Tests verify code correctness
+
+  - source_type: test
+    target_type: requirement
+    relationship: verifies
+    description: Tests verify requirement satisfaction
+
+  - source_type: decision
+    target_type: requirement
+    relationship: references
+    description: Decisions constrained by requirements
+
+  - source_type: architecture
+    target_type: decision
+    relationship: implements
+    description: Architecture implements decisions
+
+directory_structure:
+  docs/:
+    requirements/: "ConOps, SRS, stakeholder needs, interface requirements"
+    architecture/: "System architecture, component diagrams, interface specs"
+    design/: "Detailed design, module specifications"
+    decisions/: "ADRs, trade studies, design decisions"
+    verification/: "Test plans, V&V reports, compliance matrices"
+  src/: "Source code modules"
+  tests/: "Test files"
+
+validation:
+  require_upstream: [requirement, architecture, design, module]
+  require_verification: [requirement, module]

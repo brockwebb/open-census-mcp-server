@@ -1,0 +1,90 @@
+name: Agile
+description: |
+  Agile/Scrum workflow. Use for iterative development with epics, stories,
+  and tasks. Emphasizes working software over documentation, but still
+  tracks key relationships for impact analysis.
+version: "1.0"
+
+artifact_types:
+  - id: epic
+    name: Epic
+    description: Large feature or capability spanning multiple sprints
+    file_patterns: ["**/epic*.md", "**/epics/**/*.md"]
+
+  - id: story
+    name: User Story
+    description: User-facing functionality deliverable in one sprint
+    file_patterns: ["**/story*.md", "**/stories/**/*.md"]
+
+  - id: task
+    name: Task
+    description: Technical work item to complete a story
+    file_patterns: ["**/task*.md", "**/tasks/**/*.md"]
+
+  - id: spike
+    name: Spike
+    description: Research or investigation task
+    file_patterns: ["**/spike*.md", "**/spikes/**/*.md"]
+
+  - id: module
+    name: Code Module
+    description: Source code file
+    file_patterns: ["**/*.py", "**/*.js", "**/*.ts", "**/*.go", "**/*.rs"]
+
+  - id: test
+    name: Test
+    description: Unit test, integration test, acceptance test
+    file_patterns: ["**/test_*.py", "**/*_test.py", "**/*.test.js", "**/*.spec.ts"]
+
+  - id: decision
+    name: Decision Record
+    description: Technical decision, spike outcome
+    file_patterns: ["**/decision*.md", "**/adr*.md"]
+
+relationship_chains:
+  - source_type: story
+    target_type: epic
+    relationship: derives_from
+    description: Stories break down epics
+
+  - source_type: task
+    target_type: story
+    relationship: derives_from
+    description: Tasks implement stories
+
+  - source_type: module
+    target_type: task
+    relationship: implements
+    description: Code completes tasks
+
+  - source_type: module
+    target_type: story
+    relationship: implements
+    description: Code delivers story (direct link when task granularity unnecessary)
+
+  - source_type: test
+    target_type: story
+    relationship: verifies
+    description: Acceptance tests verify story completion
+
+  - source_type: test
+    target_type: module
+    relationship: verifies
+    description: Unit tests verify code
+
+  - source_type: decision
+    target_type: spike
+    relationship: derives_from
+    description: Decisions result from spike investigations
+
+directory_structure:
+  docs/:
+    epics/: "Epic definitions and acceptance criteria"
+    stories/: "User stories (or use issue tracker)"
+    decisions/: "ADRs, spike outcomes"
+  src/: "Source code"
+  tests/: "Test files"
+
+validation:
+  require_upstream: [story, task, module]
+  require_verification: [story]

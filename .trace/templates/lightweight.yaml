@@ -1,0 +1,57 @@
+name: Lightweight
+description: |
+  Minimal traceability for small projects or prototypes. Tracks decisions,
+  code, and tests without heavy ceremony. Good starting point before
+  adopting fuller methodology.
+version: "1.0"
+
+artifact_types:
+  - id: decision
+    name: Decision
+    description: Any significant technical or design decision
+    file_patterns: ["**/decision*.md", "**/adr*.md", "**/*_decision*.md"]
+
+  - id: document
+    name: Document
+    description: Any documentation file (README, guides, specs)
+    file_patterns: ["**/*.md", "**/*.txt", "**/*.rst"]
+
+  - id: module
+    name: Code Module
+    description: Source code file
+    file_patterns: ["**/*.py", "**/*.js", "**/*.ts", "**/*.go", "**/*.rs"]
+
+  - id: test
+    name: Test
+    description: Test file
+    file_patterns: ["**/test_*.py", "**/*_test.py", "**/*.test.js", "**/*.spec.ts"]
+
+  - id: config
+    name: Configuration
+    description: Configuration files
+    file_patterns: ["**/*.yaml", "**/*.yml", "**/*.json", "**/*.toml"]
+
+relationship_chains:
+  - source_type: module
+    target_type: decision
+    relationship: implements
+    description: Code implements decisions
+
+  - source_type: test
+    target_type: module
+    relationship: verifies
+    description: Tests verify code
+
+  - source_type: document
+    target_type: decision
+    relationship: references
+    description: Docs may reference decisions
+
+directory_structure:
+  docs/: "All documentation"
+  src/: "Source code"
+  tests/: "Test files"
+
+validation:
+  require_upstream: []
+  require_verification: []
