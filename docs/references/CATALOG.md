@@ -15,7 +15,7 @@
 
 | ID | Title | Version | Source URL | Local Path | Status |
 |----|-------|---------|------------|------------|--------|
-| ACS-GEN-001 | Understanding and Using ACS Data: What All Data Users Need to Know | 2020 | [census.gov](https://www.census.gov/content/dam/Census/library/publications/2020/acs/acs_general_handbook_2020.pdf) | `acs/acs_general_handbook_2020.pdf` | 🟡 |
+| ACS-GEN-001 | Understanding and Using ACS Data: What All Data Users Need to Know | 2020 | [census.gov](https://www.census.gov/content/dam/Census/library/publications/2020/acs/acs_general_handbook_2020.pdf) | `acs/acs_general_handbook_2020.pdf` | 🟢 |
 | ACS-RES-001 | Understanding and Using ACS Data: What Researchers Need to Know | 2020 | [census.gov](https://www.census.gov/content/dam/Census/library/publications/2020/acs/acs_researchers_handbook_2020.pdf) | `acs/acs_researchers_handbook_2020.pdf` | 🟡 |
 | ACS-PUMS-001 | Understanding and Using ACS PUMS Files | 2020 | [census.gov](https://www.census.gov/content/dam/Census/library/publications/2020/acs/acs_pums_handbook_2020.pdf) | `acs/acs_pums_handbook_2020.pdf` | 🟡 |
 
