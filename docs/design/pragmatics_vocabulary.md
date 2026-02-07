@@ -1,7 +1,7 @@
 # Pragmatics Vocabulary
 ## The Terms We Use and Why
 
-*Decided February 2026*
+*Decided 2026-02-06*
 
 ---
 
@@ -144,6 +144,39 @@
 - "This context has narrow latitude — don't bend without justification."
 - "High-latitude context informs but doesn't constrain."
 - "The model has no latitude on existence constraints."
+
+---
+
+## Asserted vs. Augmented
+
+**Origin:** Knowledge graph engineering (standard KG terminology)
+
+**Reference:** Yáñez Romero, F. (2026). "Why LLMs Fail at Knowledge Graph Extraction (And What Works Instead)." *Towards AI.*
+
+Also established in KG literature: asserted graphs contain only explicitly stated information; augmented graphs add inferred relationships, taxonomic links, or cross-references.
+
+**How it maps to our architecture:**
+
+| KG Term | Our Layer | What's In It |
+|---------|-----------|-------------|
+| **Asserted** | Staging (`staging/`) | Only what methodology docs explicitly state. Ground truth. Human-verified. |
+| **Augmented** | Compiled Packs (`.db`) | Structured, routed, enriched with inheritance edges, cross-survey links, latitude assignments. |
+
+**Why it matters:**
+- The asserted layer is your verifiable baseline. If a pack contains bad context, you trace it back to staging.
+- The augmented layer is where compilation adds value: thread edges, pack inheritance, cross-domain routing.
+- Pipeline error accumulation (90% × 90% = 81%) means validation gates between asserted→augmented are critical.
+- This separation enables debugging: "Is the error in what we extracted, or how we compiled it?"
+
+**What this means for the extraction pipeline:**
+- Stage 1–3 (source identification, extraction, structuring) produce **asserted** content
+- Stage 4–5 (validation, compilation) produce **augmented** packs
+- Human-in-the-loop validation sits at the asserted→augmented boundary
+
+**Usage:**
+- "The staging directory contains the asserted pragmatic context."
+- "Compiled packs are the augmented layer — asserted content plus structural relationships."
+- "Validate at the asserted layer before augmenting."
 
 ---
 

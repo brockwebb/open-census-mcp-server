@@ -12,21 +12,22 @@ Fresh rebuild. v1/v2 archived to `/Users/brock/Documents/GitHub/archive-opencens
 Week 1 of 5-week sprint toward FCSM conference talk (empirical evaluation of pragmatic rules).
 
 ## Repo Structure
+Canonical structure is defined in `docs/requirements/srs.md` section 2 (that is law).
+Quick reference:
 ```
-docs/                  # Systems engineering docs (SE template)
-  requirements/        # ConOps, SRS
-  architecture/        # System architecture
-  decisions/           # ADRs, trade studies
-  design/              # Detailed design
-  verification/        # V&V, evaluation results
-  lessons_learned/     # Project narrative from v1/v2
-knowledge-base/        # Source material & extracted rules
-  source-docs/         # Census methodology PDFs (gitignored)
-  rules/               # Pragmatic rules JSON (the deliverable)
-  methodology/         # Processed methodology content
-src/                   # MCP server source (Week 2+)
-tests/                 # Evaluation harness & unit tests
-scripts/               # Build & utility scripts
+docs/requirements/     # ConOps, SRS
+docs/design/           # Pragmatics vocabulary, reference card, extraction pipeline spec
+docs/architecture/     # System architecture
+docs/decisions/        # ADRs
+docs/verification/     # Evaluation results
+docs/lessons_learned/  # Project narrative from v1/v2
+src/census_mcp/        # Runtime package (api/, geography/, pragmatics/, tools/)
+staging/               # Pack content source of truth (JSON, version controlled)
+packs/                 # Compiled SQLite packs (build artifacts, gitignored)
+knowledge-base/        # Source material (source-docs/ gitignored)
+scripts/               # Build, compile, extraction scripts
+tests/                 # unit/, integration/, evaluation/
+talks/fcsm_2026/       # FCSM conference talk materials
 handoffs/              # Thread handoff docs (gitignored)
 cc_tasks/              # Claude Code task files (gitignored)
 tmp/                   # Scratch space (gitignored)
@@ -39,17 +40,46 @@ tmp/                   # Scratch space (gitignored)
 - **Scratch work goes in `tmp/`**
 - All three directories are gitignored.
 
-## 5-Week Timeline
-1. **Week 1 (current):** Extract pragmatic rules from KB source docs → `knowledge-base/rules/`
-2. **Week 2:** Build minimal MCP server with rules engine → `src/`
-3. **Week 3:** Run CQS evaluation protocol → `docs/verification/`
-4. **Week 4-5:** Analyze results, prepare FCSM presentation
+## Implementation Schedule
+**See:** `docs/architecture/implementation_schedule.md` for detailed task breakdown.
+
+**Current Phase:** 0A — Census API Client
+
+**Dependency order:**
+```
+Phase 0A (API Client) ────────────────────┐
+                                           ├──► Phase 3 (MCP) ──► Phase 4 (Eval)
+Phase 0B (Geography) ─────────────────────┤
+                                           │
+Phase 1C (Pack Pipeline) ──► Phase 2 (Pragmatics)┘
+         │
+Phase 1D (Seed Content) ───┘
+```
+
+Track A and B have no internal dependencies — start there.
+
+## Vocabulary
+All terms defined in `docs/design/pragmatics_vocabulary.md` (normative). Key terms:
+- **Pragmatics** — fitness-for-use expert judgment layer (Morris 1938)
+- **Pack** — domain-specific shippable bundle (compiles to SQLite)
+- **Thread** — connected graph path through context nodes
+- **Context** — expert knowledge content (not rules, not constraints)
+- **Latitude** — freedom to bend: none / narrow / wide / full
+- **NEVER use:** crystal, constraint, rule, guardrail, directive, ontology, weight, severity
 
 ## Technical Context
 - **Census API:** Direct Python HTTP calls to `api.census.gov`
-- **Pragmatic Rules:** JSON rule sets covering MOE thresholds, coverage bias, temporal validity, geographic pitfalls, source selection, imputation quality
-- **Evaluation:** Conversational Quality Score (CQS) protocol comparing baseline LLM vs rules-augmented responses
-- **No vector DB yet** — rules are structured JSON, not embeddings
+- **Pragmatic context:** Structured JSON in `staging/`, compiled to SQLite packs
+- **Evaluation:** Conversational Quality Score (CQS) protocol comparing baseline LLM vs pragmatics-augmented responses
+- **No vector DB, no RAG over metadata** — structured context with latitude, not embeddings
+- **No ontology layer** — the LLM's weights are the semantic layer; we supply pragmatics only
+
+## Key Lessons from v1/v2
+- **Geography resolver is critical** — FIPS resolution was the one thing that actually worked and mattered. Prioritize.
+- **RAG over variable metadata fails** — Census domain is too semantically homogeneous for embeddings to differentiate. Semantic smearing.
+- **Don't rebuild the semantic layer** — COOS/enrichment/ontology work was duplicating what the LLM already knows.
+- **Batch API calls are essential** — real analysis needs multi-variable, multi-geography retrieval, not single lookups.
+- **The MCP is a component** — design tools as composable, stateless units for agentic workflows.
 
 ## Archive Reference
 `/Users/brock/Documents/GitHub/archive-opencensusmcp/v2` — Previous implementation. Useful as archaeology, not as code.
@@ -70,6 +100,9 @@ This is WHY we moved to pragmatics (structured expert context with latitude) ins
 
 ## What NOT to Do
 - Don't add R, tidycensus, or Docker infrastructure (that's v1/v2)
-- Don't over-engineer the architecture before evaluation proves the concept
+- Don't build ontology, COOS, or semantic enrichment layers — the LLM handles semantics
+- Don't use RAG over variable metadata — semantic smearing kills it
 - Don't create files outside the repo without asking
 - Don't use web search for Census data — use Census API or project knowledge base
+- Don't use the term "crystal" anywhere — it's purged
+- Don't build throwaway MVPs — build the real thing correctly from the start

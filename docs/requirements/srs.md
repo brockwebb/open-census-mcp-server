@@ -82,6 +82,8 @@ census-mcp-server/
 │   ├── integration/               # Integration tests
 │   └── evaluation/                # CQS evaluation harness
 │
+├── talks/                         # Conference talk materials
+│   └── fcsm_2026/                 # FCSM 2026 presentation
 ├── handoffs/                      # Thread handoff docs (gitignored)
 ├── cc_tasks/                      # Claude Code task files (gitignored)
 └── tmp/                           # Scratch space (gitignored)
@@ -104,6 +106,7 @@ census-mcp-server/
 | ADRs | `docs/decisions/` | No |
 | Test code | `tests/` (appropriate subdir) | No |
 | Evaluation results | `docs/verification/` | No |
+| Talk materials | `talks/` (by conference) | No |
 | Handoffs | `handoffs/` | Yes |
 | CC task files | `cc_tasks/` | Yes |
 | Scratch/temp | `tmp/` | Yes |
@@ -141,6 +144,10 @@ census-mcp-server/
 | FR-DR-004 | System SHALL construct valid Census API URLs and retrieve data | Must |
 | FR-DR-005 | System SHALL return data in structured format with variable labels | Must |
 | FR-DR-006 | System SHALL handle Census API errors gracefully with user-readable messages | Must |
+| FR-DR-007 | System SHALL support batch retrieval of multiple variables for a single geography in one call | Must |
+| FR-DR-008 | System SHALL support batch retrieval of a single variable across multiple geographies in one call | Must |
+| FR-DR-009 | System SHALL support multi-variable, multi-geography batch retrieval | Should |
+| FR-DR-010 | System SHALL return batch results in a structured tabular format suitable for downstream analysis | Must |
 
 ### 3.2 Pragmatic Consultation
 
@@ -170,6 +177,17 @@ census-mcp-server/
 | FR-RQ-002 | System SHALL flag estimates with unacceptable coefficient of variation | Must |
 | FR-RQ-003 | System SHALL communicate fitness-for-use relative to the user's apparent purpose | Should |
 | FR-RQ-004 | System SHALL warn about temporal comparability issues (methodology changes, COVID disruption) | Should |
+
+### 3.5 Composability
+
+| ID | Requirement | Priority |
+|----|------------|----------|
+| FR-CO-001 | MCP tools SHALL be independently callable — no tool should require prior tool calls to function | Must |
+| FR-CO-002 | Tool responses SHALL be structured data suitable for consumption by other tools or agents | Must |
+| FR-CO-003 | System SHALL support an analysis planning mode where the host LLM can discover available variables and geographies before committing to retrieval | Should |
+| FR-CO-004 | System SHALL NOT maintain session state between tool calls — each call is self-contained | Must |
+
+**Rationale:** The MCP is one component in larger agentic workflows. An LLM planning a full analysis (retrieve data, compare geographies, assess trends) will call these tools repeatedly and compose results. Tools must be stateless, independently callable, and return machine-readable output.
 
 ---
 
