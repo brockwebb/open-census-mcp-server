@@ -17,6 +17,9 @@ tmp/
 # Private notes (unredacted, strategic, not for public)
 notes/
 
+# Reference PDFs (large files, optional to track)
+docs/references/**/*.pdf
+
 # Keep directory structure
 !knowledge-base/source-docs/.gitkeep
 !knowledge-base/rules/.gitkeep

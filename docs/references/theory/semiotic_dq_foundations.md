@@ -2,42 +2,46 @@
 
 References supporting the pragmatics layer architecture.
 
+## The Gap We're Filling
+
+> "Syntactic tests ask 'does this data obey the formal rules?', while pragmatic tests ask 'is this data actually good enough for this specific use and user?'"
+> — Semiotic DQ Thesis (2022)
+
+Existing tools cover syntax and semantics. **No standard tools exist for pragmatics.**
+
 ## Core Framework Papers
 
 ### Semiotic Principles for Metadata Auditing
 - **Source:** [research.amanote](https://research.amanote.com/publication/f5oI3HMBKQvf0BhivObD/semiotic-principles-for-metadata-auditing-and-evaluation)
-- **Relevance:** Concrete auditing framework (syntagm, sign-functions, corpus boundaries) - validates our thread traversal approach
+- **Validates:** Thread traversal as "syntagmatic rules over records"
 
 ### Semiotic DQ for Behavioral Data (2022 Thesis)
 - **Source:** [diva-portal.org](https://www.diva-portal.org/smash/get/diva2:1737820/FULLTEXT01.pdf)
-- **Relevance:** Operationalizes pragmatic indicators (task adequacy, interpretability, context completeness) - validates our latitude concept
+- **Validates:** Latitude concept maps to "unusable / usable with caveats / fit-for-purpose"
 
 ### DataKitchen: Syntax-Semantics-Pragmatics Gap
 - **Source:** [datakitchen.io](https://datakitchen.io/the-syntax-semantics-and-pragmatics-gap-in-data-quality-validate-testing/)
-- **Relevance:** Industry recognition that existing tools cover syntax/semantics but NOT pragmatics - validates our gap analysis
+- **Validates:** Industry recognition that existing tools miss pragmatics
 
 ### Semiotics in Scientific Data Quality
 - **Source:** [honghuang.myweb.usf.edu](http://honghuang.myweb.usf.edu/pub2/Huang_JIS.pdf)
-- **Relevance:** Sign-relations among data, models, interpretations - validates context-as-signs approach
+- **Validates:** Context-as-signs approach
 
-## Key Validations
+## Architecture Validation
 
-| Our Architecture | Literature Support |
-|------------------|-------------------|
-| Pragmatics = fitness-for-use | Semiotic DQ thesis: "pragmatic tests ask 'is this data actually good enough for this specific use and user?'" |
-| Latitude levels (none→full) | Maps to pragmatic thresholds: "unusable," "usable with caveats," "fit-for-purpose" |
-| Thread traversal | Auditing framework's "syntagmatic rules over records" |
-| Pack as domain bundle | "metadata catalog extended with intended use, known unsuitable uses" |
-| LLM handles syntax/semantics | DataKitchen: schema validators + Great Expectations = syntactic; OWL/reasoners = semantic |
+| Our Concept | Literature Support |
+|-------------|-------------------|
+| Pragmatics layer | "fitness-for-use from user/decision perspective" |
+| Latitude levels | "minimum viable quality thresholds per use" |
+| Thread traversal | "syntagmatic rules" + "corpus boundaries" |
+| Pack bundles | "metadata catalog with intended use, known unsuitable uses" |
+| LLM handles syntax/semantics | Schema validators + OWL reasoners exist; pragmatics doesn't |
 
-## Toolchain Mapping
+## Existing Toolchains (What We Don't Build)
 
-What exists (we don't build):
-- **Syntactic:** Schema validators, Great Expectations, dbt tests, SQL constraints
-- **Semantic:** OWL/RDF, Protégé, SPARQL reasoners
+**Syntactic:** Great Expectations, dbt tests, JSON Schema, SDMX validators
+**Semantic:** OWL/RDF, Protégé, SPARQL reasoners
 
-What we build (pragmatics layer):
-- Context items with latitude
-- Thread traversal for query-relevant context
-- Pack compilation for domain bundles
-- Docstring injection for LLM grounding
+## What We Build
+
+**Pragmatic:** Context items, latitude, thread traversal, pack compilation, docstring injection
