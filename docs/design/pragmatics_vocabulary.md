@@ -34,6 +34,26 @@
 
 ---
 
+## Theoretical Foundation
+
+The semiotic triad isn't our invention — it's established in data quality literature. Recent work explicitly identifies the **pragmatics gap** in existing tooling:
+
+> "Syntactic tests ask 'does this data obey the formal rules?', while pragmatic tests ask 'is this data actually good enough for this specific use and user?'" — Semiotic DQ Thesis (2022)
+
+**What the literature confirms:**
+
+| Layer | Tools Exist | Our Role |
+|-------|-------------|----------|
+| Syntactic | Schema validators, Great Expectations, dbt | LLM + API handles this |
+| Semantic | OWL/RDF, Protégé, SPARQL reasoners | LLM handles concept alignment |
+| Pragmatic | **None** — must build custom | **This is what we're building** |
+
+The DataKitchen framework explicitly shows syntax/semantics coverage but acknowledges pragmatics requires "metadata catalog tools documenting intended uses, known limitations" — exactly what our packs provide.
+
+**See:** `docs/references/theory/semiotic_dq_foundations.md` for full citations.
+
+---
+
 ## Thread
 
 **Origin:** Graph theory + textiles + conversation
