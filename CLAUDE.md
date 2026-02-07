@@ -51,6 +51,23 @@ tmp/                   # Scratch space (gitignored)
 - **Evaluation:** Conversational Quality Score (CQS) protocol comparing baseline LLM vs rules-augmented responses
 - **No vector DB yet** — rules are structured JSON, not embeddings
 
+## Archive Reference
+`/Users/brock/Documents/GitHub/archive-opencensusmcp/v2` — Previous implementation. Useful as archaeology, not as code.
+
+**What's there:**
+- `knowledge-base/2023_ACS_Enriched_Universe.json` — 1GB+ enriched variable metadata for ALL 2023 ACS variables and tables. Dual lookup system with massive metadata per variable.
+- `knowledge-base/concepts/` — Concept templates, ontology attempts
+- `knowledge-base/methodology-db/` — Processed methodology content
+- `knowledge-base/source-docs/` — May overlap with v3 source-docs
+- `knowledge-base/variables-db/`, `variables-faiss/`, `vector-db/` — Multiple generations of embedding indexes
+- `evaluation/` — Previous eval attempts
+- 47+ debug/test/check scripts in root — diagnostic archaeology of what went wrong
+
+**Why it failed (key lesson):**
+RAG over Census variable metadata hits a dimensionality wall. When everything is statistical data about demographic variables, embeddings cluster too tightly — semantic smearing. A 1GB enriched variable file for ONE survey couldn't be effectively searched because the embedding space couldn't differentiate "median household income" from "median family income" from "aggregate income" with enough resolution. The problem isn't retrieval — it's that the domain is too semantically homogeneous for general-purpose embeddings to navigate.
+
+This is WHY we moved to pragmatics (structured expert context with latitude) instead of RAG over metadata.
+
 ## What NOT to Do
 - Don't add R, tidycensus, or Docker infrastructure (that's v1/v2)
 - Don't over-engineer the architecture before evaluation proves the concept

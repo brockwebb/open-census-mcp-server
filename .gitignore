@@ -6,6 +6,9 @@ knowledge-base/vector-db/
 knowledge-base/methodology-db/
 knowledge-base/model_cache/
 
+# Compiled packs (build artifacts)
+packs/*.db
+
 # Working directories (gitignored by convention)
 handoffs/
 cc_tasks/

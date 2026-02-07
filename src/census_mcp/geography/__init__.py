@@ -1,0 +1,1 @@
+"""Geographic resolution package."""
