@@ -35,6 +35,7 @@ tmp/                   # Scratch space (gitignored)
 
 ## Key Conventions
 - **Never edit files without explicit permission.** Output to artifacts or chat.
+- **TEVV every task.** Test-Evaluate-Verify-Validate before moving on. (NIST AI RMF 2023)
 - **CC tasks go in `cc_tasks/`** with date prefix: `YYYY-MM-DD_description.md`
 - **Thread handoffs go in `handoffs/`** with date prefix
 - **Scratch work goes in `tmp/`**
@@ -106,3 +107,5 @@ This is WHY we moved to pragmatics (structured expert context with latitude) ins
 - Don't use web search for Census data — use Census API or project knowledge base
 - Don't use the term "crystal" anywhere — it's purged
 - Don't build throwaway MVPs — build the real thing correctly from the start
+- Don't add external databases (Neo4j, Postgres, etc.) — SQLite only per SRS C-002
+- Don't add dependencies without justification — minimal footprint, prove we need it first

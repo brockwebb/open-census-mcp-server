@@ -99,6 +99,10 @@ def compile_pack(staging_dir: Path, output_path: Path, parent_db_path: Path | No
     # Create output directory if needed
     output_path.parent.mkdir(parents=True, exist_ok=True)
     
+    # Remove existing db file (compile is a full rebuild)
+    if output_path.exists():
+        output_path.unlink()
+    
     # Create SQLite database
     conn = sqlite3.connect(output_path)
     try:
