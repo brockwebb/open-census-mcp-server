@@ -1,6 +1,7 @@
 # Census MCP Server — Implementation Schedule
 
 *Created: 2026-02-08*
+*Last Updated: 2026-02-07*
 
 ---
 
@@ -32,41 +33,62 @@
 
 ## Phase 1: Pack Pipeline
 
-Depends on: Nothing (but informs Phase 2)
+### Track C: Pack Schema & Compiler ✅ COMPLETE
+**Location:** `src/census_mcp/pragmatics/`, `scripts/`
 
-### Track C: Pack Schema & Compiler
-**Location:** `scripts/compile_pack.py`, `pragmatics/pack.py`
+| Task | Description | Status |
+|------|-------------|--------|
+| C.1 | SQLite schema DDL (from vocabulary doc) | ✅ |
+| C.2 | JSON staging format validation (Pydantic) | ✅ |
+| C.3 | compile_pack.py: JSON → SQLite | ✅ |
+| C.4 | Pack inheritance resolution | ✅ |
+| C.5 | compile_all.py: batch compilation | ✅ |
+| C.6 | pack.py: load .db at runtime | ✅ |
+| C.7 | Integration test: round-trip JSON→DB→query | ✅ |
 
-| Task | Description |
-|------|-------------|
-| C.1 | SQLite schema DDL (from vocabulary doc) |
-| C.2 | JSON staging format validation |
-| C.3 | compile_pack.py: JSON → SQLite |
-| C.4 | Pack inheritance resolution |
-| C.5 | compile_all.py: batch compilation |
-| C.6 | pack.py: load .db at runtime |
-| C.7 | Integration test: round-trip JSON→DB→query |
+**TEVV:** Complete. 15/15 tests passing.
 
-**Deliverable:** `python scripts/compile_pack.py staging/acs` → `packs/acs.db`
+**Deliverables:**
+- `scripts/compile_pack.py` - Single pack compiler
+- `scripts/compile_all.py` - Batch compiler
+- `src/census_mcp/pragmatics/schema.py` - SQLite DDL
+- `src/census_mcp/pragmatics/models.py` - Pydantic validation
+- `src/census_mcp/pragmatics/pack.py` - Runtime PackLoader
 
-### Track D: Seed Content
-**Location:** `staging/general_statistics/`, `staging/census/`, `staging/acs/`
+### Track D: Seed Content ✅ COMPLETE (Initial)
+**Location:** `staging/`, `packs/`
 
-| Task | Description |
-|------|-------------|
-| D.1 | 5-10 general statistics rules (MOE, CV thresholds) |
-| D.2 | 5-10 Census-wide rules (vintage, geographic hierarchy) |
-| D.3 | 10-20 ACS-specific rules (1yr vs 5yr, population thresholds) |
-| D.4 | Thread edges between related rules |
-| D.5 | Validate against schema |
+| Task | Description | Status |
+|------|-------------|--------|
+| D.1 | General statistics rules | ✅ (3 items) |
+| D.2 | Census-wide rules | ✅ (3 items) |
+| D.3 | ACS-specific rules | ✅ (17 items) |
+| D.4 | Thread edges between related rules | ✅ (6 threads) |
+| D.5 | Validate against schema | ✅ |
 
-**Deliverable:** Minimal but real pack content to test full pipeline.
+**ACS Pack Details (17 contexts):**
+- Population thresholds: 3 (65K rule, 20K supplemental, 5-year coverage)
+- MOE/reliability: 3 (SE formula, CV threshold, precision comparison)
+- Comparison rules: 3 (no 1yr/5yr mixing, overlapping periods, significance testing)
+- Period estimates: 1 (labeling guidance)
+- Dollar values: 1 (inflation adjustment)
+- Geography: 4 (block groups, PUMAs, congressional districts, boundary dates)
+- Breaks/discontinuities: 1 (2009-2010 population controls)
+- Suppression: 1 (data availability)
+
+**Latitude Distribution:**
+- `none`: 5 (hard constraints)
+- `narrow`: 7 (strong guidance)
+- `wide`: 4 (context-dependent)
+- `full`: 1 (background info)
+
+**Source:** ACS-GEN-001 (Understanding and Using ACS Data handbook, 2020)
 
 ---
 
-## Phase 2: Pragmatics Engine
+## Phase 2: Pragmatics Engine ⏳ NOT STARTED
 
-Depends on: Phase 1 (pack loading)
+Depends on: Phase 1 (pack loading) ✅
 
 | Task | Location | Description |
 |------|----------|-------------|
@@ -83,9 +105,9 @@ Depends on: Phase 1 (pack loading)
 
 ---
 
-## Phase 3: MCP Integration
+## Phase 3: MCP Integration ⏳ NOT STARTED
 
-Depends on: Phase 0 (API client), Phase 2 (pragmatics)
+Depends on: Phase 0A (API client) ✅, Phase 2 (pragmatics)
 
 | Task | Location | Description |
 |------|----------|-------------|
@@ -101,7 +123,7 @@ Depends on: Phase 0 (API client), Phase 2 (pragmatics)
 
 ---
 
-## Phase 4: Evaluation & Hardening
+## Phase 4: Evaluation & Hardening ⏳ NOT STARTED
 
 Depends on: Phase 3
 
@@ -121,36 +143,68 @@ Depends on: Phase 3
 ## Dependency Graph
 
 ```
-Phase 0A (API Client) ──────────────────────────┐
+Phase 0A (API Client) ✅ ───────────────────────┐
                                                  ├──► Phase 3 (MCP) ──► Phase 4 (Eval)
-Phase 0B (Geography) ───────────────────────────┤
-                                                 │
-Phase 1C (Pack Pipeline) ──► Phase 2 (Pragmatics)┘
+Phase 1C (Pack Pipeline) ✅ ──► Phase 2 (Engine) ┘
          │
-Phase 1D (Seed Content) ───┘
+Phase 1D (Seed Content) ✅ ────┘
 ```
 
 ---
 
 ## Current Status
 
-| Phase | Status |
-|-------|--------|
-| 0A: API Client | ✅ Complete (TEVV passed) |
-| ~~0B: Geography~~ | ❌ Deleted (LLM handles, edge cases → packs) |
-| 1C: Pack Pipeline | 🔄 In Progress |
-| 1D: Seed Content | ⏳ Not Started |
-| 2: Pragmatics | ⏳ Not Started |
-| 3: MCP Integration | ⏳ Not Started |
-| 4: Evaluation | ⏳ Not Started |
+| Phase | Status | Tests |
+|-------|--------|-------|
+| 0A: API Client | ✅ Complete | 14/14 |
+| ~~0B: Geography~~ | ❌ Deleted | — |
+| 1C: Pack Pipeline | ✅ Complete | 15/15 |
+| 1D: Seed Content | ✅ Complete (initial) | — |
+| 2: Pragmatics Engine | ⏳ Not Started | — |
+| 3: MCP Integration | ⏳ Not Started | — |
+| 4: Evaluation | ⏳ Not Started | — |
+
+---
+
+## Infrastructure & CI
+
+| Component | Status |
+|-----------|--------|
+| GitHub Actions CI | ✅ `.github/workflows/ci.yml` |
+| Unit tests | ✅ pytest |
+| Pack compilation | ✅ In CI pipeline |
+| Ruff linting | ✅ Separate job |
+
+---
+
+## Documentation Added
+
+| Document | Purpose |
+|----------|---------|
+| `docs/references/CATALOG.md` | Source document registry with provenance |
+| `docs/references/theory/semiotic_dq_foundations.md` | Theoretical foundation citations |
+| `docs/architecture/knowledge_pack_management.md` | Authoring vs runtime separation |
+| `docs/design/pragmatics_vocabulary.md` | Canonical terms + theoretical foundation |
+
+---
+
+## Tech Debt / Future Work
+
+| Item | Priority | Notes |
+|------|----------|-------|
+| Automated extraction from PDFs | Medium | Manual extraction doesn't scale |
+| Bulk Neo4j loader script | Medium | Currently loading via MCP manually |
+| Neo4j → JSON export script | Medium | Round-trip automation |
+| CPS pack | Low | Needed for user's other project |
+| Additional ACS docs extraction | Low | Researchers handbook, PUMS handbook |
 
 ---
 
 ## Risk Items
 
-| Risk | Mitigation |
-|------|------------|
-| Census API rate limits slow testing | Cache responses locally during dev |
-| Geography disambiguation is hard | Start with unambiguous cases, iterate |
-| Pack content takes longer than code | Timebox initial content, expand in Phase 4 |
-| MCP protocol quirks | Test with simple tool first before pragmatics integration |
+| Risk | Mitigation | Status |
+|------|------------|--------|
+| Census API rate limits | Cache responses locally | Mitigated |
+| Geography disambiguation | LLM handles + edge cases in packs | Resolved |
+| Pack content takes longer than code | Timebox initial content | Initial content done |
+| MCP protocol quirks | Test with simple tool first | Not yet started |
