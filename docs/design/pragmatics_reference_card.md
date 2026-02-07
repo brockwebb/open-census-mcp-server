@@ -95,61 +95,56 @@ From a graph perspective: you're not traversing the entire graph. You're extract
 
 ---
 
-## Talking Points: Why Prompt Eval Won't Work (and What Will)
+## Why Retrieval Accuracy Alone Is Insufficient
 
-*Framed constructively — "complement" not "critique"*
+### The Limitation of Prompt-Response Evaluation
+Existing approaches to evaluating LLM understanding of statistical data focus on retrieval accuracy:
+can the system return the correct number from the correct source?
 
-### The NORC Approach (MLMU, $700K, prompt-response evaluation)
-**What it measures:**
-- Can an LLM retrieve the correct value?
+This is necessary but not sufficient. A system can return the **correct number** and still give the
+**wrong answer**.
+
+**What retrieval evaluation measures:**
+- Can the LLM retrieve the correct value?
 - Does it cite the right source?
 - Is the number accurate?
-- Can it handle time-sensitive queries?
 
-**What it doesn't reach:**
-- Should the LLM have answered *at all*?
-- Did it route to the *appropriate* source (not just *a* source)?
+**What it cannot reach:**
+- Should the LLM have answered at all?
+- Did it route to the *appropriate* source for the user's specific purpose?
 - Did it communicate uncertainty relative to the use case?
 - Did it apply valid methodology for the data characteristics?
-- Would an expert have answered *differently*?
+- Would a domain expert have answered *differently*?
 
-### The Core Problem with Prompt-Response Eval
-A system can return the **correct number** and still give the **wrong answer**. Both a system with pragmatic constraints and one without can return "median household income = $X" for Severna Park. The number matches. But only one system knows to use 5-Year ACS instead of 1-Year for a population of ~40K. Only one flags that the margin of error may be unacceptable for the user's purpose.
+### Example: Right Number, Wrong Answer
+A system returns "median household income = $X" for Severna Park, MD (CDP). The number matches
+the Census API. But Severna Park's population (~39,500 per 2023 ACS 5-year, table DP05) means
+only the 5-Year ACS produces reliable estimates for this geography. A system without pragmatic context might pull from 1-Year ACS — returning an accurate
+retrieval from an inappropriate source.
 
-**Prompt eval measures retrieval accuracy. The hard problem is consultation quality.**
+**Retrieval evaluation measures whether the system got the right number. The hard problem is
+whether the system did what an expert would do.**
 
-### Why the Pragmatic Approach Addresses This
+### The Evaluation Gap
 
-| Dimension | Prompt Eval | Pragmatic Consultation |
-|-----------|-------------|----------------------|
+| Dimension | Retrieval Evaluation | Pragmatic Consultation |
+|-----------|---------------------|----------------------|
 | Success metric | "Got the right number" | "Did what an expert would do" |
 | Failure mode detected | Wrong value returned | Right value, wrong source/method |
 | Handles redirects | No — only tests if answer matches | Yes — "don't use Census for this" is a valid answer |
 | Handles uncertainty | Barely — checks if caveats exist | Deeply — communicates fitness relative to purpose |
-| Architecture-aware | No — treats LLM as black box | Yes — evaluates the system, not just the model |
-
-### Constructive Framing (Jujitsu Talking Points)
-
-1. **"Implementation revealed additional dimensions worth evaluating."**
-   Not: "They're measuring the wrong thing." Instead: "Retrieval accuracy is necessary but not sufficient. Here's what else emerged."
-
-2. **"The hard part isn't returning the right number — it's knowing when not to return Census data at all."**
-   The teacher salary example: ACS has occupation data, but Texas Education Agency administrative records are the right source for teacher salaries by district. The correct answer is a redirect.
-
-3. **"We're building on the same foundation — asking what 'understanding' means in practice."**
-   NORC asks "does the LLM understand the data?" The pragmatic layer asks "does the system understand the *question* well enough to know which data to use?"
-
-4. **"Evaluation frameworks and implementation architectures should inform each other."**
-   Not: "Their eval is useless." Instead: "What we learned building systems suggests additional test dimensions that would strengthen any evaluation framework."
-
-5. **"Both efforts point to the same gap: the layer between metadata and expert judgment."**
-   Position NORC's work and yours as converging on the same insight from different directions. They'll find their prompts fail on fitness-for-use cases. You've already identified why.
 
 ---
 
 ## One-Liner
 
 > "Federal AI-ready data guidance solves syntax and semantics. Implementation reveals the missing layer is **pragmatics** — the expert knowledge of when, whether, and how to use data for a specific purpose."
+
+---
+
+*All data examples in this document reference publicly available Census Bureau products.
+Population thresholds, table references, and geographic claims are verifiable against
+data.census.gov and Census Bureau technical documentation.*
 
 ---
 

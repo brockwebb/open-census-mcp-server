@@ -14,6 +14,9 @@ handoffs/
 cc_tasks/
 tmp/
 
+# Private notes (unredacted, strategic, not for public)
+notes/
+
 # Keep directory structure
 !knowledge-base/source-docs/.gitkeep
 !knowledge-base/rules/.gitkeep
