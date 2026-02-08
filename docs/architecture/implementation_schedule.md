@@ -65,6 +65,7 @@
 | D.3 | ACS-specific rules | ✅ (17 items) |
 | D.4 | Thread edges between related rules | ✅ (6 threads) |
 | D.5 | Validate against schema | ✅ |
+| D.6 | ACS General Handbook deep extraction (7 non-obvious findings) — author with provenance | ⏳ | ACS-GEN-001 |
 
 **ACS Pack Details (17 contexts):**
 - Population thresholds: 3 (65K rule, 20K supplemental, 5-year coverage)
@@ -83,6 +84,8 @@
 - `full`: 1 (background info)
 
 **Source:** ACS-GEN-001 (Understanding and Using ACS Data handbook, 2020)
+
+**Pending:** 7 additional items from ACS General Handbook deep read (D.6). See `handoffs/2026-02-08_provenance_schema.md` for findings list.
 
 ---
 
@@ -227,7 +230,7 @@ Phase 1D (Seed Content) ✅ ────┘
 | 4A: Manual Validation | ⏳ In Progress | — |
 | 4B: Systematic Evaluation | ⏳ Not Started | — |
 
-**Total Tests:** 48/48 (1 pre-existing failure in pack_roundtrip unrelated to new work)
+**Total Tests:** 47/47 (all passing)
 
 ---
 
@@ -292,10 +295,11 @@ See `docs/lessons_learned/session_2026-02-08_pipeline_gap.md` for root cause.
 | P.6 | Migrate Neo4j nodes in-place: `tags`→`triggers`, add `category`, restructure `source` | ✅ | FR-EP-004 |
 | P.7 | Run `neo4j_to_staging.py` to generate canonical staging JSON | ✅ (manual) | FR-EP-001, FR-EP-003 |
 | P.8 | Remove old `staging/acs.json` (replaced by `staging/acs/*.json` per-category files) | ✅ | FR-EP-003 |
-| P.9 | Run `compile_all.py` to rebuild packs from new staging | ⏳ | — |
-| P.10 | Validate: run tests, confirm pack round-trip | ⏳ | — |
+| P.9 | Run `compile_all.py` to rebuild packs from new staging | ✅ | — |
+| P.10 | Validate: run tests, confirm pack round-trip | ✅ | — |
 | P.11 | Author G.10/G.11/G.7 content in Neo4j using canonical schema (10 new nodes, 10 new edges) | ✅ | G.10, G.11, G.7 |
-| P.12 | Run full pipeline: Neo4j → staging → compile → test | ⏳ | End-to-end |
+| P.12 | Run full pipeline: Neo4j → staging → compile → test | ✅ | End-to-end |
+| P.13 | Provenance schema migration: models.py, staging JSON, Neo4j scripts, CLAUDE.md, tests | ✅ | ADR (provenance) |
 
 **Exit Criteria:** Full round-trip works. All staging JSON matches Pydantic model. No stale formats.
 
@@ -305,6 +309,7 @@ See `docs/lessons_learned/session_2026-02-08_pipeline_gap.md` for root cause.
 
 | Item | Priority | Notes |
 |------|----------|-------|
+| Source-grounded authoring for all existing content | High | Existing 25 ACS items cite ACS-GEN-001 but were authored from LLM training data, not source docs. Need re-verification against handbook. |
 | LLM-assisted PDF extraction (`scripts/extract/`) | Medium | Manual extraction doesn't scale. MinerU for chunking, agent swarms for extraction. FR-EP-007, FR-EP-008 |
 | CPS pack | Low | Needed for user's other project |
 | Additional ACS docs extraction | Low | Researchers handbook, PUMS handbook |
