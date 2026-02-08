@@ -14,10 +14,25 @@ class ThreadEdge(BaseModel):
 
 
 class Source(BaseModel):
-    """Provenance information for a context item."""
-    document: str
-    section: str | None = None
+    """A single source citation with locator information."""
+    document: str                    # Catalog ID, e.g., "ACS-GEN-001"
+    section: str | None = None       # Chapter/section, e.g., "Ch. 7"
+    page: int | str | None = None    # Page number or range, e.g., 53 or "53-57"
     extraction_method: Literal["manual", "llm_assisted", "automated"] = "manual"
+
+
+class Provenance(BaseModel):
+    """Full provenance for a context item.
+
+    Single-source grounded items need only sources + confidence.
+    Multi-source interpreted/expert items require synthesis_note
+    explaining how the sources combine to form the judgment.
+    Limitations flag known boundary conditions where guidance breaks down.
+    """
+    sources: list[Source] = Field(..., min_length=1)
+    synthesis_note: str | None = None        # Required when len(sources) > 1
+    confidence: Literal["grounded", "interpreted", "expert_judgment"] = "grounded"
+    limitations: str | None = None           # Where this guidance breaks down
 
 
 class ContextItem(BaseModel):
@@ -29,7 +44,7 @@ class ContextItem(BaseModel):
     context_text: str
     triggers: list[str] = []
     thread_edges: list[ThreadEdge] = []
-    source: Source | None = None
+    provenance: Provenance
 
 
 class PackManifest(BaseModel):

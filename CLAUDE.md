@@ -11,6 +11,9 @@ WHICH data to use and HOW to interpret it matters more than finding it.
 Fresh rebuild. v1/v2 archived to `/Users/brock/Documents/GitHub/archive-opencensusmcp/v2`.
 Week 1 of 5-week sprint toward FCSM conference talk (empirical evaluation of pragmatic rules).
 
+## FCSM Talk Lab Notebook
+`talks/fcsm_2026/notes.md` is a **chronological lab notebook**. Add dated entries with lessons learned, insights, and observations. Never edit old entries — append corrections as new entries. Reference files in the same directory store polished context (e.g., `reference_*.md`).
+
 ## Repo Structure
 Canonical structure is defined in `docs/requirements/srs.md` section 2 (that is law).
 Quick reference:
@@ -36,15 +39,74 @@ tmp/                   # Scratch space (gitignored)
 ## Key Conventions
 - **Never edit files without explicit permission.** Output to artifacts or chat.
 - **TEVV every task.** Test-Evaluate-Verify-Validate before moving on. (NIST AI RMF 2023)
+- **Prompt = how to think, Packs = what to know.** Never duplicate domain knowledge in both.
+- **Adding knowledge?** See `docs/design/pragmatics_authoring_guide.md`
 - **CC tasks go in `cc_tasks/`** with date prefix: `YYYY-MM-DD_description.md`
 - **Thread handoffs go in `handoffs/`** with date prefix
 - **Scratch work goes in `tmp/`**
 - All three directories are gitignored.
 
+## Pragmatics Content Quality Rules
+
+**What is a pragmatic?** A context item encoding expert statistical judgment about
+fitness-for-use — what a senior statistician would tell a colleague before they use
+data. Pragmatics are NOT rules, constraints, lookup tables, or LLM instructions.
+They are structured expert knowledge with latitude (Morris 1938 semiotics).
+
+**Canonical schema:** `src/census_mcp/pragmatics/models.py` (Pydantic). All content
+MUST conform. Key fields: `context_id`, `domain`, `category`, `latitude`, `context_text`,
+`triggers` (NOT `tags`), `thread_edges`, `provenance` (required: sources list with document/section/page, confidence level, optional synthesis_note and limitations).
+
+**Content principles — MUST follow when authoring or extracting:**
+
+1. **Encode principles, not instances.** Write "independent cities are county-equivalents
+   that break the nesting assumption" — NOT "Virginia has 38 independent cities" or
+   "Baltimore FIPS is 24:510". The LLM knows specific instances from training data.
+   Pragmatics encode the *judgment* the LLM doesn't have.
+
+2. **No lookup tables.** FIPS codes, state lists, city enumerations, variable codes —
+   these belong in the geographic resolver, API layer, or LLM training data. Pragmatics
+   encode *when and why* to use them, not the data itself.
+
+3. **No LLM instructions.** Don't write "Always warn the user..." or "You must check..."
+   Write the factual context: "MOE exceeding the estimate indicates unreliability."
+   The LLM decides what to do with it.
+
+4. **Test: Would a statistician say this to a colleague?** If yes, it's a pragmatic.
+   If it reads like a database record, a prompt instruction, or an encyclopedia entry,
+   it's in the wrong layer.
+
+5. **1-3 sentences per item.** Dense, actionable, factual. No jargon without explanation.
+   No hedging. No "it is important to note that..." filler.
+
+6. **3-6 triggers per item.** Triggers are retrieval hooks, not tags. Over-triggering
+   destroys retrieval specificity.
+
+7. **Latitude must be justified.** `none` = hard constraint ("ACS 1-year requires 65K+ pop").
+   `narrow` = strong guidance with rare exceptions. `wide` = genuinely context-dependent.
+   `full` = background FYI. Most items should be `none` or `narrow`.
+
+8. **Every item needs provenance grounded in documentation, NEVER from LLM training data.**
+   Structured object with `sources` list (each source has document/section/page/extraction_method),
+   `confidence` level (grounded/interpreted/expert_judgment), and optional `synthesis_note` and
+   `limitations`. Unsourced expert opinion is not auditable. LLM training data may contain
+   confabulations — the pragmatics layer exists to provide *auditable* expert judgment with
+   traceable provenance. When authoring: read the source document first, extract the judgment,
+   cite it with page/section. Never reverse-engineer citations onto pre-existing beliefs. If no
+   source document exists for a domain, download it BEFORE authoring content. Source documents
+   live in `docs/references/` and `knowledge-base/source-docs/`.
+
+9. **Thread edges are for retrieval depth, not ontology.** Connect items a user might
+   need together. Don't over-connect — if everything links to everything, traversal
+   is useless.
+
+**Staging directory:** `staging/{domain}/{category}.json` — one file per category.
+Manifest in `staging/{domain}/manifest.json`. Compile with `python scripts/compile_all.py`.
+
 ## Implementation Schedule
 **See:** `docs/architecture/implementation_schedule.md` for detailed task breakdown.
 
-**Current Phase:** 0A — Census API Client
+**Current Phase:** 4A — Manual Validation
 
 **Dependency order:**
 ```
@@ -68,9 +130,29 @@ All terms defined in `docs/design/pragmatics_vocabulary.md` (normative). Key ter
 - **Latitude** — freedom to bend: none / narrow / wide / full
 - **NEVER use:** crystal, constraint, rule, guardrail, directive, ontology, weight, severity
 
+## Neo4j Pragmatics Database (Authoring Environment)
+- **Database name:** `pragmatics` — prefix ALL Cypher queries with `USE pragmatics`
+- **Contains:** Context nodes (25 ACS), Pack nodes (1), thread edges (14 RELATES_TO, 17 BELONGS_TO)
+- **This is the authoring/research environment per ADR-001**
+- **Pipeline:** Neo4j → export script → staging JSON → compile_pack.py → SQLite packs
+- **Arnold/training graph is in the default database — DO NOT mix them**
+- **Round-trip scripts:** `scripts/neo4j_to_staging.py` (export) and `scripts/staging_to_neo4j.py` (import). Require NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD env vars.
+- **LLM extraction scripts:** `scripts/extract/` is empty — future home of PDF chunking + LLM extraction (MinerU, agent swarms). Not yet implemented.
+- **Schema:** All staging files use canonical Pydantic format (triggers, thread_edges, structured source). Old flat format purged 2026-02-08.
+
+## Key Architecture Docs for Pragmatics
+- `docs/decisions/ADR-001-neo4j-authoring-sqlite-runtime.md` — Authoring vs runtime separation
+- `docs/architecture/knowledge_pack_management.md` — Full pipeline architecture
+- `docs/design/extraction_pipeline.md` — Source docs → LLM extraction → staging
+- `docs/design/pragmatics_authoring_guide.md` — How to add content
+- `docs/design/pragmatics_vocabulary.md` — Normative terminology
+- `docs/design/pragmatics_data_flow.md` — End-to-end data flow explainer
+- `docs/design/theoretical_foundations.md` — ReAct, OODA, Cynefin, Morris semiotic triad
+- `src/census_mcp/pragmatics/models.py` — Pydantic models (canonical schema)
+
 ## Technical Context
 - **Census API:** Direct Python HTTP calls to `api.census.gov`
-- **Pragmatic context:** Structured JSON in `staging/`, compiled to SQLite packs
+- **Pragmatic context:** Authored in Neo4j (`USE pragmatics`), exported to JSON in `staging/`, compiled to SQLite packs in `packs/`
 - **Evaluation:** Conversational Quality Score (CQS) protocol comparing baseline LLM vs pragmatics-augmented responses
 - **No vector DB, no RAG over metadata** — structured context with latitude, not embeddings
 - **No ontology layer** — the LLM's weights are the semantic layer; we supply pragmatics only
@@ -105,6 +187,7 @@ This is WHY we moved to pragmatics (structured expert context with latitude) ins
 - Don't use RAG over variable metadata — semantic smearing kills it
 - Don't create files outside the repo without asking
 - Don't use web search for Census data — use Census API or project knowledge base
+- Tool is `get_census_data` not `get_acs_data` (legacy name accepted but deprecated)
 - Don't use the term "crystal" anywhere — it's purged
 - Don't build throwaway MVPs — build the real thing correctly from the start
 - Don't add external databases (Neo4j, Postgres, etc.) — SQLite only per SRS C-002

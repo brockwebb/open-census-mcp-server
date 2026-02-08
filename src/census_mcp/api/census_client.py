@@ -168,22 +168,35 @@ class CensusClient:
         url = f"{self.BASE_URL}/{year}/acs/acs5"
         
         # Build geography specification
-        for_geo = f"state:{state}"
-        if county:
-            for_geo = f"county:{county}"
+        # Priority: tract > place > county > state
+        # Census API requires: for=<geo_level>:<code>&in=<parent_levels>
+        # Tract requires both state and county in 'in' clause (ADR-006)
+        if tract:
+            in_geo = f"state:{state}"
+            if county:
+                in_geo += f"+county:{county}"
+            params = {
+                "get": ",".join(variables),
+                "for": f"tract:{tract}",
+                "in": in_geo,
+            }
         elif place:
-            for_geo = f"place:{place}"
-        elif tract:
-            for_geo = f"tract:{tract}"
-        
-        params = {
-            "get": ",".join(variables),
-            "for": for_geo,
-        }
-        
-        # Add state context if needed
-        if county or place or tract:
-            params["in"] = f"state:{state}"
+            params = {
+                "get": ",".join(variables),
+                "for": f"place:{place}",
+                "in": f"state:{state}",
+            }
+        elif county:
+            params = {
+                "get": ",".join(variables),
+                "for": f"county:{county}",
+                "in": f"state:{state}",
+            }
+        else:
+            params = {
+                "get": ",".join(variables),
+                "for": f"state:{state}",
+            }
         
         return await self._request(url, params)
     

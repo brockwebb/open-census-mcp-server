@@ -3,7 +3,7 @@
 import pytest
 from pydantic import ValidationError
 
-from census_mcp.pragmatics.models import ContextItem, ThreadEdge, Source, PackManifest
+from census_mcp.pragmatics.models import ContextItem, ThreadEdge, Source, Provenance, PackManifest
 
 
 def test_valid_context_item():
@@ -16,7 +16,10 @@ def test_valid_context_item():
         context_text="Test context",
         triggers=["test"],
         thread_edges=[],
-        source=Source(document="Test Doc")
+        provenance=Provenance(
+            sources=[Source(document="Test Doc")],
+            confidence="grounded"
+        )
     )
     assert item.context_id == "ACS-POP-001"
     assert item.latitude == "none"
@@ -30,7 +33,11 @@ def test_invalid_latitude():
             domain="acs",
             category="population",
             latitude="invalid",  # Invalid
-            context_text="Test"
+            context_text="Test",
+            provenance=Provenance(
+                sources=[Source(document="Test")],
+                confidence="grounded"
+            )
         )
     assert "latitude" in str(exc_info.value)
 
@@ -43,7 +50,11 @@ def test_invalid_context_id_pattern():
             domain="acs",
             category="population",
             latitude="none",
-            context_text="Test"
+            context_text="Test",
+            provenance=Provenance(
+                sources=[Source(document="Test")],
+                confidence="grounded"
+            )
         )
     assert "context_id" in str(exc_info.value)
 
@@ -51,14 +62,18 @@ def test_invalid_context_id_pattern():
 def test_valid_context_id_patterns():
     """Test various valid context_id patterns."""
     valid_ids = ["ACS-POP-001", "GEN-TV-123", "CEN-GEO-999"]
-    
+
     for context_id in valid_ids:
         item = ContextItem(
             context_id=context_id,
             domain="test",
             category="test",
             latitude="none",
-            context_text="Test"
+            context_text="Test",
+            provenance=Provenance(
+                sources=[Source(document="Test")],
+                confidence="grounded"
+            )
         )
         assert item.context_id == context_id
 
@@ -112,8 +127,11 @@ def test_context_item_defaults():
         domain="acs",
         category="test",
         latitude="none",
-        context_text="Test"
+        context_text="Test",
+        provenance=Provenance(
+            sources=[Source(document="Test")],
+            confidence="grounded"
+        )
     )
     assert item.triggers == []
     assert item.thread_edges == []
-    assert item.source is None

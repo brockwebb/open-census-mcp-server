@@ -30,3 +30,18 @@ the prompt from going stale when packs update.
 ## Risk
 If we don't revisit: prompt and packs drift apart, contradictions emerge, 
 maintenance burden doubles.
+
+## Resolution (2026-02-08, G.6)
+
+**DONE.** Prompt slimmed per this decision.
+
+Removed 4 domain-specific items from "Never" list, 2 from "Always" list.
+All removed items are covered by pragmatics packs (ACS-MOE-001/002, ACS-CMP-001,
+ACS-PER-001). Design notes moved to `agent_prompt_design_notes.md`.
+
+Added audience calibration line based on external SWOT review (ChatGPT 5.2
+assessment identified audience adaptation as a gap; assessment was correct
+on this point).
+
+Prompt went from ~280 lines to ~55 lines. Domain knowledge now lives
+exclusively in packs.

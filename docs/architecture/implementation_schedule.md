@@ -121,13 +121,13 @@ Depends on: Phase 0A (API client) ✅, Phase 2 (retriever) ✅
 
 | Task | Location | Description | Status |
 |------|----------|-------------|--------|
-| F.1 | `tools/census_tools.py` | get_methodology_guidance tool | ✅ |
-| F.2 | `tools/census_tools.py` | get_acs_data handler (data + pragmatics) | ✅ |
-| F.3 | `tools/census_tools.py` | explore_variables handler | ✅ |
-| F.4 | `server.py` | FastMCP server setup (stdio transport) | ✅ |
-| F.5 | `server.py` | System prompt from agent_prompt.md | ✅ |
+| F.1 | `server.py` | get_methodology_guidance tool | ✅ |
+| F.2 | `server.py` | get_census_data handler (data + pragmatics) | ✅ (renamed from get_acs_data, G.6) |
+| F.3 | `server.py` | explore_variables handler | ✅ |
+| F.4 | `server.py` | Low-level Server + stdio (ADR-005) | ✅ (rewrote from FastMCP) |
+| F.5 | `agent_prompt.md` | Agent prompt (slimmed G.6) | ✅ |
 | F.6 | `server.py` | Pack loading (lazy initialization) | ✅ |
-| F.7 | Integration tests | Tool handlers tested with mocked context | ✅ (6/6) |
+| F.7 | Integration tests | 10 tests: tools + tract fixes + legacy compat | ✅ (10/10) |
 | F.8 | `pyproject.toml` | MCP dependency, entry point | ✅ |
 
 **Deliverables:**
@@ -146,20 +146,59 @@ Depends on: Phase 0A (API client) ✅, Phase 2 (retriever) ✅
 
 ---
 
-## Phase 4: Evaluation & Hardening ⏳ NOT STARTED
+## Phase 4A: Manual Validation ⏳ IN PROGRESS
 
-Depends on: Phase 3
+Depends on: Phase 3 ✅
 
-| Task | Location | Description |
-|------|----------|-------------|
-| G.1 | `tests/evaluation/` | CQS test harness skeleton |
-| G.2 | `tests/evaluation/` | 20 curated test queries |
-| G.3 | `tests/evaluation/` | Expert judgment baseline |
-| G.4 | `docs/verification/` | Evaluation results documentation |
-| G.5 | — | Bug fixes from evaluation |
-| G.6 | — | Pack content expansion based on failures |
+*Objective: Prove the system works end-to-end before investing in automated evaluation.*
 
-**Deliverable:** Documented evaluation with CQS scores.
+| Task | Description | Status | Traces To |
+|------|-------------|--------|----------|
+| G.1 | Fix PACKS_DIR: `server.py` reads from `os.environ.get("PACKS_DIR", "packs")` | ✅ | Blocks all testing |
+| G.2 | Restart Claude Desktop, verify MCP connection healthy | ✅ | VR-002 |
+| G.3 | Test: "What's the median income in Mercer, PA?" (MCP tools live) | ✅ | VR-012 |
+| G.4 | Test: Owsley County, KY poverty — three-model comparison (Sonnet 4, 4.5, Opus 4.6) | ✅ | VR-012 |
+| G.5 | SRS reconciliation: update FR-PC-001, FR-PC-003 to align with ADR-003/004 | ⏳ | ADR-003, ADR-004 |
+| G.6 | Prompt slimming: removed domain rules, renamed tool, FSS-general language | ✅ | Decision log (prompt specificity) |
+| G.7 | Add independent cities pack content (ACS-IND-001/002/003) | ✅ | VR-011 |
+| G.8 | Document results of manual tests in `docs/verification/` | ✅ (partial) | — |
+| G.9 | **BUG FIX:** `get_census_data` tract parameter — add wildcard support + county validation (ADR-006) | ✅ | G.4 finding |
+| G.10 | **PACK:** Disclosure avoidance (ACS-DIS-001/002/003) | ✅ | G.4 finding |
+| G.11 | **PACK:** Population thresholds (ACS-THR-001/002) + geographic equivalence (ACS-EQV-001/002) | ✅ | G.4 finding |
+
+**Exit Criteria:** System produces pragmatics-grounded responses for test queries. Tract-level geography works. SRS reflects actual architecture. Agent prompt slim (no domain overfitting).
+
+---
+
+## Phase 4B: Systematic Evaluation ⏳ NOT STARTED
+
+Depends on: Phase 4A
+
+*Objective: Multi-model empirical evaluation for FCSM talk.*
+
+| Task | Description | Status | Traces To |
+|------|-------------|--------|----------|
+| H.1 | API testbench CLI skeleton: launch MCP, execute queries, collect results | ⏳ | VR-001 |
+| H.2 | Health check: verify MCP connection before test run | ⏳ | VR-002 |
+| H.3 | Multi-model backend support (Claude, OpenAI, Gemini) | ⏳ | VR-003, VR-004 |
+| H.4 | Structured result recording (query, model, response, tool calls, pragmatics, latency) | ⏳ | VR-005 |
+| H.5 | Output format: CSV/JSON for CQS scoring | ⏳ | VR-006 |
+| H.6 | Data-driven test definitions (no code changes to add queries) | ⏳ | VR-007 |
+| H.7 | Test battery: 80/20 edge case weighting | ⏳ | VR-010 |
+| H.8 | Geographic edge cases (independent cities, NYC boroughs, DC, consolidated city-counties) | ⏳ | VR-011 |
+| H.9 | Small-area reliability cases (<65K, <20K, tract-level) | ⏳ | VR-012 |
+| H.10 | Temporal edge cases (cross-vintage, overlapping periods, breaks, inflation) | ⏳ | VR-013 |
+| H.11 | Ambiguity cases (Portland, Springfield, Washington) | ⏳ | VR-014 |
+| H.12 | Product-mismatch cases (1-year for small geo, decennial→ACS) | ⏳ | VR-015 |
+| H.13 | Persona-based query variants (8th grader, city planner, journalist) | ⏳ | VR-016 |
+| H.14 | Ensemble prompt testing: same queries across Claude/OpenAI/Gemini/others | ⏳ | VR-003, VR-004 |
+| H.15 | Expert judgment baseline for CQS scoring | ⏳ | — |
+| H.16 | CQS scoring and results documentation | ⏳ | — |
+| H.17 | Bug fixes and pack content expansion from evaluation failures | ⏳ | — |
+
+**Exit Criteria:** Documented CQS scores across ≥2 models, with and without pragmatics. Results in `docs/verification/`.
+
+**Deliverable:** Empirical evaluation suitable for FCSM talk.
 
 ---
 
@@ -167,7 +206,7 @@ Depends on: Phase 3
 
 ```
 Phase 0A (API Client) ✅ ────────────────────────┐
-                                                  ├──► Phase 3 (MCP) ✅ ──► Phase 4 (Eval)
+                                                  ├─► Phase 3 (MCP) ✅ ─► Phase 4A (Manual) ─► Phase 4B (Eval)
 Phase 1C (Pack Pipeline) ✅ ──► Phase 2 (Retriever) ✅ ┘
          │
 Phase 1D (Seed Content) ✅ ────┘
@@ -184,10 +223,11 @@ Phase 1D (Seed Content) ✅ ────┘
 | 1C: Pack Pipeline | ✅ Complete | 15/15 |
 | 1D: Seed Content | ✅ Complete (initial) | — |
 | 2: Retriever | ✅ Complete (revised) | 9/9 |
-| 3: MCP Server | ✅ Complete | 6/6 |
-| 4: Evaluation | ⏳ Not Started | — |
+| 3: MCP Server | ✅ Complete | 10/10 |
+| 4A: Manual Validation | ⏳ In Progress | — |
+| 4B: Systematic Evaluation | ⏳ Not Started | — |
 
-**Total Tests:** 44/44 (1 pre-existing failure in pack_roundtrip unrelated to new work)
+**Total Tests:** 48/48 (1 pre-existing failure in pack_roundtrip unrelated to new work)
 
 ---
 
@@ -213,13 +253,59 @@ Phase 1D (Seed Content) ✅ ────┘
 
 ---
 
+## Architecture Decision Records
+
+| ADR | Title | Status |
+|-----|-------|--------|
+| ADR-003 | Reasoning Model Requirement | Accepted |
+| ADR-004 | Agent Reasoning Loop (ReAct + OODA + Cynefin) | Accepted |
+| ADR-005 | Low-level Server Pattern (FastMCP bypass) | Accepted |
+| ADR-006 | Tract-Level Geography Bug Fixes | Accepted |
+| — | Prompt Specificity Concern | ✅ Resolved (G.6) |
+
+---
+
+## Open Items (Post Phase 3)
+
+| Item | Priority | Notes |
+|------|----------|-------|
+| `server.py` reads PACKS_DIR from env | **Immediate** | Hardcoded `"packs"` relative path fails when Claude Desktop launches from arbitrary CWD. Must read `os.environ.get("PACKS_DIR", "packs")`. Blocks manual testing. |
+| Claude Desktop integration test | **Immediate** | Config updated (2026-02-08). Restart Desktop, test "What's the median income in Mercer, PA?" |
+| SRS reconciliation with ADR-003/004 | High | FR-PC-001 (system classifies queries) and FR-PC-003 (inject into tool descriptions) contradict ADRs. Update FRs. |
+| ~~Slim agent prompt "Never" list~~ | ~~Medium~~ | ✅ Done (G.6). 280→55 lines. Tool renamed `get_census_data`. |
+| API testbench (multi-model CQS) | Medium | CLI harness to run test queries against Claude/GPT/Gemini via API. Validates pragmatics work regardless of reasoning model (ADR-003). |
+
+---
+
+## Phase 4A.5: Pipeline Repair & Schema Migration ⏳ IN PROGRESS
+
+Discovered 2026-02-08: Round-trip scripts were never built. Neo4j nodes use stale schema.
+See `docs/lessons_learned/session_2026-02-08_pipeline_gap.md` for root cause.
+
+| Task | Description | Status | Traces To |
+|------|-------------|--------|----------|
+| P.1 | Create `scripts/neo4j_to_staging.py` (export) | ✅ | FR-EP-001 |
+| P.2 | Create `scripts/staging_to_neo4j.py` (import) | ✅ | FR-EP-002 |
+| P.3 | Add FR-EP-001–009 to SRS § 3.5 | ✅ | SRS |
+| P.4 | Document pipeline gap in lessons learned | ✅ | — |
+| P.5 | Update CLAUDE.md with Neo4j details + script refs | ✅ | — |
+| P.6 | Migrate Neo4j nodes in-place: `tags`→`triggers`, add `category`, restructure `source` | ✅ | FR-EP-004 |
+| P.7 | Run `neo4j_to_staging.py` to generate canonical staging JSON | ✅ (manual) | FR-EP-001, FR-EP-003 |
+| P.8 | Remove old `staging/acs.json` (replaced by `staging/acs/*.json` per-category files) | ✅ | FR-EP-003 |
+| P.9 | Run `compile_all.py` to rebuild packs from new staging | ⏳ | — |
+| P.10 | Validate: run tests, confirm pack round-trip | ⏳ | — |
+| P.11 | Author G.10/G.11/G.7 content in Neo4j using canonical schema (10 new nodes, 10 new edges) | ✅ | G.10, G.11, G.7 |
+| P.12 | Run full pipeline: Neo4j → staging → compile → test | ⏳ | End-to-end |
+
+**Exit Criteria:** Full round-trip works. All staging JSON matches Pydantic model. No stale formats.
+
+---
+
 ## Tech Debt / Future Work
 
 | Item | Priority | Notes |
 |------|----------|-------|
-| Automated extraction from PDFs | Medium | Manual extraction doesn't scale |
-| Bulk Neo4j loader script | Medium | Currently loading via MCP manually |
-| Neo4j → JSON export script | Medium | Round-trip automation |
+| LLM-assisted PDF extraction (`scripts/extract/`) | Medium | Manual extraction doesn't scale. MinerU for chunking, agent swarms for extraction. FR-EP-007, FR-EP-008 |
 | CPS pack | Low | Needed for user's other project |
 | Additional ACS docs extraction | Low | Researchers handbook, PUMS handbook |
 
@@ -233,3 +319,5 @@ Phase 1D (Seed Content) ✅ ────┘
 | Geography disambiguation | LLM handles + edge cases in packs | Resolved |
 | Pack content takes longer than code | Timebox initial content | Initial content done |
 | MCP protocol quirks | Test with simple tool first | Not yet started |
+| Context7 shows unreleased APIs | Always verify against `pip index versions` before assuming API exists | Learned 2026-02-08 |
+| Agent prompt overfits domain rules | Slim "Never" list, remove survey-specific language | ✅ Resolved (G.6) |

@@ -178,7 +178,30 @@ census-mcp-server/
 | FR-RQ-003 | System SHALL communicate fitness-for-use relative to the user's apparent purpose | Should |
 | FR-RQ-004 | System SHALL warn about temporal comparability issues (methodology changes, COVID disruption) | Should |
 
-### 3.5 Composability
+### 3.5 Extraction Pipeline
+
+| ID | Requirement | Priority |
+|----|------------|----------|
+| FR-EP-001 | System SHALL provide a script to export Context nodes, Pack nodes, and thread edges from the Neo4j `pragmatics` database to staging JSON conforming to the Pydantic ContextItem model | Must |
+| FR-EP-002 | System SHALL provide a script to import staging JSON into the Neo4j `pragmatics` database, creating or updating Context nodes and thread edges | Must |
+| FR-EP-003 | Export script SHALL produce JSON files organized by domain subdirectory (`staging/acs/`, `staging/census/`, `staging/general_statistics/`) with items grouped by category | Must |
+| FR-EP-004 | Import script SHALL validate all items against Pydantic models before writing to Neo4j | Must |
+| FR-EP-005 | Export script SHALL be idempotent — running it twice produces identical output | Must |
+| FR-EP-006 | Import script SHALL support incremental updates — new items added, existing items updated, no items deleted without explicit flag | Should |
+| FR-EP-007 | System SHOULD support LLM-assisted bulk extraction from source documents (PDFs) via chunking and structured prompting | Should |
+| FR-EP-008 | System SHOULD support MinerU or equivalent for PDF text extraction at scale | Should |
+| FR-EP-009 | Export and import scripts SHALL live in `scripts/` and be documented in CLAUDE.md | Must |
+
+**Rationale:** ADR-001 separates authoring (Neo4j) from runtime (SQLite). The round-trip scripts are the bridge. Without them, the pipeline is conceptual architecture with no implementation. In-session extraction feeds Neo4j directly; the export script then produces staging JSON for version control and compilation. Future scale uses agent swarms for extraction, but the foundation is these two scripts.
+
+**Pipeline:**
+```
+Source docs → (LLM extraction, in-session or automated) → Neo4j pragmatics DB
+    → neo4j_to_staging.py → staging/*.json → compile_pack.py → packs/*.db
+    ← staging_to_neo4j.py ← (for bootstrap/sync)
+```
+
+### 3.6 Composability
 
 | ID | Requirement | Priority |
 |----|------------|----------|
@@ -309,6 +332,36 @@ Test dimensions:
 3. **Redirect correctness** — Did it redirect when Census wasn't appropriate?
 4. **Explanation quality** — Did it explain its reasoning?
 5. **Harm avoidance** — Did it avoid enabling bad analysis?
+
+### 8.1 API Testbench
+
+| ID | Requirement | Priority |
+|----|------------|----------|
+| VR-001 | System SHALL provide a command-line testbench that launches the MCP server and executes test queries programmatically | Must |
+| VR-002 | Testbench SHALL verify healthy MCP connection before running test queries | Must |
+| VR-003 | Testbench SHALL support multiple LLM backends (Claude, OpenAI, Gemini) as the reasoning caller | Must |
+| VR-004 | Testbench SHALL run identical test queries against each configured backend and collect responses | Must |
+| VR-005 | Testbench SHALL record structured results (query, model, response, tool calls, pragmatics returned, latency) for analysis | Must |
+| VR-006 | Testbench SHALL output results in a format suitable for CQS scoring (CSV or JSON) | Must |
+| VR-007 | Testbench SHOULD support adding new test queries without code changes (data-driven test definitions) | Should |
+
+**Rationale:** The pragmatics layer (packs + retriever) should improve consultation quality regardless of which LLM reasons over the tools. Multi-model comparison validates that the value is in the MCP (data + pragmatics), not in any single model's training data. This directly tests the ADR-003 claim that reasoning belongs to the caller — if pragmatics work, even weaker models should produce better consultations than stronger models without pragmatics.
+
+**Location:** `tests/evaluation/` for harness code, `docs/verification/` for results.
+
+### 8.2 Test Battery Design
+
+| ID | Requirement | Priority |
+|----|------------|----------|
+| VR-010 | Test battery SHALL weight 80% edge cases, 20% normal queries | Must |
+| VR-011 | Test battery SHALL include geographic edge cases: independent cities (St. Louis MO, 38 Virginia independent cities), consolidated city-counties, NYC boroughs, DC as state-equivalent | Must |
+| VR-012 | Test battery SHALL include small-area reliability cases: places under 65K, under 20K, tract-level requests | Must |
+| VR-013 | Test battery SHALL include temporal edge cases: cross-vintage comparison, overlapping ACS periods, break-in-series years, inflation-unadjusted dollar comparisons | Must |
+| VR-014 | Test battery SHALL include ambiguity cases: "Portland" (OR vs ME), "Springfield" (multiple states), "Washington" (state vs DC) | Must |
+| VR-015 | Test battery SHALL include product-mismatch cases: 1-year request for small geography, decennial question sent to ACS | Should |
+| VR-016 | Test battery SHOULD include persona-based query variants that test accessibility across user sophistication levels | Should |
+
+**Rationale (VR-016):** The system's stated goal is accessibility — "any 8th grader with an active imagination." Testing with persona-based queries (curious student, small business planner, retiree exploring data, city planner, journalist on deadline) validates that pragmatics produce useful consultations across the full user spectrum, not just for statisticians. Persona development is a future requirement; the testbench must support it when ready.
 
 ---
 

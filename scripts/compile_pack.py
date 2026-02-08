@@ -124,10 +124,10 @@ def compile_pack(staging_dir: Path, output_path: Path, parent_db_path: Path | No
         
         # Insert context items
         for item in items:
-            # Serialize triggers and source as JSON
+            # Serialize triggers and provenance as JSON
             triggers_json = json.dumps(item.triggers)
-            source_json = json.dumps(item.source.model_dump()) if item.source else None
-            
+            provenance_json = json.dumps(item.provenance.model_dump()) if item.provenance else None
+
             conn.execute(
                 """INSERT INTO context (context_id, domain, category, latitude, context_text, triggers, source)
                    VALUES (?, ?, ?, ?, ?, ?, ?)""",
@@ -138,7 +138,7 @@ def compile_pack(staging_dir: Path, output_path: Path, parent_db_path: Path | No
                     item.latitude,
                     item.context_text,
                     triggers_json,
-                    source_json
+                    provenance_json
                 )
             )
             

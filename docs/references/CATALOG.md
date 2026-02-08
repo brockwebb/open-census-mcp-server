@@ -45,11 +45,25 @@
 
 ---
 
+## Federal AI-Ready Data Policy
+
+| ID | Title | Source URL | Local Path | Status |
+|----|-------|------------|------------|--------|
+| FED-AI-001 | FCSM 25-03: AI-Ready Federal Statistical Data (May 2025) | [statspolicy.gov](https://statspolicy.gov/assets/fcsm/files/docs/FCSM.25.03_AI-Ready-Extension-Data-Quality.pdf) | N/A (cited, not downloaded) | 🟡 |
+| FED-AI-002 | Dept. of Commerce: Generative AI and Open Data (Jan 2025) | [commerce.gov](https://www.commerce.gov/sites/default/files/2025-01/GenerativeAI-Open-Data.pdf) | N/A (cited, not downloaded) | 🟡 |
+
+**Context:** These documents represent the federal policy landscape this project responds to. FCSM 25-03 extends traditional data quality for ML use cases. The Commerce report focuses on making open data GenAI-ready. Both anchor the talk's argument that current guidance addresses syntax and semantics but misses pragmatics.
+
+---
+
 ## Theory References
 
 | ID | Title | Source URL | Local Path | Status |
 |----|-------|------------|------------|--------|
 | THEORY-001 | Semiotic DQ Foundations | See semiotic_dq_foundations.md | `theory/semiotic_dq_foundations.md` | 🟢 |
+| THEORY-002 | A Theory of Usable Information Under Computational Constraints (Xu et al., ICLR 2020) | [arXiv:2002.10689](https://arxiv.org/abs/2002.10689) | N/A (cited, not downloaded) | 🟡 |
+
+**THEORY-002 relevance:** Formal basis for pragmatics layer. V-information shows bounded observers (LLMs) gain usable information from preprocessing (packs), extraction is inherently asymmetric/lossy, and misspecified representations still outperform MI-based approaches. Supports ADR-004 always-ground pattern, pragmatics-over-ontology architecture, and lossy-but-sufficient extraction philosophy.
 
 ---
 
