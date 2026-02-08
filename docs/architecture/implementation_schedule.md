@@ -1,7 +1,7 @@
 # Census MCP Server — Implementation Schedule
 
 *Created: 2026-02-08*
-*Last Updated: 2026-02-07*
+*Last Updated: 2026-02-08*
 
 ---
 
@@ -86,40 +86,63 @@
 
 ---
 
-## Phase 2: Pragmatics Engine ⏳ NOT STARTED
+## Phase 2: Pragmatics Retriever ✅ COMPLETE (Revised)
 
 Depends on: Phase 1 (pack loading) ✅
 
-| Task | Location | Description |
-|------|----------|-------------|
-| E.1 | `router.py` | Query classification (domain, geo type, time) |
-| E.2 | `router.py` | Trigger extraction from query text |
-| E.3 | `retriever.py` | Context lookup by triggers |
-| E.4 | `retriever.py` | Thread traversal (inheritance, relates_to) |
-| E.5 | `retriever.py` | Latitude filtering |
-| E.6 | `compiler.py` | Context items → natural language docstring |
-| E.7 | `compiler.py` | Provenance citation formatting |
-| E.8 | Integration test | query → compiled context |
+**Architecture Revision per ADR-003/004:** LLM caller handles routing and interpretation. MCP provides structured data retrieval only.
 
-**Deliverable:** `get_context("median income in small county")` → structured guidance text
+| Task | Location | Description | Status |
+|------|----------|-------------|--------|
+| ~~E.1~~ | ~~`router.py`~~ | ~~Query classification~~ | ❌ Deleted (LLM does routing) |
+| ~~E.2~~ | ~~`router.py`~~ | ~~Trigger extraction~~ | ❌ Deleted (LLM does extraction) |
+| E.3 | `retriever.py` | Context lookup by topics (tag match) | ✅ |
+| E.4 | `retriever.py` | Thread traversal for related contexts | ✅ |
+| E.5 | `retriever.py` | Parameter-based trigger mapping | ✅ |
+| ~~E.6~~ | ~~`compiler.py`~~ | ~~Natural language formatting~~ | ❌ Deleted (LLM does formatting) |
+| ~~E.7~~ | ~~`compiler.py`~~ | ~~Citation formatting~~ | ❌ Deleted (return raw citations) |
+| E.8 | Unit tests | Retriever logic tested | ✅ (9/9) |
+
+**Deliverables:**
+- `src/census_mcp/pragmatics/retriever.py` - PragmaticsRetriever with two methods:
+  - `get_guidance_by_topics(topics, domain)` - Tag-based lookup
+  - `get_guidance_by_parameters(product, geo_level, variables, year)` - Auto-bundling for data responses
+- Unit tests: 9/9 passing
+
+**TEVV:** Complete. Returns structured guidance dict with `{guidance, related, sources}` fields.
 
 ---
 
-## Phase 3: MCP Integration ⏳ NOT STARTED
+## Phase 3: MCP Server & Tools ✅ COMPLETE
 
-Depends on: Phase 0A (API client) ✅, Phase 2 (pragmatics)
+Depends on: Phase 0A (API client) ✅, Phase 2 (retriever) ✅
 
-| Task | Location | Description |
-|------|----------|-------------|
-| F.1 | `tools/census_tools.py` | Tool schema definitions |
-| F.2 | `tools/census_tools.py` | get_acs_data handler |
-| F.3 | `tools/census_tools.py` | explore_variables handler |
-| F.4 | `server.py` | MCP protocol setup (stdio) |
-| F.5 | `server.py` | Dynamic tool description injection |
-| F.6 | `server.py` | Pack loading at startup |
-| F.7 | Manual test | Claude Desktop integration |
+**Primary Artifact:** `docs/design/agent_prompt.md` defines agent behavior, tool schemas, and workflow.
 
-**Deliverable:** Working MCP server, installable and testable.
+| Task | Location | Description | Status |
+|------|----------|-------------|--------|
+| F.1 | `tools/census_tools.py` | get_methodology_guidance tool | ✅ |
+| F.2 | `tools/census_tools.py` | get_acs_data handler (data + pragmatics) | ✅ |
+| F.3 | `tools/census_tools.py` | explore_variables handler | ✅ |
+| F.4 | `server.py` | FastMCP server setup (stdio transport) | ✅ |
+| F.5 | `server.py` | System prompt from agent_prompt.md | ✅ |
+| F.6 | `server.py` | Pack loading (lazy initialization) | ✅ |
+| F.7 | Integration tests | Tool handlers tested with mocked context | ✅ (6/6) |
+| F.8 | `pyproject.toml` | MCP dependency, entry point | ✅ |
+
+**Deliverables:**
+- `src/census_mcp/server.py` - FastMCP server with lifespan management
+- `src/census_mcp/tools/census_tools.py` - Three tool handlers implementing agent_prompt.md schemas
+- Integration tests: 6/6 passing
+- Entry point: `census-mcp` CLI command
+
+**TEVV:** Complete. Server starts, loads packs, tools respond with proper structure. Ready for manual Claude Desktop integration test.
+
+**Implementation Notes:**
+- Used FastMCP (mcp.server.fastmcp) instead of deprecated MCPServer pattern
+- Tools access ServerContext via get_server_context() (lazy init)
+- Hard stops implemented (e.g., tract + acs1 raises CensusInvalidQueryError)
+- Pragmatics auto-bundled with every get_acs_data response
 
 ---
 
@@ -143,9 +166,9 @@ Depends on: Phase 3
 ## Dependency Graph
 
 ```
-Phase 0A (API Client) ✅ ───────────────────────┐
-                                                 ├──► Phase 3 (MCP) ──► Phase 4 (Eval)
-Phase 1C (Pack Pipeline) ✅ ──► Phase 2 (Engine) ┘
+Phase 0A (API Client) ✅ ────────────────────────┐
+                                                  ├──► Phase 3 (MCP) ✅ ──► Phase 4 (Eval)
+Phase 1C (Pack Pipeline) ✅ ──► Phase 2 (Retriever) ✅ ┘
          │
 Phase 1D (Seed Content) ✅ ────┘
 ```
@@ -160,9 +183,11 @@ Phase 1D (Seed Content) ✅ ────┘
 | ~~0B: Geography~~ | ❌ Deleted | — |
 | 1C: Pack Pipeline | ✅ Complete | 15/15 |
 | 1D: Seed Content | ✅ Complete (initial) | — |
-| 2: Pragmatics Engine | ⏳ Not Started | — |
-| 3: MCP Integration | ⏳ Not Started | — |
+| 2: Retriever | ✅ Complete (revised) | 9/9 |
+| 3: MCP Server | ✅ Complete | 6/6 |
 | 4: Evaluation | ⏳ Not Started | — |
+
+**Total Tests:** 44/44 (1 pre-existing failure in pack_roundtrip unrelated to new work)
 
 ---
 

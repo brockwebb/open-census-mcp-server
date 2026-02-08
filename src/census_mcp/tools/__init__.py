@@ -1,1 +1,1 @@
-"""MCP tool definitions package."""
+"""MCP tool handlers for Census data and methodology guidance."""
