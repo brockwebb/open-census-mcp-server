@@ -75,7 +75,17 @@ census-mcp-server/
 ├── scripts/                       # Build and utility scripts
 │   ├── compile_pack.py            # Build one .db from staging dir
 │   ├── compile_all.py             # Build all packs
-│   └── extract/                   # Extraction pipeline scripts
+│   ├── extract/                   # Legacy extraction pipeline scripts
+│   └── quarry/                    # Quarry extraction toolkit (ADR-008, ADR-009)
+│       ├── config.py              # Shared config, controlled vocabularies
+│       ├── schema.json            # Machine-readable KG schema v3.1
+│       ├── seed.py                # Layer 0 setup
+│       ├── chunk.py               # Docling PDF → structured chunks
+│       ├── extract.py             # PDF → LLM extraction → Neo4j write
+│       ├── prompts.py             # Extraction prompt templates
+│       ├── harvest.py             # Layer 2 harvest queries
+│       ├── export.py              # Quarry → staging JSON
+│       └── utils.py               # Shared utilities
 │
 ├── tests/                         # All tests
 │   ├── unit/                      # Unit tests (pytest)
@@ -101,7 +111,8 @@ census-mcp-server/
 | Source PDFs/docs | `knowledge-base/source-docs/` | Yes |
 | Extracted rules | `knowledge-base/rules/` | No |
 | Build/compile scripts | `scripts/` | No |
-| Extraction pipeline scripts | `scripts/extract/` | No |
+| Legacy extraction scripts | `scripts/extract/` | No |
+| Quarry extraction toolkit | `scripts/quarry/` | No |
 | Systems engineering docs | `docs/` (appropriate subdir) | No |
 | ADRs | `docs/decisions/` | No |
 | Test code | `tests/` (appropriate subdir) | No |
@@ -188,8 +199,8 @@ census-mcp-server/
 | FR-EP-004 | Import script SHALL validate all items against Pydantic models before writing to Neo4j | Must |
 | FR-EP-005 | Export script SHALL be idempotent — running it twice produces identical output | Must |
 | FR-EP-006 | Import script SHALL support incremental updates — new items added, existing items updated, no items deleted without explicit flag | Should |
-| FR-EP-007 | System SHOULD support LLM-assisted bulk extraction from source documents (PDFs) via chunking and structured prompting | Should |
-| FR-EP-008 | System SHOULD support MinerU or equivalent for PDF text extraction at scale | Should |
+| FR-EP-007 | System SHALL support LLM-assisted bulk extraction from source documents (PDFs) via section-aware chunking and structured JSON prompting | Must |
+| FR-EP-008 | System SHALL use Docling for PDF parsing with structure-aware chunking (section boundaries, table preservation, reading order) | Must |
 | FR-EP-009 | Export and import scripts SHALL live in `scripts/` and be documented in CLAUDE.md | Must |
 | FR-EP-010 | Compiled SQLite packs SHALL include a `provenance_catalog` table that indexes each source citation per context item, enabling redundancy detection and extraction coverage tracking | Must |
 
@@ -202,7 +213,30 @@ Source docs → (LLM extraction, in-session or automated) → Neo4j pragmatics D
     ← staging_to_neo4j.py ← (for bootstrap/sync)
 ```
 
-### 3.6 Composability
+### 3.6 Quarry Extraction Pipeline
+
+| ID | Requirement | Priority |
+|----|------------|----------|
+| FR-QE-001 | Quarry extraction toolkit SHALL live in `scripts/quarry/` and ship as a project component | Must |
+| FR-QE-002 | Extraction pipeline SHALL use Docling `HierarchicalChunker` for section-aware chunking (not page-based) | Must |
+| FR-QE-003 | Extraction SHALL produce structured JSON conforming to raw KG schema v3.1 with controlled vocabulary enforcement | Must |
+| FR-QE-004 | All writes to quarry SHALL use MERGE for entity resolution at write time | Must |
+| FR-QE-005 | Each source PDF SHALL produce exactly one SourceDocument node (canonical name from config) | Must |
+| FR-QE-006 | Extraction SHALL enforce controlled vocabularies: `fact_category`, `dimension`, `value_type`, `assertion_type` with three-tier validation (core, provisional, rejected) per ADR-010 | Must |
+| FR-QE-007 | Extraction SHALL validate returned JSON before writing: schema-valid types, required properties, range checks | Must |
+| FR-QE-008 | Pipeline SHALL report post-extraction quality metrics: node counts by type, relationship distribution, property completeness, MERGE collision count | Must |
+| FR-QE-009 | Pipeline SHALL NOT produce MENTIONS relationships (indicates schema fallback failure) | Must |
+| FR-QE-010 | Quarry toolkit SHALL include `seed.py` to recreate Layer 0 (AnalysisTask + REQUIRES + reference nodes) from scratch | Must |
+| FR-QE-011 | Harvest queries SHALL filter on `value_type` to prevent cross-type threshold comparison false positives | Must |
+| FR-QE-012 | Quarry toolkit SHALL include `export.py` to transform harvested candidates into staging JSON | Should |
+| FR-QE-013 | Toolkit dependencies (docling, anthropic, neo4j) SHALL be development dependencies, not runtime MCP server dependencies | Must |
+| FR-QE-014 | Controlled vocabularies SHALL support evolutionary extension: new terms accepted provisionally with warnings, promoted to core after recurrence across 2+ documents, rejected with correction mapping if determined to be errors. Vocabulary changes SHALL be auditable with source document, date, and occurrence count. (ADR-010) | Must |
+
+**Rationale:** ADR-008 demonstrated that llm-graph-builder produces unacceptable extraction quality (291 MENTIONS fallback edges, 11 hallucinated SourceDocument nodes, null properties on QualityAttribute). ADR-009 establishes the toolkit as a reproducible methodology for the FCSM paper. The requirements encode the specific failure modes discovered empirically.
+
+**Design spec:** `docs/design/quarry_extraction_pipeline.md`
+
+### 3.7 Composability
 
 | ID | Requirement | Priority |
 |----|------------|----------|

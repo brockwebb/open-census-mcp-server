@@ -140,14 +140,21 @@ All terms defined in `docs/design/pragmatics_vocabulary.md` (normative). Key ter
 - **LLM extraction scripts:** `scripts/extract/` is empty — future home of PDF chunking + LLM extraction (MinerU, agent swarms). Not yet implemented.
 - **Schema:** All staging files use canonical Pydantic format (triggers, thread_edges, structured source). Old flat format purged 2026-02-08.
 
-## Neo4j Raw Knowledge Graph (Extraction Target)
-- **Database name:** TBD (separate from `pragmatics` database)
+## Neo4j MCP Configuration (Claude Desktop)
+- **neo4j-pragmatics** — points to `pragmatics` database (authoring environment for Context/Pack nodes)
+- **neo4j-quarry** — points to `quarry` database (raw KG extraction target)
+- Both accessible directly from Claude Desktop MCP tools. No Python scripts needed to query either database.
+- Previous single-database limitation resolved by running two separate MCP server instances.
+
+## Neo4j Raw Knowledge Graph (Quarry)
+- **Database name:** `quarry` (separate from `pragmatics` database)
 - **Schema:** `docs/design/raw_kg_schema.md` v3.1 — 4-layer harvest architecture
 - **Architecture:** Extract facts (Layer 1) → pattern-match against standards (Layer 2) → curate (Layer 3) → export to pragmatics DB
 - **Key insight:** Fitness implications are DERIVED by Cypher queries, not extracted from documents
-- **Seeding required before extraction:** AnalysisTask nodes + REQUIRES edges (Layer 0)
-- **Tool:** neo4j-labs/llm-graph-builder for PDF extraction
-- **NOT YET IMPLEMENTED** — schema approved, tooling setup in progress
+- **Tool:** Custom extraction pipeline in `scripts/quarry/` (ADR-008, ADR-009). Replaces llm-graph-builder.
+- **llm-graph-builder:** Installed at `~/Documents/GitHub/llm-graph-builder` for reference only. See ADR-008 for rationale.
+- **Large quarry operations:** Use Claude Code to conserve context window in Claude Desktop.
+- **NEXT:** Build `scripts/quarry/` toolkit (Phase 5B). Section-aware chunking, direct structured extraction, entity resolution.
 
 ## Key Architecture Docs for Pragmatics
 - `docs/decisions/ADR-001-neo4j-authoring-sqlite-runtime.md` — Authoring vs runtime separation
@@ -162,6 +169,9 @@ All terms defined in `docs/design/pragmatics_vocabulary.md` (normative). Key ter
 - `docs/design/kg_schema_design_narrative.md` — Design process narrative (multi-model adversarial review)
 - `docs/design/reviews/README.md` — External review audit trail
 - `docs/decisions/ADR-007-kg-first-authoring.md` — KG-first authoring workflow
+- `docs/decisions/ADR-008-custom-extraction-pipeline.md` — Why llm-graph-builder was replaced
+- `docs/decisions/ADR-009-quarry-toolkit-shippable.md` — Quarry toolkit ships as project component
+- `docs/design/quarry_extraction_pipeline.md` — Quarry pipeline design (Docling + direct LLM extraction)
 
 ## Technical Context
 - **Census API:** Direct Python HTTP calls to `api.census.gov`

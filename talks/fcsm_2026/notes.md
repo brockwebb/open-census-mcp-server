@@ -142,5 +142,106 @@ When ADR-005 rewrote `server.py` from FastMCP to low-level pattern, the integrat
 
 **Test impact:** Integration tests updated to new tool name. 10 tests total (was 9). Added legacy compatibility test.
 
+## 2026-02-09: Quarry Database Setup, First Extraction, and Pipeline Pivot
+
+### What Happened
+Full end-to-end test of the KG extraction pipeline using neo4j-labs/llm-graph-builder against the CPS Handbook of Methods (22 pages).
+
+**Environment setup (3 hours):**
+- llm-graph-builder cloned, Python 3.12 venv configured
+- torch CPU suffix broke on macOS ARM64 (sed fix for constraints.txt)
+- RAGAS module has hard OpenAI import dependency — requires dummy API key even with local embeddings
+- Backend started at localhost:8000 via uvicorn
+
+**Schema API discovery (dead end):**
+- Context7 docs suggested POST /schema to set extraction schema. Wrong.
+- Code inspection revealed /schema is read-only (queries existing labels)
+- Frontend-dependent schema configuration (Graph Enhancement tab → Data Importer JSON) — requires React app
+- Pivoted to direct Cypher seeding via Python script
+
+**Layer 0 seeding (success):**
+- 21 nodes: 5 AnalysisTask, 5 QualityAttribute, 4 DataProduct, 6 SurveyProcess, 6 CanonicalConcept + 1 SourceDocument placeholder
+- 5 REQUIRES edges with rule_type, threshold, violation_template, recommended_action
+- 5 constraints, 8 indexes
+
+**Layer 1 extraction (mixed):**
+- 291 nodes, 349 relationships from 22-page PDF
+- 93 MethodologicalChoice, 36 ConceptDefinition, 22 TemporalEvent, 17 Threshold
+- BUT: Only 3 PRODUCES edges (critical harvest join path nearly empty)
+- 291 MENTIONS (generic fallback — noise)
+- 9 SourceDocument nodes from 1 PDF (entity hallucination)
+- Page-based chunking (1 page = 1 chunk) — lost section context
+
+**Enrichment pass (success):**
+- Direct LLM prompt: "What quality consequence does this MethodologicalChoice produce?"
+- 89/93 choices got PRODUCES edges with typed QualityAttribute properties
+- All 5 REQUIRES dimensions now have matching observations
+- 96% coverage from a simple, well-prompted LLM call — outperformed LLMGraphTransformer
+
+**First harvest (partially successful):**
+- 8 numeric threshold results: 1 genuine (75% rotation overlap), 7 false positives (type mismatch)
+- 20 interaction candidates: some useful (rotation × population controls), some noise (cartesian products)
+- Cross-survey queries: 0 results (expected — single survey in document)
+- Only 4 orphaned MethodologicalChoice nodes — good coverage
+
+### Key Decisions
+- **ADR-008:** Replace llm-graph-builder with custom pipeline. LLMGraphTransformer doesn't populate typed properties, requires enrichment cleanup, page-based chunking is inadequate.
+- **ADR-009:** Ship quarry toolkit as project component. Extraction pipeline = reproducible methodology for FCSM paper + toolkit for domain experts.
+
+### Lessons Learned
+1. **Direct LLM extraction > LLMGraphTransformer.** The enrichment script (structured JSON output, controlled vocabulary prompt) produced better results in one pass than extraction + enrichment combined.
+2. **Section-aware chunking is mandatory.** Page boundaries split mid-paragraph, mid-table. Methodology docs have clear structure (numbered sections, headers). Use it.
+3. **Entity resolution at write time prevents hallucinated duplicates.** MERGE on canonical names, not LLM-generated names.
+4. **Harvest query false positives come from missing type constraints.** Need `WHERE qa_obs.value_type = qa_std.value_type` to prevent comparing PSU counts against overlap fractions.
+5. **Neo4j MCP is single-database.** Claude Desktop config allows one NEO4J_DATABASE. Multi-database work requires direct Python scripts.
+6. **llm-graph-builder is a demo tool, not a production extraction pipeline.** Good for pretty graph pictures. Not for domain-specific structured knowledge engineering.
+
+### The Genuine Finding
+CPS rotation group design creates 75% sample overlap in consecutive months. The harvest correctly identified this exceeds the 0.2 threshold for temporal comparability. This is exactly the kind of warning a senior statistician would give — and it was derived by graph pattern-matching, not extracted directly from the document. **The architecture works. The tooling doesn't.**
+
+### Files Created
+- `docs/decisions/ADR-008-custom-extraction-pipeline.md`
+- `docs/decisions/ADR-009-quarry-toolkit-shippable.md`
+- `docs/lessons_learned/session_2026-02-09_quarry_setup.md`
+- `~/Documents/GitHub/llm-graph-builder/extract_to_quarry.py` (test script)
+- `~/Documents/GitHub/llm-graph-builder/enrich_quarry.py` (enrichment script)
+- `~/Documents/GitHub/llm-graph-builder/harvest_quarry_v2.py` (harvest script)
+
+---
+
+### 2026-02-09 (Session 2): Quarry Archive & Pipeline Pivot to Docling
+
+**Quarry baseline snapshot before wipe** (llm-graph-builder extraction, CPS Handbook 22 pages):
+- 401 nodes: 112 QualityAttribute, 93 MethodologicalChoice, 35 ConceptDefinition, 32 DataProduct, 22 Document, 22 TemporalEvent, 19 SurveyProcess, 17 Threshold, 16 QualityCaveat, 11 SourceDocument, 9 UniverseDefinition, 8 CanonicalConcept, 5 AnalysisTask
+- 745 relationships: 291 MENTIONS (noise fallback), 110 SOURCED_FROM, 107 PRODUCES (104 from enrichment pass, 3 from extraction), 54 APPLIES_TO, 37 PART_OF, 35 DEFINED_FOR, 32 OPERATIONALIZES, 17 CONSTRAINS, 16 QUALIFIES, 15 IMPLEMENTS, 15 SUPERSEDES, 10 TARGETS, 5 REQUIRES (Layer 0 seed), 1 MITIGATES
+
+**Known quality issues in baseline:**
+1. 291 MENTIONS relationships = LLMGraphTransformer fallback when it can't match schema. Pure noise.
+2. 11 SourceDocument nodes from 1 PDF — entity resolution failure ("CPS Handbook of Methods", "Handbook of Methods", "CPS Technical Documentation", etc.)
+3. 32 DataProduct nodes — should be ~4 (CPS Basic Monthly, CPS ASEC, etc.). Explosion from uncontrolled entity creation.
+4. Harvest false positives: `mode_change_year=1994` compared against `threshold_number=0.2` because no `value_type` filtering. `psu_count=1987` and `sample_size=60000` matching precision thresholds meant for different measures.
+5. Only genuine finding: `rotation_group_overlap=0.75` exceeding `temporal_comparability` threshold of `0.2` for EstimateChangeOverTime task. Schema architecture validated despite tooling failure.
+
+**Decision: Docling for PDF parsing** (replaces PyMuPDF page-based extraction)
+- IBM Research / LF AI Foundation, MIT license, 8K+ GitHub stars
+- Built-in `HierarchicalChunker` respects section boundaries (our #1 failure mode solved)
+- Table structure detection with multi-level headers → DataFrame export
+- Local execution, Apple Silicon MLX acceleration
+- Unified DoclingDocument (Pydantic) with layout metadata, reading order, provenance
+- Risk: "computationally intensive" per docs, but irrelevant for 3-4 documents
+
+**Dual Neo4j MCP configuration confirmed:**
+- `neo4j-pragmatics` → pragmatics database (25 Context, 1 Pack)
+- `neo4j-quarry` → quarry database (to be wiped and rebuilt)
+- Resolves previous single-database MCP limitation
+
+**Pipeline design: `scripts/quarry/`** — Docling for parsing, direct structured JSON extraction via LLM, MERGE-based entity resolution, single-pass with OHIO dedup (second pass if needed).
+
+**Target documents for March talk:**
+1. CPS Handbook of Methods (22 pages — baseline comparison)
+2. ACS Design & Methodology 2024 (100+ pages)
+3. CPS Tech Paper 77 (180 pages — scale test)
+4. TBD: Census geography hierarchy or statistical quality standards
+
 ---
 *Add entries chronologically. Append corrections as new entries, don't edit old ones.*

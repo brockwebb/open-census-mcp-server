@@ -264,6 +264,9 @@ Phase 1D (Seed Content) ✅ ────┘
 | ADR-004 | Agent Reasoning Loop (ReAct + OODA + Cynefin) | Accepted |
 | ADR-005 | Low-level Server Pattern (FastMCP bypass) | Accepted |
 | ADR-006 | Tract-Level Geography Bug Fixes | Accepted |
+| ADR-007 | KG-First Authoring Workflow | Accepted |
+| ADR-008 | Custom Extraction Pipeline over llm-graph-builder | Accepted |
+| ADR-009 | Quarry Toolkit as Shippable Project Component | Accepted |
 | — | Prompt Specificity Concern | ✅ Resolved (G.6) |
 
 ---
@@ -317,14 +320,47 @@ See `docs/lessons_learned/session_2026-02-08_pipeline_gap.md` for root cause.
 | KG.2 | Multi-model adversarial review (5 rounds, 4 models) | ✅ |
 | KG.3 | Bug fixes from structural review (8 fixes) | ✅ |
 | KG.4 | Design narrative / explainer document | ⏳ (CC task pending) |
-| KG.5 | Setup llm-graph-builder (neo4j-labs) | ⏳ Next |
-| KG.6 | Seed Layer 0: AnalysisTask + REQUIRES edges | ⏳ Needs expert |
-| KG.7 | Seed Layer 0: CanonicalConcept, DataProduct, SurveyProcess nodes | ⏳ |
-| KG.8 | First extraction: CPS Handbook income chapter (proof of concept) | ⏳ |
-| KG.9 | Extraction prompt engineering (penalize summary, reward operational detail) | ⏳ |
-| KG.10 | First harvest: run violation detection queries | ⏳ |
-| KG.11 | Expert validation of harvest output | ⏳ |
-| KG.12 | CPS-ACS income pack (15-30 context items) | ⏳ |
+| KG.5 | Setup llm-graph-builder (neo4j-labs) | ✅ Done — then abandoned (ADR-008) |
+| KG.6 | Seed Layer 0: AnalysisTask + REQUIRES edges | ✅ (5 tasks, 5 REQUIRES) |
+| KG.7 | Seed Layer 0: CanonicalConcept, DataProduct, SurveyProcess nodes | ✅ (6 concepts, 4 products, 6 processes) |
+| KG.8 | First extraction: CPS Handbook of Methods (22 pages) | ✅ (291 nodes, 349 rels) |
+| KG.9 | Post-extraction enrichment: PRODUCES edge generation | ✅ (93→89 with PRODUCES, 9 dimensions) |
+| KG.10 | First harvest: violation detection queries | ✅ (8 threshold results, 20 interactions) |
+| KG.11 | Harvest quality assessment | ✅ (1 genuine finding, 7 false positives — see ADR-008) |
+| KG.12 | **DECISION:** Replace llm-graph-builder with custom pipeline | ✅ ADR-008, ADR-009 |
+| KG.13 | CPS-ACS income pack (15-30 context items) | ⏳ Blocked on pipeline rebuild |
+
+---
+
+## Phase 5B: Quarry Extraction Toolkit ⏳ IN PROGRESS — Code Complete, Awaiting First Real Run
+
+**ADRs:** ADR-008 (custom pipeline), ADR-009 (shippable toolkit)
+**Location:** `scripts/quarry/`
+**Design spec:** `docs/design/quarry_extraction_pipeline.md`
+**Depends on:** Phase 5 (schema + Layer 0 seed in quarry DB)
+**Built:** 2026-02-09 (Claude Code session — 15 files, ~1,690 lines, 4 bugs fixed)
+
+| Task | Description | Status | Traces To |
+|------|-------------|--------|----------|
+| QT.1 | `config.py` — shared configuration (Neo4j creds, API keys, paths, schema version) | ✅ | ADR-009 |
+| QT.2 | `seed.py` — Layer 0 setup (idempotent MERGE, --dry-run) | ✅ | KG.6, KG.7 |
+| QT.3 | `chunk.py` — Docling section-aware PDF chunker (22pg → 157 chunks) | ✅ | ADR-008 |
+| QT.4 | `extract.py` — PDF → LLM extraction → Neo4j write (MERGE, entity resolution) | ✅ | ADR-008 |
+| QT.5 | `prompts.py` — Extraction prompt with controlled vocabulary enforcement | ✅ | KG.9 |
+| QT.6 | Entity resolution at write time (MERGE on canonical names) — built into extract.py | ✅ | ADR-008 |
+| QT.7 | `harvest.py` — Layer 2 queries with value_type filtering (fixes false positives) | ✅ | KG.10, KG.11 |
+| QT.8 | `export.py` — stub only (blocked on harvest curation design) | ⏳ stub | ADR-007 |
+| QT.9 | `schema.json` — machine-readable v3.1 schema definition | ✅ | ADR-009 |
+| QT.10 | `README.md` — setup, usage, extending to new surveys | ✅ | ADR-009 |
+| QT.11 | Test: CPS Handbook re-extraction with new pipeline, compare quality vs llm-graph-builder | ⏳ **NEXT** | TEVV |
+| QT.12 | Test: CPS Technical Paper 77 (180 pages) — scalability test | ⏳ | TEVV |
+| QT.13 | Test: ACS General Handbook — cross-survey queries light up | ⏳ | KG.13 |
+
+**Verification passed:** Chunking (157 chunks, section-aware ✓), seed dry-run (valid Cypher ✓), extraction dry-run (prompts generated ✓)
+
+**Next:** Wipe quarry → seed Layer 0 → run `extract --source cps_handbook` → compare against llm-graph-builder baseline (401 nodes, 291 MENTIONS, 11 SourceDocs)
+
+**Exit Criteria:** Single command extracts a PDF into quarry, harvest produces actionable pragmatics candidates, export generates valid staging JSON. Quality demonstrably better than llm-graph-builder baseline.
 
 ---
 
