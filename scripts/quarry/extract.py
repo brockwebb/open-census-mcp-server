@@ -3,7 +3,9 @@
 import argparse
 import json
 import sys
+import threading
 from collections import Counter
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 
 from . import config
@@ -229,17 +231,79 @@ def extract_chunk(client, chunk, source_doc, existing_entities, dry_run=False):
     }
 
 
-def run_extraction(source_key, dry_run=False, limit=None):
-    """Run full extraction pipeline.
+def process_single_chunk(chunk, client, source_doc, existing_entities, dry_run, driver, total_chunks):
+    """Process a single chunk (worker function for parallel extraction).
+
+    Returns:
+        Tuple of (chunk_index, result_dict, stats_update)
+    """
+    chunk_idx = chunk.chunk_index + 1
+    logger.info(f"Processing chunk {chunk_idx}/{total_chunks}: "
+               f"{' > '.join(chunk.section_path[:2]) if chunk.section_path else '(root)'}")
+
+    # Extract
+    result = extract_chunk(client, chunk, source_doc, existing_entities, dry_run)
+
+    if not result:
+        return (chunk_idx, None, {"chunks_failed": 1})
+
+    if dry_run:
+        return (chunk_idx, result, {})
+
+    # Thread-safe Neo4j write
+    stats_update = {
+        "chunks_processed": 1,
+        "total_input_tokens": result["tokens"]["input"],
+        "total_output_tokens": result["tokens"]["output"],
+        "validation_errors": 1 if not result.get("valid") else 0,
+        "nodes_created": Counter(),
+        "nodes_matched": Counter(),
+        "relationships_created": Counter(),
+        "relationships_matched": Counter(),
+    }
+
+    data = result["data"]
+
+    # Write to Neo4j (Neo4j driver is thread-safe)
+    with driver.session(database=config.NEO4J_DATABASE) as session:
+        # Write nodes
+        node_map = {}
+        for node in data.get("nodes", []):
+            write_result = write_node_to_neo4j(session, node, source_doc["catalog_id"])
+            node_map[node["id"]] = write_result["neo4j_id"]
+
+            if write_result["created"]:
+                stats_update["nodes_created"][write_result["type"]] += 1
+            else:
+                stats_update["nodes_matched"][write_result["type"]] += 1
+
+        # Write relationships
+        for rel in data.get("relationships", []):
+            write_result = write_relationship_to_neo4j(session, rel, node_map)
+            if write_result.get("created"):
+                stats_update["relationships_created"][write_result["type"]] += 1
+            else:
+                stats_update["relationships_matched"][write_result["type"]] += 1
+
+    return (chunk_idx, result, stats_update)
+
+
+def run_extraction(source_key, dry_run=False, limit=None, workers=1):
+    """Run full extraction pipeline with optional parallel workers.
 
     Args:
         source_key: Key in SOURCE_CATALOG
         dry_run: If True, show extraction output without writing to Neo4j
         limit: Limit number of chunks to process
+        workers: Number of parallel workers (1-5, default 1)
 
     Returns:
         Exit code (0 = success)
     """
+    # Validate workers
+    if workers < 1 or workers > 5:
+        logger.error(f"Invalid workers count: {workers}. Must be 1-5.")
+        return 1
     # Get source config
     if source_key not in config.SOURCE_CATALOG:
         logger.error(f"Unknown source: {source_key}")
@@ -268,7 +332,8 @@ def run_extraction(source_key, dry_run=False, limit=None):
             chunks = chunks[:limit]
             logger.info(f"Limited to first {limit} chunks")
 
-        # Metrics
+        # Metrics (thread-safe with lock)
+        stats_lock = threading.Lock()
         stats = {
             "chunks_processed": 0,
             "chunks_failed": 0,
@@ -281,53 +346,64 @@ def run_extraction(source_key, dry_run=False, limit=None):
             "total_output_tokens": 0,
         }
 
-        # Process chunks
-        with driver.session(database=config.NEO4J_DATABASE) as session:
+        # Process chunks (parallel or sequential based on workers count)
+        if dry_run or workers == 1:
+            # Sequential mode for dry-run or single worker
             for chunk in chunks:
-                logger.info(f"Processing chunk {chunk.chunk_index + 1}/{len(chunks)}: "
-                           f"{' > '.join(chunk.section_path[:2]) if chunk.section_path else '(root)'}")
+                chunk_idx, result, stats_update = process_single_chunk(
+                    chunk, client, source_doc, existing_entities, dry_run, driver, len(chunks)
+                )
 
-                # Extract
-                result = extract_chunk(client, chunk, source_doc, existing_entities, dry_run)
-
-                if not result:
+                if result is None:
                     stats["chunks_failed"] += 1
                     continue
 
                 if dry_run:
                     print(f"\n=== CHUNK {chunk.chunk_index} ===")
                     print(f"Prompt length: {len(result['prompt'])} chars")
-                    if result["response"]:
-                        print(f"Response:\n{result['response'][:500]}...")
                     continue
 
-                stats["chunks_processed"] += 1
-                stats["total_input_tokens"] += result["tokens"]["input"]
-                stats["total_output_tokens"] += result["tokens"]["output"]
+                # Update stats
+                with stats_lock:
+                    for key in ["chunks_processed", "total_input_tokens", "total_output_tokens", "validation_errors"]:
+                        stats[key] += stats_update[key]
+                    for key in ["nodes_created", "nodes_matched", "relationships_created", "relationships_matched"]:
+                        stats[key] += stats_update[key]
+        else:
+            # Parallel mode
+            logger.info(f"Using {workers} parallel workers")
+            with ThreadPoolExecutor(max_workers=workers) as executor:
+                # Submit all chunks
+                futures = {
+                    executor.submit(
+                        process_single_chunk,
+                        chunk, client, source_doc, existing_entities, dry_run, driver, len(chunks)
+                    ): chunk
+                    for chunk in chunks
+                }
 
-                if not result.get("valid"):
-                    stats["validation_errors"] += 1
+                # Collect results as they complete
+                for future in as_completed(futures):
+                    try:
+                        chunk_idx, result, stats_update = future.result()
 
-                data = result["data"]
+                        if result is None:
+                            with stats_lock:
+                                stats["chunks_failed"] += 1
+                            continue
 
-                # Write nodes
-                node_map = {}  # Map extraction IDs to Neo4j internal IDs
-                for node in data.get("nodes", []):
-                    write_result = write_node_to_neo4j(session, node, source_doc["catalog_id"])
-                    node_map[node["id"]] = write_result["neo4j_id"]
+                        # Update stats (thread-safe)
+                        with stats_lock:
+                            for key in ["chunks_processed", "total_input_tokens", "total_output_tokens", "validation_errors"]:
+                                stats[key] += stats_update[key]
+                            for key in ["nodes_created", "nodes_matched", "relationships_created", "relationships_matched"]:
+                                stats[key] += stats_update[key]
 
-                    if write_result["created"]:
-                        stats["nodes_created"][write_result["type"]] += 1
-                    else:
-                        stats["nodes_matched"][write_result["type"]] += 1
-
-                # Write relationships
-                for rel in data.get("relationships", []):
-                    write_result = write_relationship_to_neo4j(session, rel, node_map)
-                    if write_result.get("created"):
-                        stats["relationships_created"][write_result["type"]] += 1
-                    else:
-                        stats["relationships_matched"][write_result["type"]] += 1
+                    except Exception as e:
+                        chunk = futures[future]
+                        logger.error(f"Chunk {chunk.chunk_index} failed with error: {e}")
+                        with stats_lock:
+                            stats["chunks_failed"] += 1
 
         # Create SourceDocument
         if not dry_run:
@@ -380,9 +456,11 @@ def main():
                        help="Source document key from config")
     parser.add_argument("--dry-run", action="store_true", help="Show extraction without writing to Neo4j")
     parser.add_argument("--limit", type=int, help="Limit number of chunks to process")
+    parser.add_argument("--workers", type=int, default=1,
+                       help="Number of parallel workers (1-5, default 1)")
     args = parser.parse_args()
 
-    return run_extraction(args.source, dry_run=args.dry_run, limit=args.limit)
+    return run_extraction(args.source, dry_run=args.dry_run, limit=args.limit, workers=args.workers)
 
 
 if __name__ == "__main__":
