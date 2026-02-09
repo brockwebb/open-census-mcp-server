@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS context (
     latitude TEXT NOT NULL CHECK (latitude IN ('none', 'narrow', 'wide', 'full')),
     context_text TEXT NOT NULL,
     triggers TEXT,  -- JSON array of trigger strings
-    source TEXT     -- provenance JSON
+    provenance TEXT -- provenance JSON (Provenance model serialized)
 );
 
 -- Threads: how context connects
@@ -41,6 +41,25 @@ CREATE TABLE IF NOT EXISTS pack_contents (
     context_id TEXT NOT NULL,
     PRIMARY KEY (pack_id, context_id)
 );
+
+-- Provenance catalog: denormalized projection of source citations for coverage tracking
+-- One row per source citation per context item (many-to-many: items cite N sources, sources appear in M items)
+CREATE TABLE IF NOT EXISTS provenance_catalog (
+    context_id TEXT NOT NULL,
+    source_index INTEGER NOT NULL,
+    document TEXT NOT NULL,
+    section TEXT,
+    page TEXT,
+    extraction_method TEXT,
+    confidence TEXT NOT NULL,
+    synthesis_note TEXT,
+    limitations TEXT,
+    PRIMARY KEY (context_id, source_index)
+);
+
+CREATE INDEX IF NOT EXISTS idx_catalog_document ON provenance_catalog(document);
+CREATE INDEX IF NOT EXISTS idx_catalog_doc_page ON provenance_catalog(document, page);
+CREATE INDEX IF NOT EXISTS idx_catalog_confidence ON provenance_catalog(confidence);
 
 -- Indexes for query performance
 CREATE INDEX IF NOT EXISTS idx_context_domain ON context(domain);

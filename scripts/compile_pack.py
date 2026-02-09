@@ -129,7 +129,7 @@ def compile_pack(staging_dir: Path, output_path: Path, parent_db_path: Path | No
             provenance_json = json.dumps(item.provenance.model_dump()) if item.provenance else None
 
             conn.execute(
-                """INSERT INTO context (context_id, domain, category, latitude, context_text, triggers, source)
+                """INSERT INTO context (context_id, domain, category, latitude, context_text, triggers, provenance)
                    VALUES (?, ?, ?, ?, ?, ?, ?)""",
                 (
                     item.context_id,
@@ -156,7 +156,28 @@ def compile_pack(staging_dir: Path, output_path: Path, parent_db_path: Path | No
                    VALUES (?, ?)""",
                 (manifest.pack_id, item.context_id)
             )
-        
+
+            # Populate provenance catalog (FR-EP-010)
+            if item.provenance:
+                for idx, src in enumerate(item.provenance.sources):
+                    conn.execute(
+                        """INSERT INTO provenance_catalog
+                           (context_id, source_index, document, section, page,
+                            extraction_method, confidence, synthesis_note, limitations)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                        (
+                            item.context_id,
+                            idx,
+                            src.document,
+                            src.section,
+                            str(src.page) if src.page is not None else None,
+                            src.extraction_method,
+                            item.provenance.confidence,
+                            item.provenance.synthesis_note,
+                            item.provenance.limitations,
+                        )
+                    )
+
         conn.commit()
         print(f"  ✓ Compiled successfully")
     

@@ -191,6 +191,7 @@ census-mcp-server/
 | FR-EP-007 | System SHOULD support LLM-assisted bulk extraction from source documents (PDFs) via chunking and structured prompting | Should |
 | FR-EP-008 | System SHOULD support MinerU or equivalent for PDF text extraction at scale | Should |
 | FR-EP-009 | Export and import scripts SHALL live in `scripts/` and be documented in CLAUDE.md | Must |
+| FR-EP-010 | Compiled SQLite packs SHALL include a `provenance_catalog` table that indexes each source citation per context item, enabling redundancy detection and extraction coverage tracking | Must |
 
 **Rationale:** ADR-001 separates authoring (Neo4j) from runtime (SQLite). The round-trip scripts are the bridge. Without them, the pipeline is conceptual architecture with no implementation. In-session extraction feeds Neo4j directly; the export script then produces staging JSON for version control and compilation. Future scale uses agent swarms for extraction, but the foundation is these two scripts.
 
