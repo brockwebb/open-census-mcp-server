@@ -57,7 +57,7 @@ def chunk_pdf(pdf_path: str, catalog_id: str, max_tokens: int = None) -> List[Ch
         include_section_structure=True,  # Respect section hierarchy
     )
 
-    chunks_output = chunker.chunk(doc)
+    chunks_output = list(chunker.chunk(doc))
     logger.info(f"Created {len(chunks_output)} chunks")
 
     # 3. Map Docling chunks to our Chunk dataclass
@@ -66,7 +66,7 @@ def chunk_pdf(pdf_path: str, catalog_id: str, max_tokens: int = None) -> List[Ch
         # Extract section path from chunk headings
         section_path = []
         if hasattr(doc_chunk.meta, "headings") and doc_chunk.meta.headings:
-            section_path = [h.text for h in doc_chunk.meta.headings]
+            section_path = doc_chunk.meta.headings if isinstance(doc_chunk.meta.headings, list) else []
 
         # Get page range
         page_start = doc_chunk.meta.doc_items[0].prov[0].page_no if doc_chunk.meta.doc_items else 1

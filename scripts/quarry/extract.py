@@ -25,15 +25,15 @@ def get_existing_entities(driver):
     with driver.session(database=config.NEO4J_DATABASE) as session:
         # DataProducts
         result = session.run("MATCH (n:DataProduct) RETURN n.name AS name ORDER BY name")
-        entities["DataProduct"] = [r["name"] for r in result]
+        entities["DataProduct"] = [r["name"] for r in result if r["name"] is not None]
 
         # CanonicalConcepts
         result = session.run("MATCH (n:CanonicalConcept) RETURN n.name AS name ORDER BY name")
-        entities["CanonicalConcept"] = [r["name"] for r in result]
+        entities["CanonicalConcept"] = [r["name"] for r in result if r["name"] is not None]
 
         # SurveyProcesses
         result = session.run("MATCH (n:SurveyProcess) RETURN n.name AS name ORDER BY name")
-        entities["SurveyProcess"] = [r["name"] for r in result]
+        entities["SurveyProcess"] = [r["name"] for r in result if r["name"] is not None]
 
     logger.info(f"Existing entities: {len(entities['DataProduct'])} DataProducts, "
                 f"{len(entities['CanonicalConcept'])} CanonicalConcepts, "
@@ -245,7 +245,7 @@ def run_extraction(source_key, dry_run=False, limit=None):
     logger.info(f"Processing: {source_doc['title']}")
 
     # Initialize clients
-    client = get_anthropic_client()
+    client = None if dry_run else get_anthropic_client()
     driver = get_neo4j_driver()
 
     try:
