@@ -415,8 +415,10 @@ RETURN d.catalog_id, d.ingestion_status,
 ```cypher
 MATCH (mc:MethodologicalChoice)
 WHERE NOT (mc)-[:PRODUCES]->(:QualityAttribute)
-RETURN mc.raw_text, mc.fact_category, mc.source_document, mc.source_page
-ORDER BY mc.fact_category, mc.source_page
+OPTIONAL MATCH (mc)-[src:SOURCED_FROM]->(doc:SourceDocument)
+RETURN mc.fact_category, doc.catalog_id AS source_document,
+       src.source_page, src.raw_text
+ORDER BY mc.fact_category, src.source_page
 ```
 
 ---

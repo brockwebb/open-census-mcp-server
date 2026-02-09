@@ -140,6 +140,15 @@ All terms defined in `docs/design/pragmatics_vocabulary.md` (normative). Key ter
 - **LLM extraction scripts:** `scripts/extract/` is empty — future home of PDF chunking + LLM extraction (MinerU, agent swarms). Not yet implemented.
 - **Schema:** All staging files use canonical Pydantic format (triggers, thread_edges, structured source). Old flat format purged 2026-02-08.
 
+## Neo4j Raw Knowledge Graph (Extraction Target)
+- **Database name:** TBD (separate from `pragmatics` database)
+- **Schema:** `docs/design/raw_kg_schema.md` v3.1 — 4-layer harvest architecture
+- **Architecture:** Extract facts (Layer 1) → pattern-match against standards (Layer 2) → curate (Layer 3) → export to pragmatics DB
+- **Key insight:** Fitness implications are DERIVED by Cypher queries, not extracted from documents
+- **Seeding required before extraction:** AnalysisTask nodes + REQUIRES edges (Layer 0)
+- **Tool:** neo4j-labs/llm-graph-builder for PDF extraction
+- **NOT YET IMPLEMENTED** — schema approved, tooling setup in progress
+
 ## Key Architecture Docs for Pragmatics
 - `docs/decisions/ADR-001-neo4j-authoring-sqlite-runtime.md` — Authoring vs runtime separation
 - `docs/architecture/knowledge_pack_management.md` — Full pipeline architecture
@@ -149,6 +158,10 @@ All terms defined in `docs/design/pragmatics_vocabulary.md` (normative). Key ter
 - `docs/design/pragmatics_data_flow.md` — End-to-end data flow explainer
 - `docs/design/theoretical_foundations.md` — ReAct, OODA, Cynefin, Morris semiotic triad
 - `src/census_mcp/pragmatics/models.py` — Pydantic models (canonical schema)
+- `docs/design/raw_kg_schema.md` — Raw KG schema v3.1 (13 node types, 16 relationships, 4-layer harvest architecture)
+- `docs/design/kg_schema_design_narrative.md` — Design process narrative (multi-model adversarial review)
+- `docs/design/reviews/README.md` — External review audit trail
+- `docs/decisions/ADR-007-kg-first-authoring.md` — KG-first authoring workflow
 
 ## Technical Context
 - **Census API:** Direct Python HTTP calls to `api.census.gov`
