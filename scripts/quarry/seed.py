@@ -113,13 +113,14 @@ ANALYSIS_TASKS = [
 ]
 
 # REQUIRES edges: AnalysisTask → QualityAttribute with typed rules
-# Format: (task_name, qa_name, qa_dimension, edge_properties)
+# Format: (task_name, qa_name, qa_dimension, qa_value_type, edge_properties)
 REQUIRES_EDGES = [
     # EstimateChangeOverTime requires low data overlap
     (
         "EstimateChangeOverTime",
         "overlap_fraction",
         "temporal_comparability",
+        "fraction",
         {
             "rule_type": "numeric_threshold",
             "threshold_number": 0.2,
@@ -135,6 +136,7 @@ REQUIRES_EDGES = [
         "CrossSurveyComparison",
         "reference_period_alignment",
         "definitional_alignment",
+        "categorical",
         {
             "rule_type": "categorical_match",
             "threshold_number": None,
@@ -150,6 +152,7 @@ REQUIRES_EDGES = [
         "CrossSurveyComparison",
         "universe_alignment",
         "coverage",
+        "categorical",
         {
             "rule_type": "categorical_match",
             "threshold_number": None,
@@ -165,6 +168,7 @@ REQUIRES_EDGES = [
         "SmallAreaEstimation",
         "effective_sample_size",
         "precision",
+        "count",
         {
             "rule_type": "numeric_threshold",
             "threshold_number": 100,
@@ -180,6 +184,7 @@ REQUIRES_EDGES = [
         "SubgroupAnalysis",
         "subgroup_sample_size",
         "precision",
+        "count",
         {
             "rule_type": "numeric_threshold",
             "threshold_number": 200,
@@ -288,17 +293,17 @@ ON CREATE SET t.description = "{desc}",
         statements.append(stmt)
 
     # === QUALITY ATTRIBUTES (for REQUIRES targets) ===
-    # Extract unique QA nodes from REQUIRES_EDGES
+    # Extract unique QA nodes from REQUIRES_EDGES with value_type
     qa_nodes = {}
-    for task_name, qa_name, qa_dimension, props in REQUIRES_EDGES:
-        qa_nodes[(qa_name, qa_dimension)] = True
+    for task_name, qa_name, qa_dimension, qa_value_type, props in REQUIRES_EDGES:
+        qa_nodes[(qa_name, qa_dimension)] = qa_value_type
 
-    for (qa_name, qa_dimension) in qa_nodes.keys():
-        stmt = f'MERGE (qa:QualityAttribute {{name: "{qa_name}", dimension: "{qa_dimension}"}})'
+    for (qa_name, qa_dimension), qa_value_type in qa_nodes.items():
+        stmt = f'MERGE (qa:QualityAttribute {{name: "{qa_name}", dimension: "{qa_dimension}"}})\nON CREATE SET qa.value_type = "{qa_value_type}"'
         statements.append(stmt)
 
     # === REQUIRES EDGES ===
-    for task_name, qa_name, qa_dimension, props in REQUIRES_EDGES:
+    for task_name, qa_name, qa_dimension, qa_value_type, props in REQUIRES_EDGES:
         # Build property assignments
         prop_lines = []
         for k, v in props.items():
