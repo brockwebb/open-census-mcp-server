@@ -261,30 +261,30 @@ def seed_layer_0(driver, dry_run=False):
 
     # === CANONICAL CONCEPTS ===
     for concept in CANONICAL_CONCEPTS:
-        stmt = f"MERGE (c:CanonicalConcept {{name: '{concept['name']}'}})"
+        stmt = f'MERGE (c:CanonicalConcept {{name: "{concept["name"]}"}})'
         statements.append(stmt)
 
     # === DATA PRODUCTS ===
     for product in DATA_PRODUCTS:
-        stmt = f"MERGE (dp:DataProduct {{name: '{product['name']}'}})"
+        stmt = f'MERGE (dp:DataProduct {{name: "{product["name"]}"}})'
         statements.append(stmt)
 
     # === SURVEY PROCESSES ===
     for process in SURVEY_PROCESSES:
-        stmt = f"MERGE (sp:SurveyProcess {{name: '{process['name']}'}})"
+        stmt = f'MERGE (sp:SurveyProcess {{name: "{process["name"]}"}})'
         statements.append(stmt)
 
     # === ANALYSIS TASKS ===
     for task in ANALYSIS_TASKS:
-        # Escape single quotes in descriptions
-        desc = task['description'].replace("'", "\\'")
-        use_cases = str(task['typical_use_cases']).replace("'", "\\'")
-        dims = str(task['critical_quality_dimensions'])
+        # Build Cypher list syntax properly (using double quotes for strings inside lists)
+        desc = task['description']
+        use_cases_cypher = '[' + ', '.join(f'"{uc}"' for uc in task['typical_use_cases']) + ']'
+        dims_cypher = '[' + ', '.join(f'"{d}"' for d in task['critical_quality_dimensions']) + ']'
 
-        stmt = f"""MERGE (t:AnalysisTask {{name: '{task['name']}'}})
-ON CREATE SET t.description = '{desc}',
-              t.typical_use_cases = {use_cases},
-              t.critical_quality_dimensions = {dims}"""
+        stmt = f"""MERGE (t:AnalysisTask {{name: "{task['name']}"}})
+ON CREATE SET t.description = "{desc}",
+              t.typical_use_cases = {use_cases_cypher},
+              t.critical_quality_dimensions = {dims_cypher}"""
         statements.append(stmt)
 
     # === QUALITY ATTRIBUTES (for REQUIRES targets) ===
@@ -294,8 +294,8 @@ ON CREATE SET t.description = '{desc}',
         qa_nodes[(qa_name, qa_dimension)] = True
 
     for (qa_name, qa_dimension) in qa_nodes.keys():
-        stmt = f"""MERGE (qa:QualityAttribute {{name: '{qa_name}', dimension: '{qa_dimension}'}})
-ON CREATE SET qa.value_type = 'number'"""
+        stmt = f"""MERGE (qa:QualityAttribute {{name: "{qa_name}", dimension: "{qa_dimension}"}})
+ON CREATE SET qa.value_type = "number" """
         statements.append(stmt)
 
     # === REQUIRES EDGES ===
@@ -306,13 +306,15 @@ ON CREATE SET qa.value_type = 'number'"""
             if v is None:
                 prop_lines.append(f"r.{k} = null")
             elif isinstance(v, str):
-                prop_lines.append(f"r.{k} = '{v.replace(chr(39), chr(92) + chr(39))}'")  # Escape quotes
+                # Escape double quotes in string values
+                escaped_v = v.replace('"', '\\"')
+                prop_lines.append(f'r.{k} = "{escaped_v}"')
             elif isinstance(v, (int, float)):
                 prop_lines.append(f"r.{k} = {v}")
         props_str = ",\n    ".join(prop_lines)
 
-        stmt = f"""MATCH (t:AnalysisTask {{name: '{task_name}'}})
-MATCH (qa:QualityAttribute {{name: '{qa_name}', dimension: '{qa_dimension}'}})
+        stmt = f"""MATCH (t:AnalysisTask {{name: "{task_name}"}})
+MATCH (qa:QualityAttribute {{name: "{qa_name}", dimension: "{qa_dimension}"}})
 MERGE (t)-[r:REQUIRES]->(qa)
 ON CREATE SET {props_str}"""
         statements.append(stmt)
