@@ -74,16 +74,33 @@ def setup_logging(name: str) -> logging.Logger:
     return logging.getLogger(name)
 
 
-def validate_extraction(data: dict) -> tuple[bool, list[str]]:
-    """Validate extracted JSON against schema constraints.
+def validate_extraction(data: dict, catalog_id: str = "") -> tuple[bool, list[str], dict]:
+    """Validate extracted JSON against schema constraints with three-tier vocabulary validation.
+
+    Three-tier validation (ADR-010):
+    1. Core term (in FACT_CATEGORIES etc.) → accept silently
+    2. Provisional term (in VOCABULARY_EXTENSIONS) → accept, INFO log, increment count
+    3. Rejected term (in VOCABULARY_REJECTIONS) → apply correction, WARN log
+    4. Unknown term → accept, WARN log, auto-add to provisional
 
     Args:
         data: Extraction output with 'nodes' and 'relationships' keys
+        catalog_id: Source document catalog_id for provisional tracking
 
     Returns:
-        (is_valid, error_messages)
+        (is_valid, warnings, corrections)
+
+        corrections dict has structure:
+        {
+            "remapped_values": [{"node_id": ..., "field": ..., "old": ..., "new": ...}],
+            "reclassified_nodes": [{"node_id": ..., "old_type": ..., "new_type": ...}]
+        }
     """
+    import datetime
+
+    logger = logging.getLogger(__name__)
     errors = []
+    corrections = {"remapped_values": [], "reclassified_nodes": []}
 
     # Check structure
     if "nodes" not in data:
@@ -91,7 +108,66 @@ def validate_extraction(data: dict) -> tuple[bool, list[str]]:
     if "relationships" not in data:
         errors.append("Missing 'relationships' key")
     if errors:
-        return False, errors
+        return False, errors, corrections
+
+    # Helper to validate vocabulary term
+    def validate_vocab_term(field: str, term: str, node_id: str, node_idx: int) -> str:
+        """Validate a vocabulary term and return corrected value (or original if valid)."""
+        # Get core vocabulary for this field
+        core_vocab = {
+            "fact_category": config.FACT_CATEGORIES,
+            "dimension": config.DIMENSIONS,
+            "value_type": config.VALUE_TYPES,
+            "assertion_type": config.ASSERTION_TYPES,
+            "latitude": config.LATITUDES,
+        }.get(field)
+
+        if not core_vocab:
+            return term  # Not a controlled field
+
+        # Tier 1: Core vocabulary - accept silently
+        if term in core_vocab:
+            return term
+
+        # Tier 2: Rejected terms - apply correction
+        if term in config.VOCABULARY_REJECTIONS.get(field, {}):
+            rejection = config.VOCABULARY_REJECTIONS[field][term]
+            if rejection["action"] == "remap":
+                target = rejection.get("target", "")
+                logger.warning(f"Node {node_idx} ({node_id}): Rejected {field} '{term}' → remapping to '{target}' ({rejection['reason']})")
+                corrections["remapped_values"].append({
+                    "node_id": node_id,
+                    "field": field,
+                    "old": term,
+                    "new": target
+                })
+                return target
+            elif rejection["action"] == "reclassify":
+                target_type = rejection.get("target_type", "")
+                logger.warning(f"Node {node_idx} ({node_id}): Rejected {field} '{term}' → reclassifying to {target_type} ({rejection['reason']})")
+                corrections["reclassified_nodes"].append({
+                    "node_id": node_id,
+                    "old_type": data["nodes"][node_idx]["type"],
+                    "new_type": target_type
+                })
+                errors.append(f"Node {node_idx}: {field} '{term}' triggers reclassification to {target_type}")
+                return term  # Keep original, but flag for reclassification
+
+        # Tier 3: Provisional terms - accept with INFO log
+        if term in config.VOCABULARY_EXTENSIONS.get(field, {}):
+            config.VOCABULARY_EXTENSIONS[field][term]["count"] += 1
+            logger.info(f"Provisional vocabulary term '{term}' for {field} (count: {config.VOCABULARY_EXTENSIONS[field][term]['count']})")
+            return term
+
+        # Tier 4: Unknown terms - accept, WARN, auto-add to provisional
+        logger.warning(f"Node {node_idx} ({node_id}): New vocabulary term '{term}' for {field} — adding to provisional")
+        config.VOCABULARY_EXTENSIONS[field][term] = {
+            "first_seen": catalog_id or "unknown",
+            "date": datetime.date.today().isoformat(),
+            "count": 1,
+            "notes": "Auto-added during extraction"
+        }
+        return term
 
     # Validate nodes
     for i, node in enumerate(data["nodes"]):
@@ -103,25 +179,23 @@ def validate_extraction(data: dict) -> tuple[bool, list[str]]:
             errors.append(f"Node {i}: invalid type '{node['type']}'")
 
         # Check ID
-        if "id" not in node or not node["id"]:
+        node_id = node.get("id", "")
+        if not node_id:
             errors.append(f"Node {i}: missing or empty 'id'")
-        elif not re.match(r"^[a-z0-9_]+$", node["id"]):
-            errors.append(f"Node {i}: id '{node['id']}' not snake_case")
+        elif not re.match(r"^[a-z0-9_]+$", node_id):
+            errors.append(f"Node {i}: id '{node_id}' not snake_case")
 
         # Check properties if present
         props = node.get("properties", {})
 
-        # Validate controlled vocabularies
-        if "fact_category" in props and props["fact_category"] not in config.FACT_CATEGORIES:
-            errors.append(f"Node {i}: invalid fact_category '{props['fact_category']}'")
-        if "dimension" in props and props["dimension"] not in config.DIMENSIONS:
-            errors.append(f"Node {i}: invalid dimension '{props['dimension']}'")
-        if "value_type" in props and props["value_type"] not in config.VALUE_TYPES:
-            errors.append(f"Node {i}: invalid value_type '{props['value_type']}'")
-        if "assertion_type" in props and props["assertion_type"] not in config.ASSERTION_TYPES:
-            errors.append(f"Node {i}: invalid assertion_type '{props['assertion_type']}'")
-        if "latitude" in props and props["latitude"] not in config.LATITUDES:
-            errors.append(f"Node {i}: invalid latitude '{props['latitude']}'")
+        # Validate controlled vocabularies with three-tier system
+        for field in ["fact_category", "dimension", "value_type", "assertion_type", "latitude"]:
+            if field in props:
+                original = props[field]
+                corrected = validate_vocab_term(field, original, node_id, i)
+                if corrected != original:
+                    # Update in-place for remapped values
+                    props[field] = corrected
 
         # Validate fractions
         if "value_number" in props and props.get("value_type") == "fraction":
@@ -141,4 +215,4 @@ def validate_extraction(data: dict) -> tuple[bool, list[str]]:
         if "target" not in rel or not rel["target"]:
             errors.append(f"Relationship {i}: missing or empty 'target'")
 
-    return len(errors) == 0, errors
+    return len(errors) == 0, errors, corrections

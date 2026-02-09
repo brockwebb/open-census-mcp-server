@@ -206,15 +206,25 @@ def extract_chunk(client, chunk, source_doc, existing_entities, dry_run=False):
         logger.error(f"JSON parse failed for chunk {chunk.chunk_index}: {e}")
         return {"raw": response_text, "error": "parse_failed", "tokens": tokens_used}
 
-    # Validate
-    is_valid, errors = validate_extraction(data)
+    # Validate with evolutionary vocabulary
+    is_valid, errors, corrections = validate_extraction(data, source_doc["catalog_id"])
     if not is_valid:
         logger.warning(f"Validation failed for chunk {chunk.chunk_index}: {errors[:3]}")
+
+    # Apply corrections to data (reclassified nodes)
+    for correction in corrections.get("reclassified_nodes", []):
+        for node in data["nodes"]:
+            if node["id"] == correction["node_id"]:
+                node["type"] = correction["new_type"]
+                # Remove fact_category property if reclassifying
+                if "properties" in node and "fact_category" in node["properties"]:
+                    del node["properties"]["fact_category"]
 
     return {
         "data": data,
         "valid": is_valid,
         "errors": errors if not is_valid else [],
+        "corrections": corrections,
         "tokens": tokens_used
     }
 

@@ -3,6 +3,12 @@
 import os
 from pathlib import Path
 
+try:
+    from dotenv import load_dotenv
+    load_dotenv(Path(__file__).parent.parent.parent / ".env")
+except ImportError:
+    pass
+
 # === Neo4j Configuration ===
 NEO4J_URI = os.environ.get("NEO4J_URI", "bolt://localhost:7687")
 NEO4J_DATABASE = "quarry"
@@ -51,7 +57,7 @@ SOURCE_CATALOG = {
 # === Controlled Vocabularies ===
 FACT_CATEGORIES = [
     "design", "collection", "weighting", "estimation",
-    "variance", "processing", "adjustment"
+    "variance", "processing", "adjustment", "dissemination"
 ]
 
 DIMENSIONS = [
@@ -65,6 +71,34 @@ VALUE_TYPES = ["fraction", "count", "boolean", "categorical"]
 ASSERTION_TYPES = ["fact", "definition", "procedure", "threshold", "caveat", "change"]
 
 LATITUDES = ["none", "narrow", "wide", "full"]
+
+# === Evolutionary Vocabulary (ADR-010) ===
+# Provisional vocabulary extensions — terms discovered during extraction
+# that haven't yet been validated across multiple documents.
+# Format: {field: {term: {first_seen: catalog_id, date: str, count: int, notes: str}}}
+VOCABULARY_EXTENSIONS = {
+    "fact_category": {},
+    "dimension": {},
+    "value_type": {},
+    "assertion_type": {},
+}
+
+# Rejected vocabulary terms — mapped to corrections.
+# Format: {field: {term: {reason: str, action: str, target: str, date: str}}}
+# action can be: "remap" (use target as replacement value) or "reclassify" (wrong node type)
+VOCABULARY_REJECTIONS = {
+    "fact_category": {
+        "definition": {
+            "reason": "Node type error — these are ConceptDefinition nodes, not MethodologicalChoice",
+            "action": "reclassify",
+            "target_type": "ConceptDefinition",
+            "date": "2026-02-09"
+        }
+    },
+    "dimension": {},
+    "value_type": {},
+    "assertion_type": {},
+}
 
 # === Allowed Node Types (from schema v3.1) ===
 ALLOWED_NODE_TYPES = [
