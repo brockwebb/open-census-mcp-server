@@ -294,8 +294,7 @@ ON CREATE SET t.description = "{desc}",
         qa_nodes[(qa_name, qa_dimension)] = True
 
     for (qa_name, qa_dimension) in qa_nodes.keys():
-        stmt = f"""MERGE (qa:QualityAttribute {{name: "{qa_name}", dimension: "{qa_dimension}"}})
-ON CREATE SET qa.value_type = "number" """
+        stmt = f'MERGE (qa:QualityAttribute {{name: "{qa_name}", dimension: "{qa_dimension}"}})'
         statements.append(stmt)
 
     # === REQUIRES EDGES ===
