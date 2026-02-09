@@ -305,13 +305,35 @@ See `docs/lessons_learned/session_2026-02-08_pipeline_gap.md` for root cause.
 
 ---
 
+## Phase 5: Knowledge Graph Extraction Pipeline ⏳ DESIGN COMPLETE
+
+**Schema:** `docs/design/raw_kg_schema.md` v3.1 — reviewed by 4 AI models across 5 rounds.
+**Architecture:** 4-layer harvest (seed → extract → harvest → curate → export)
+**ADR:** ADR-007 (KG-first authoring)
+
+| Task | Description | Status |
+|------|-------------|--------|
+| KG.1 | Raw KG schema design (13 node types, 16 relationships) | ✅ v3.1 |
+| KG.2 | Multi-model adversarial review (5 rounds, 4 models) | ✅ |
+| KG.3 | Bug fixes from structural review (8 fixes) | ✅ |
+| KG.4 | Design narrative / explainer document | ⏳ (CC task pending) |
+| KG.5 | Setup llm-graph-builder (neo4j-labs) | ⏳ Next |
+| KG.6 | Seed Layer 0: AnalysisTask + REQUIRES edges | ⏳ Needs expert |
+| KG.7 | Seed Layer 0: CanonicalConcept, DataProduct, SurveyProcess nodes | ⏳ |
+| KG.8 | First extraction: CPS Handbook income chapter (proof of concept) | ⏳ |
+| KG.9 | Extraction prompt engineering (penalize summary, reward operational detail) | ⏳ |
+| KG.10 | First harvest: run violation detection queries | ⏳ |
+| KG.11 | Expert validation of harvest output | ⏳ |
+| KG.12 | CPS-ACS income pack (15-30 context items) | ⏳ |
+
+---
+
 ## Tech Debt / Future Work
 
 | Item | Priority | Notes |
 |------|----------|-------|
 | Source-grounded authoring for all existing content | High | Existing 25 ACS items cite ACS-GEN-001 but were authored from LLM training data, not source docs. Need re-verification against handbook. |
-| LLM-assisted PDF extraction (`scripts/extract/`) | Medium | Manual extraction doesn't scale. MinerU for chunking, agent swarms for extraction. FR-EP-007, FR-EP-008 |
-| CPS pack | Low | Needed for user's other project |
+| CPS pack (manual) | Medium | Can be authored manually while KG pipeline matures |
 | Additional ACS docs extraction | Low | Researchers handbook, PUMS handbook |
 
 ---
