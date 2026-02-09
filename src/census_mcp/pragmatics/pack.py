@@ -99,7 +99,7 @@ class PackLoader:
                     item = dict(row)
                     # Parse JSON fields
                     item["triggers"] = row_triggers
-                    item["source"] = json.loads(row["source"]) if row["source"] else None
+                    item["provenance"] = json.loads(row["provenance"]) if row["provenance"] else None
                     item["_pack_id"] = pack_id  # Add pack provenance
                     results.append(item)
         
@@ -125,7 +125,7 @@ class PackLoader:
             if row:
                 item = dict(row)
                 item["triggers"] = json.loads(row["triggers"]) if row["triggers"] else []
-                item["source"] = json.loads(row["source"]) if row["source"] else None
+                item["provenance"] = json.loads(row["provenance"]) if row["provenance"] else None
                 item["_pack_id"] = pack_id
                 return item
         

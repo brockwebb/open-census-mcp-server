@@ -26,13 +26,13 @@ def test_pack_db(tmp_path):
     )
     
     conn.execute(
-        """INSERT INTO context (context_id, domain, category, latitude, context_text, triggers, source)
+        """INSERT INTO context (context_id, domain, category, latitude, context_text, triggers, provenance)
            VALUES ('TST-001', 'test', 'test_cat', 'none', 'Test context', ?, NULL)""",
         (json.dumps(["trigger1", "trigger2"]),)
     )
     
     conn.execute(
-        """INSERT INTO context (context_id, domain, category, latitude, context_text, triggers, source)
+        """INSERT INTO context (context_id, domain, category, latitude, context_text, triggers, provenance)
            VALUES ('TST-002', 'test', 'test_cat', 'narrow', 'Another context', ?, NULL)""",
         (json.dumps(["trigger3"]),)
     )

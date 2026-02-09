@@ -34,7 +34,12 @@ def test_pack_db(tmp_path):
             "latitude": "none",
             "text": "ACS 1-year estimates are only available for areas with 65,000+ population.",
             "triggers": ["population_threshold", "1yr_acs", "1-year"],
-            "source": json.dumps({"document": "ACS Handbook", "section": "2.3"}),
+            "provenance": json.dumps({
+                "sources": [{"document": "ACS Handbook", "section": "2.3", "page": None, "extraction_method": None}],
+                "confidence": "verified",
+                "synthesis_note": None,
+                "limitations": None
+            }),
         },
         {
             "context_id": "ACS-GEO-001",
@@ -43,7 +48,12 @@ def test_pack_db(tmp_path):
             "latitude": "narrow",
             "text": "Small area estimation requires ACS 5-year data. Tract and block group data not available in 1-year.",
             "triggers": ["small_area", "block_group", "tract"],
-            "source": json.dumps({"document": "ACS Handbook", "section": "3.1"}),
+            "provenance": json.dumps({
+                "sources": [{"document": "ACS Handbook", "section": "3.1", "page": None, "extraction_method": None}],
+                "confidence": "verified",
+                "synthesis_note": None,
+                "limitations": None
+            }),
         },
         {
             "context_id": "ACS-MOE-001",
@@ -52,7 +62,12 @@ def test_pack_db(tmp_path):
             "latitude": "full",
             "text": "Always report margins of error. Estimates with CV > 40% are unreliable.",
             "triggers": ["margin_of_error", "reliability"],
-            "source": json.dumps({"document": "ACS Handbook", "section": "7.2"}),
+            "provenance": json.dumps({
+                "sources": [{"document": "ACS Handbook", "section": "7.2", "page": None, "extraction_method": None}],
+                "confidence": "verified",
+                "synthesis_note": None,
+                "limitations": None
+            }),
         },
         {
             "context_id": "ACS-DOL-001",
@@ -61,7 +76,12 @@ def test_pack_db(tmp_path):
             "latitude": "narrow",
             "text": "Dollar values must be inflation-adjusted for temporal comparisons.",
             "triggers": ["dollar_values", "inflation"],
-            "source": json.dumps({"document": "ACS Handbook", "section": "6.4"}),
+            "provenance": json.dumps({
+                "sources": [{"document": "ACS Handbook", "section": "6.4", "page": None, "extraction_method": None}],
+                "confidence": "verified",
+                "synthesis_note": None,
+                "limitations": None
+            }),
         },
         {
             "context_id": "ACS-PER-001",
@@ -70,13 +90,13 @@ def test_pack_db(tmp_path):
             "latitude": "wide",
             "text": "ACS 5-year estimates are period estimates, not point-in-time snapshots.",
             "triggers": ["period_estimate", "5-year"],
-            "source": None,
+            "provenance": None,
         },
     ]
 
     for ctx in contexts:
         conn.execute(
-            """INSERT INTO context (context_id, domain, category, latitude, context_text, triggers, source)
+            """INSERT INTO context (context_id, domain, category, latitude, context_text, triggers, provenance)
                VALUES (?, ?, ?, ?, ?, ?, ?)""",
             (
                 ctx["context_id"],
@@ -85,7 +105,7 @@ def test_pack_db(tmp_path):
                 ctx["latitude"],
                 ctx["text"],
                 json.dumps(ctx["triggers"]),
-                ctx["source"],
+                ctx["provenance"],
             )
         )
         conn.execute(

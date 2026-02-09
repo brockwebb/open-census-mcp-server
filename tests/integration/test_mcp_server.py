@@ -44,7 +44,7 @@ def test_packs_dir(tmp_path):
             "latitude": "none",
             "text": "ACS 1-year estimates require 65,000+ population.",
             "triggers": json.dumps(["population_threshold", "1yr_acs", "1-year"]),
-            "source": json.dumps({"document": "ACS Handbook", "section": "2.3"}),
+            "provenance": json.dumps({"document": "ACS Handbook", "section": "2.3"}),
         },
         {
             "context_id": "ACS-MOE-001",
@@ -53,16 +53,16 @@ def test_packs_dir(tmp_path):
             "latitude": "full",
             "text": "Always report margins of error.",
             "triggers": json.dumps(["margin_of_error", "reliability"]),
-            "source": None,
+            "provenance": None,
         },
     ]
 
     for ctx in contexts:
         conn.execute(
-            """INSERT INTO context (context_id, domain, category, latitude, context_text, triggers, source)
+            """INSERT INTO context (context_id, domain, category, latitude, context_text, triggers, provenance)
                VALUES (?, ?, ?, ?, ?, ?, ?)""",
             (ctx["context_id"], ctx["domain"], ctx["category"], ctx["latitude"],
-             ctx["text"], ctx["triggers"], ctx["source"]),
+             ctx["text"], ctx["triggers"], ctx["provenance"]),
         )
         conn.execute(
             """INSERT INTO pack_contents (pack_id, context_id) VALUES ('acs', ?)""",

@@ -30,7 +30,7 @@ class PragmaticsRetriever:
         
         Returns:
             {
-                "guidance": [{"context_id": ..., "text": ..., "latitude": ..., "source": ...}, ...],
+                "guidance": [{"context_id": ..., "text": ..., "latitude": ..., "provenance": ...}, ...],
                 "related": [{"context_id": ..., "text": ..., "edge_type": ..., "depth": ...}, ...],
                 "sources": [{"document": ..., "section": ...}, ...]
             }
@@ -61,18 +61,21 @@ class PragmaticsRetriever:
                         "context_id": context_dict['context_id'],
                         "text": context_dict['context_text'],
                         "latitude": context_dict['latitude'],
-                        "source": context_dict.get('source'),
+                        "provenance": context_dict.get('provenance'),
                         "tags": triggers
                     }
                     guidance.append(guidance_item)
-                    
-                    # Track source documents
-                    if context_dict.get('source'):
-                        source_data = json.loads(context_dict['source'])
-                        if isinstance(source_data, dict):
-                            sources_set.add(
-                                (source_data.get('document'), source_data.get('section'))
-                            )
+
+                    # Track source documents from provenance.sources list
+                    if context_dict.get('provenance'):
+                        provenance_data = json.loads(context_dict['provenance'])
+                        if isinstance(provenance_data, dict):
+                            # New schema: provenance has sources list
+                            for src in provenance_data.get('sources', []):
+                                if isinstance(src, dict):
+                                    sources_set.add(
+                                        (src.get('document'), src.get('section'))
+                                    )
                     
                     # For each matched context, traverse threads to find related
                     related_contexts = self.loader.traverse_threads(
