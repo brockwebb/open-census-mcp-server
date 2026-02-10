@@ -107,23 +107,17 @@ def run_harvest():
             all_results["unanticipated_interactions"] = run_query(session,
                 "§6.4 Unanticipated Interactions",
                 """
-                MATCH (mc1:MethodologicalChoice)-[:PRODUCES]->(qa1:QualityAttribute)
-                MATCH (mc2:MethodologicalChoice)-[:PRODUCES]->(qa2:QualityAttribute)
-                WHERE mc1 <> mc2
-                  AND qa1.dimension = qa2.dimension
-                  AND (mc1.valid_from IS NULL OR mc2.valid_until IS NULL
-                       OR date(mc1.valid_from) <= date(mc2.valid_until))
-                  AND (mc2.valid_from IS NULL OR mc1.valid_until IS NULL
-                       OR date(mc2.valid_from) <= date(mc1.valid_until))
+                MATCH (mc1:MethodologicalChoice)-[:PRODUCES]->(qa:QualityAttribute)<-[:PRODUCES]-(mc2:MethodologicalChoice)
+                WHERE mc1.id < mc2.id
                   AND NOT EXISTS { MATCH (mc1)-[:CONFOUNDS]-(mc2) }
                 RETURN {
                   type: "potential_interaction",
                   choices: [mc1.id, mc2.id],
-                  dimension: qa1.dimension,
-                  confidence: "low",
-                  action: "Expert review needed"
+                  shared_attribute: qa.name,
+                  dimension: qa.dimension,
+                  confidence: "medium",
+                  action: "Expert review: two methodological choices affect the same quality attribute"
                 } AS result
-                LIMIT 50
                 """
             )
 

@@ -10,10 +10,29 @@ from datetime import datetime
 
 from . import config
 from .chunk import chunk_pdf
-from .prompts import build_extraction_prompt
+from .prompts import build_extraction_prompt, build_batch_extraction_prompt
 from .utils import get_anthropic_client, get_neo4j_driver, parse_llm_json, setup_logging, validate_extraction
 
 logger = setup_logging(__name__)
+
+
+def get_processed_chunks(driver, catalog_id):
+    """Get set of chunk indexes already processed for this document.
+
+    Args:
+        driver: Neo4j driver
+        catalog_id: Source document catalog_id
+
+    Returns:
+        Set of chunk indexes already processed
+    """
+    with driver.session(database=config.NEO4J_DATABASE) as session:
+        result = session.run("""
+            MATCH (n)-[sf:SOURCED_FROM]->(sd:SourceDocument {catalog_id: $catalog_id})
+            WHERE sf.chunk_index IS NOT NULL
+            RETURN DISTINCT sf.chunk_index AS idx
+        """, {"catalog_id": catalog_id})
+        return {r["idx"] for r in result}
 
 
 def get_existing_entities(driver):
@@ -231,71 +250,202 @@ def extract_chunk(client, chunk, source_doc, existing_entities, dry_run=False):
     }
 
 
-def process_single_chunk(chunk, client, source_doc, existing_entities, dry_run, driver, total_chunks):
-    """Process a single chunk (worker function for parallel extraction).
+def extract_batch(client, chunks, source_doc, existing_entities, dry_run=False):
+    """Extract structured knowledge from a batch of chunks in one API call.
+
+    Args:
+        client: Anthropic client
+        chunks: List of chunks to process together
+        source_doc: Source document metadata
+        existing_entities: Existing entity names for MERGE
+        dry_run: If True, return prompt without calling API
 
     Returns:
-        Tuple of (chunk_index, result_dict, stats_update)
+        List of extraction results (one per chunk) or None on failure
     """
-    chunk_idx = chunk.chunk_index + 1
-    logger.info(f"Processing chunk {chunk_idx}/{total_chunks}: "
-               f"{' > '.join(chunk.section_path[:2]) if chunk.section_path else '(root)'}")
+    if not chunks:
+        return []
 
-    # Extract
-    result = extract_chunk(client, chunk, source_doc, existing_entities, dry_run)
-
-    if not result:
-        return (chunk_idx, None, {"chunks_failed": 1})
+    # Build batch prompt using the proper template
+    batch_prompt = build_batch_extraction_prompt(chunks, source_doc, existing_entities)
 
     if dry_run:
-        return (chunk_idx, result, {})
+        return [{"prompt": batch_prompt, "response": None, "parsed": None} for _ in chunks]
 
-    # Thread-safe Neo4j write
-    stats_update = {
-        "chunks_processed": 1,
-        "total_input_tokens": result["tokens"]["input"],
-        "total_output_tokens": result["tokens"]["output"],
-        "validation_errors": 1 if not result.get("valid") else 0,
-        "nodes_created": Counter(),
-        "nodes_matched": Counter(),
-        "relationships_created": Counter(),
-        "relationships_matched": Counter(),
-    }
+    # Call API
+    try:
+        message = client.messages.create(
+            model=config.ANTHROPIC_MODEL,
+            max_tokens=8192,  # Larger for batch responses
+            temperature=0,
+            messages=[{"role": "user", "content": batch_prompt}]
+        )
+        response_text = message.content[0].text
+        tokens_used = {"input": message.usage.input_tokens, "output": message.usage.output_tokens}
+    except Exception as e:
+        logger.error(f"API call failed for batch of {len(chunks)} chunks: {e}")
+        return None
 
-    data = result["data"]
+    # Parse JSON array
+    try:
+        batch_data = parse_llm_json(response_text)
+        if not isinstance(batch_data, list):
+            # Try wrapping in array if single object returned
+            batch_data = [batch_data]
+    except json.JSONDecodeError as e:
+        logger.error(f"JSON parse failed for batch: {e}")
+        return [{"raw": response_text, "error": "parse_failed", "tokens": tokens_used} for _ in chunks]
 
-    # Write to Neo4j (Neo4j driver is thread-safe)
-    with driver.session(database=config.NEO4J_DATABASE) as session:
-        # Write nodes
-        node_map = {}
-        for node in data.get("nodes", []):
-            write_result = write_node_to_neo4j(session, node, source_doc["catalog_id"])
-            node_map[node["id"]] = write_result["neo4j_id"]
+    # Validate and process each extraction
+    results = []
+    for i, chunk in enumerate(chunks):
+        if i < len(batch_data):
+            data = batch_data[i]
+            is_valid, errors, corrections = validate_extraction(data, source_doc["catalog_id"])
 
-            if write_result["created"]:
-                stats_update["nodes_created"][write_result["type"]] += 1
-            else:
-                stats_update["nodes_matched"][write_result["type"]] += 1
+            if not is_valid:
+                logger.warning(f"Validation failed for chunk {chunk.chunk_index}: {errors[:3]}")
 
-        # Write relationships
-        for rel in data.get("relationships", []):
-            write_result = write_relationship_to_neo4j(session, rel, node_map)
-            if write_result.get("created"):
-                stats_update["relationships_created"][write_result["type"]] += 1
-            else:
-                stats_update["relationships_matched"][write_result["type"]] += 1
+            # Apply corrections
+            for correction in corrections.get("reclassified_nodes", []):
+                for node in data.get("nodes", []):
+                    if node.get("id") == correction["node_id"]:
+                        node["type"] = correction["new_type"]
+                        if "properties" in node and "fact_category" in node["properties"]:
+                            del node["properties"]["fact_category"]
 
-    return (chunk_idx, result, stats_update)
+            results.append({
+                "data": data,
+                "valid": is_valid,
+                "errors": errors if not is_valid else [],
+                "corrections": corrections,
+                "tokens": {"input": tokens_used["input"] // len(chunks), "output": tokens_used["output"] // len(chunks)}
+            })
+        else:
+            # Missing extraction for this chunk
+            results.append(None)
+
+    return results
 
 
-def run_extraction(source_key, dry_run=False, limit=None, workers=1):
-    """Run full extraction pipeline with optional parallel workers.
+def process_chunk_batch(chunks, client, source_doc, existing_entities, dry_run, driver, total_chunks, batch_size=1):
+    """Process a batch of chunks (worker function for parallel extraction).
+
+    Args:
+        chunks: List of chunks to process (can be 1 for single-chunk mode)
+        batch_size: Number of chunks per API call (1 = single mode, >1 = batch mode)
+
+    Returns:
+        List of tuples: [(chunk_index, result_dict, stats_update), ...]
+    """
+    if not chunks:
+        return []
+
+    # Single chunk or batch?
+    if batch_size == 1 or len(chunks) == 1:
+        # Single-chunk mode (original behavior)
+        chunk = chunks[0]
+        chunk_idx = chunk.chunk_index + 1
+        logger.info(f"Processing chunk {chunk_idx}/{total_chunks}: "
+                   f"{' > '.join(chunk.section_path[:2]) if chunk.section_path else '(root)'}")
+        result = extract_chunk(client, chunk, source_doc, existing_entities, dry_run)
+        results = [result] if result else [None]
+    else:
+        # Batch mode
+        chunk_indices = [c.chunk_index + 1 for c in chunks]
+        logger.info(f"Processing batch {chunk_indices[0]}-{chunk_indices[-1]}/{total_chunks} ({len(chunks)} chunks)")
+        results = extract_batch(client, chunks, source_doc, existing_entities, dry_run)
+
+    # Process results for each chunk
+    batch_results = []
+    for i, (chunk, result) in enumerate(zip(chunks, results)):
+        chunk_idx = chunk.chunk_index + 1
+
+        if not result:
+            batch_results.append((chunk_idx, None, {"chunks_failed": 1}))
+            continue
+
+        if dry_run:
+            batch_results.append((chunk_idx, result, {}))
+            continue
+
+        # Stats for this chunk
+        stats_update = {
+            "chunks_processed": 1,
+            "total_input_tokens": result["tokens"]["input"],
+            "total_output_tokens": result["tokens"]["output"],
+            "validation_errors": 1 if not result.get("valid") else 0,
+            "nodes_created": Counter(),
+            "nodes_matched": Counter(),
+            "relationships_created": Counter(),
+            "relationships_matched": Counter(),
+        }
+
+        data = result["data"]
+
+        # Write to Neo4j
+        with driver.session(database=config.NEO4J_DATABASE) as session:
+            # Ensure SourceDocument exists
+            session.run("""
+                MERGE (sd:SourceDocument {catalog_id: $catalog_id})
+                ON CREATE SET sd.title = $title, sd.year = $year,
+                             sd.survey = $survey, sd.local_path = $local_path
+            """, {
+                "catalog_id": source_doc["catalog_id"],
+                "title": source_doc["title"],
+                "year": source_doc["year"],
+                "survey": source_doc["survey"],
+                "local_path": source_doc["local_path"]
+            })
+
+            # Write nodes
+            node_map = {}
+            for node in data.get("nodes", []):
+                write_result = write_node_to_neo4j(session, node, source_doc["catalog_id"])
+                node_map[node["id"]] = write_result["neo4j_id"]
+
+                if write_result["created"]:
+                    stats_update["nodes_created"][write_result["type"]] += 1
+                else:
+                    stats_update["nodes_matched"][write_result["type"]] += 1
+
+            # Write relationships
+            for rel in data.get("relationships", []):
+                write_result = write_relationship_to_neo4j(session, rel, node_map)
+                if write_result.get("created"):
+                    stats_update["relationships_created"][write_result["type"]] += 1
+                else:
+                    stats_update["relationships_matched"][write_result["type"]] += 1
+
+            # Link nodes to SourceDocument with chunk_index
+            for neo4j_id in node_map.values():
+                if neo4j_id:
+                    session.run("""
+                        MATCH (n) WHERE id(n) = $node_id
+                        MATCH (sd:SourceDocument {catalog_id: $catalog_id})
+                        MERGE (n)-[sf:SOURCED_FROM]->(sd)
+                        ON CREATE SET sf.chunk_index = $chunk_index
+                    """, {
+                        "node_id": neo4j_id,
+                        "catalog_id": source_doc["catalog_id"],
+                        "chunk_index": chunk.chunk_index
+                    })
+
+        batch_results.append((chunk_idx, result, stats_update))
+
+    return batch_results
+
+
+def run_extraction(source_key, dry_run=False, limit=None, workers=1, resume=False, batch_size=1):
+    """Run full extraction pipeline with optional parallel workers and batching.
 
     Args:
         source_key: Key in SOURCE_CATALOG
         dry_run: If True, show extraction output without writing to Neo4j
         limit: Limit number of chunks to process
         workers: Number of parallel workers (1-5, default 1)
+        resume: If True, skip chunks that have already been processed
+        batch_size: Number of chunks per API call (default 1, recommended 3)
 
     Returns:
         Exit code (0 = success)
@@ -332,6 +482,17 @@ def run_extraction(source_key, dry_run=False, limit=None, workers=1):
             chunks = chunks[:limit]
             logger.info(f"Limited to first {limit} chunks")
 
+        # Resume: skip already-processed chunks
+        if resume:
+            processed_chunks = get_processed_chunks(driver, source_doc["catalog_id"])
+            original_count = len(chunks)
+            chunks = [c for c in chunks if c.chunk_index not in processed_chunks]
+            skipped = original_count - len(chunks)
+            if skipped > 0:
+                logger.info(f"Resume mode: skipping {skipped} already-processed chunks ({len(chunks)} remaining)")
+            else:
+                logger.info(f"Resume mode: no chunks to skip, processing all {len(chunks)}")
+
         # Metrics (thread-safe with lock)
         stats_lock = threading.Lock()
         stats = {
@@ -346,88 +507,83 @@ def run_extraction(source_key, dry_run=False, limit=None, workers=1):
             "total_output_tokens": 0,
         }
 
-        # Process chunks (parallel or sequential based on workers count)
+        # Group chunks into batches
+        batches = []
+        for i in range(0, len(chunks), batch_size):
+            batches.append(chunks[i:i+batch_size])
+
+        total_chunks = len(chunks)
+        if batch_size > 1:
+            logger.info(f"Batch mode: {len(batches)} batches of up to {batch_size} chunks ({total_chunks} total chunks)")
+
+        # Process batches (parallel or sequential based on workers count)
         if dry_run or workers == 1:
             # Sequential mode for dry-run or single worker
-            for chunk in chunks:
-                chunk_idx, result, stats_update = process_single_chunk(
-                    chunk, client, source_doc, existing_entities, dry_run, driver, len(chunks)
+            for batch in batches:
+                batch_results = process_chunk_batch(
+                    batch, client, source_doc, existing_entities, dry_run, driver, total_chunks, batch_size
                 )
 
-                if result is None:
-                    stats["chunks_failed"] += 1
-                    continue
+                for chunk_idx, result, stats_update in batch_results:
+                    if result is None:
+                        stats["chunks_failed"] += 1
+                        continue
 
-                if dry_run:
-                    print(f"\n=== CHUNK {chunk.chunk_index} ===")
-                    print(f"Prompt length: {len(result['prompt'])} chars")
-                    continue
+                    if dry_run:
+                        print(f"\n=== CHUNK {chunk_idx} ===")
+                        print(f"Prompt length: {len(result['prompt'])} chars" if 'prompt' in result else "Batch result")
+                        continue
 
-                # Update stats
-                with stats_lock:
-                    for key in ["chunks_processed", "total_input_tokens", "total_output_tokens", "validation_errors"]:
-                        stats[key] += stats_update[key]
-                    for key in ["nodes_created", "nodes_matched", "relationships_created", "relationships_matched"]:
-                        stats[key] += stats_update[key]
+                    # Update stats
+                    with stats_lock:
+                        for key in ["chunks_processed", "total_input_tokens", "total_output_tokens", "validation_errors"]:
+                            stats[key] += stats_update[key]
+                        for key in ["nodes_created", "nodes_matched", "relationships_created", "relationships_matched"]:
+                            stats[key] += stats_update[key]
         else:
             # Parallel mode
-            logger.info(f"Using {workers} parallel workers")
+            logger.info(f"Using {workers} parallel workers with {len(batches)} batches")
             with ThreadPoolExecutor(max_workers=workers) as executor:
-                # Submit all chunks
+                # Submit all batches
                 futures = {
                     executor.submit(
-                        process_single_chunk,
-                        chunk, client, source_doc, existing_entities, dry_run, driver, len(chunks)
-                    ): chunk
-                    for chunk in chunks
+                        process_chunk_batch,
+                        batch, client, source_doc, existing_entities, dry_run, driver, total_chunks, batch_size
+                    ): batch
+                    for batch in batches
                 }
 
                 # Collect results as they complete
                 for future in as_completed(futures):
                     try:
-                        chunk_idx, result, stats_update = future.result()
+                        batch_results = future.result()
 
-                        if result is None:
+                        for chunk_idx, result, stats_update in batch_results:
+                            if result is None:
+                                with stats_lock:
+                                    stats["chunks_failed"] += 1
+                                continue
+
+                            # Update stats (thread-safe)
                             with stats_lock:
-                                stats["chunks_failed"] += 1
-                            continue
-
-                        # Update stats (thread-safe)
-                        with stats_lock:
-                            for key in ["chunks_processed", "total_input_tokens", "total_output_tokens", "validation_errors"]:
-                                stats[key] += stats_update[key]
-                            for key in ["nodes_created", "nodes_matched", "relationships_created", "relationships_matched"]:
-                                stats[key] += stats_update[key]
+                                for key in ["chunks_processed", "total_input_tokens", "total_output_tokens", "validation_errors"]:
+                                    stats[key] += stats_update[key]
+                                for key in ["nodes_created", "nodes_matched", "relationships_created", "relationships_matched"]:
+                                    stats[key] += stats_update[key]
 
                     except Exception as e:
-                        chunk = futures[future]
-                        logger.error(f"Chunk {chunk.chunk_index} failed with error: {e}")
+                        batch = futures[future]
+                        first_chunk_idx = batch[0].chunk_index if batch else "unknown"
+                        logger.error(f"Batch starting at chunk {first_chunk_idx} failed with error: {e}")
                         with stats_lock:
-                            stats["chunks_failed"] += 1
+                            stats["chunks_failed"] += len(batch)
 
         # Create SourceDocument
         if not dry_run:
             with driver.session(database=config.NEO4J_DATABASE) as session:
-                session.run("""
-                    MERGE (sd:SourceDocument {catalog_id: $catalog_id})
-                    SET sd.title = $title, sd.year = $year,
-                        sd.survey = $survey, sd.local_path = $local_path
-                """, {
-                    "catalog_id": source_doc["catalog_id"],
-                    "title": source_doc["title"],
-                    "year": source_doc["year"],
-                    "survey": source_doc["survey"],
-                    "local_path": source_doc["local_path"]
-                })
-
-                # Link extracted nodes to SourceDocument
-                session.run("""
-                    MATCH (sd:SourceDocument {catalog_id: $catalog_id})
-                    MATCH (n)
-                    WHERE NOT n:SourceDocument AND NOT n:AnalysisTask
-                      AND NOT (n)-[:SOURCED_FROM]->()
-                    MERGE (n)-[:SOURCED_FROM]->(sd)
-                """, {"catalog_id": source_doc["catalog_id"]})
+                # SourceDocument is created per-chunk now with SOURCED_FROM edges
+                # No bulk linking needed - all done in process_single_chunk
+                pass
 
         # Report metrics
         logger.info("\n=== EXTRACTION COMPLETE ===")
@@ -458,9 +614,14 @@ def main():
     parser.add_argument("--limit", type=int, help="Limit number of chunks to process")
     parser.add_argument("--workers", type=int, default=1,
                        help="Number of parallel workers (1-5, default 1)")
+    parser.add_argument("--resume", action="store_true",
+                       help="Resume from previous extraction, skipping already-processed chunks")
+    parser.add_argument("--batch-size", type=int, default=1,
+                       help="Number of chunks per API call (default 1, recommended 3 for large docs)")
     args = parser.parse_args()
 
-    return run_extraction(args.source, dry_run=args.dry_run, limit=args.limit, workers=args.workers)
+    return run_extraction(args.source, dry_run=args.dry_run, limit=args.limit, workers=args.workers,
+                         resume=args.resume, batch_size=args.batch_size)
 
 
 if __name__ == "__main__":

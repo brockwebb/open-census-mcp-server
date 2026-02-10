@@ -17,6 +17,8 @@ NEO4J_PASSWORD = os.environ.get("NEO4J_PASSWORD", "i'llbeback")
 
 # === Anthropic Configuration ===
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
+# Haiku unsuitable for structured JSON extraction — 25.7% parse failure rate
+# See ADR-010 notes. Haiku hallucinates node/relationship types outside schema.
 ANTHROPIC_MODEL = "claude-sonnet-4-5-20250929"
 
 # === Repository Root ===
@@ -41,7 +43,7 @@ SOURCE_CATALOG = {
     "cps_tech_paper_77": {
         "catalog_id": "cps_tech_paper_77",
         "title": "CPS Technical Paper 77: Design and Methodology",
-        "year": 2006,
+        "year": 2019,
         "survey": "cps",
         "local_path": "knowledge-base/census_cps/CPS-Tech-Paper-77.pdf"
     },
@@ -51,6 +53,13 @@ SOURCE_CATALOG = {
         "year": 2024,
         "survey": "general",
         "local_path": "knowledge-base/source-docs/census-methodology/quality-standards.pdf"
+    },
+    "acs_general_handbook": {
+        "catalog_id": "acs_general_handbook_2020",
+        "title": "ACS General Handbook 2020",
+        "year": 2020,
+        "survey": "acs",
+        "local_path": "knowledge-base/source-docs/OtherACS/acs_general_handbook_2020.pdf"
     }
 }
 

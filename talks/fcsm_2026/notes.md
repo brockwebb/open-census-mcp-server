@@ -244,4 +244,77 @@ CPS rotation group design creates 75% sample overlap in consecutive months. The 
 4. TBD: Census geography hierarchy or statistical quality standards
 
 ---
+
+## 2026-02-09 — Extraction Pipeline Results: CPS Handbook, ACS D&M, TP-77
+
+### CPS Handbook (22 pages) — Sonnet
+- 157 chunks, 465 nodes, 73 relationships created
+- $1.75, ~15 min sequential, ~5.5 min with 3 workers
+- 0 validation errors (after evolutionary vocabulary fix)
+- 0 MENTIONS, 1 SourceDocument (both pass)
+- Baseline comparison vs llm-graph-builder: every failure mode resolved (see ADR-008)
+
+### ACS Design & Methodology 2024 (~150 pages) — Sonnet
+- 1347 chunks, 4278 nodes, 741 relationships
+- $16.87, ~31 min with 3 workers
+- 2 validation errors (0.15% error rate)
+- Cross-document harvest working: 3 temporal breaks detected
+
+### CPS Technical Paper 77 (~180 pages) — Haiku ❌
+- 1531 chunks, 5077 nodes created (but unreliable)
+- **25.7% chunk failure rate** — 394/1531 chunks lost to JSON parse errors
+- 5.98% validation error rate (above 5% threshold)
+- Haiku hallucinated node and relationship types not in the schema
+- $7.23 — cheaper per-dollar but wasteful given 25.7% data loss
+- **Verdict: Haiku is not suitable for structured JSON extraction with strict schema compliance.** Haiku works for classification and simple tasks, but cannot reliably produce valid JSON conforming to a controlled vocabulary with 12 node types and 16 relationship types. The cost savings evaporate when a quarter of chunks fail.
+- TP-77 must be re-extracted with Sonnet.
+
+### Harvest Results (CPS + ACS, pre-TP77 reextract)
+- 0 numeric threshold violations (value_type filter working)
+- 0 categorical mismatches (only one survey pair so far)
+- 3 temporal breaks (ACS continuous collection 2005, military service question 2024)
+- 40 unanticipated interactions (medium confidence, structurally connected via shared QualityAttribute)
+- 50 unconnected facts (MethodologicalChoices with no PRODUCES edges — expected for single-survey extraction)
+- 0 MENTIONS (pass)
+
+### Key Decisions Made Today
+- **ADR-010: Evolutionary Vocabulary** — Three-tier controlled vocab (core/provisional/rejected). LLM found `dissemination` as legitimate category we missed. `definition` was node-type error, not vocab gap. Requirement FR-QE-014.
+- **`scope` property added to QualityAttribute** — Distinguishes national/state/sub_state/subgroup/unit measurement level. Eliminates false positives where national sample size (60K) matched per-area threshold (100). Combined with `value_type` filter for belt-and-suspenders.
+- **Harvest interaction query fixed** — Was doing cartesian join on dimension (n² noise). Fixed to require shared QualityAttribute node via PRODUCES. Went from 50 low-confidence to 40 medium-confidence structurally-connected results.
+- **Parallel workers** — `--workers N` (1-5) via ThreadPoolExecutor. 3x speedup on CPS (18 min → 5.5 min).
+
+### Model Selection Lesson
+The "Jobs Doctrine" applies to model selection too, but in the opposite direction from what you'd expect. Smaller/cheaper models don't always clear out complexity — sometimes they introduce it. Haiku's 25.7% failure rate on structured extraction means you'd need error handling, retry logic, output repair, and validation complexity that doesn't exist with Sonnet's <1% failure rate. The cheapest model is the one that works the first time.
+
+Exception: when the task is genuinely simple (classification, yes/no, short-answer), smaller models are appropriate. The discriminator is output structure complexity, not task conceptual difficulty.
+
+### Cost Summary
+| Document | Model | Chunks | Cost | Failure Rate |
+|----------|-------|--------|------|--------------|
+| CPS Handbook | Sonnet | 157 | $1.75 | 0% |
+| ACS D&M | Sonnet | 1347 | $16.87 | 0.15% |
+| TP-77 | Haiku | 1531 | $7.23 | 25.7% |
+| TP-77 (redo) | Sonnet | 1531 | ~$19 | <1% |
+| Quality Standards | Sonnet batch-3 | 2476 | $10.02 | <2% (post-cleanup) |
+| ACS General Handbook | Sonnet batch-2 | 1326 | $5.89 | <2% (post-cleanup) |
+
+Total extraction spend: ~$55. Budget holding.
+Batch mode savings: ~$10-15 vs single-chunk.
+
+### Final Quarry State (5 documents)
+- 13,227 nodes, 100% schema compliant (12 types)
+- 5 SourceDocuments: CPS Handbook, ACS D&M, CPS TP-77, Quality Standards, ACS General Handbook
+- 10 threshold violations, 34 temporal breaks, 147 unanticipated interactions
+- Post-extraction cleanup required for Quality Standards and ACS Handbook (~12% invalid types from confabulated node labels, reclassified or deleted)
+
+### Terminology: Confabulation, Not Hallucination
+"Hallucination" implies sensory/perceptual phenomenon — models perceiving something that isn't there. LLMs don't perceive anything. They do statistical pattern-completion and generate plausible outputs that aren't grounded in fact.
+
+"Confabulation" is the precise term from neuropsychology — filling in gaps with fabricated information without awareness of doing so. Mechanistically closer to what's actually happening: the model has incomplete information and pattern-completes confidently, producing outputs that look right but aren't sourced.
+
+For a project built on auditable provenance and source-grounded expert judgment, the distinction matters. The entire pragmatics layer exists because LLMs confabulate — they produce statistically plausible Census guidance that isn't traceable to any methodology document. "Hallucination" obscures the mechanism. "Confabulation" points directly at the failure mode the architecture is designed to prevent.
+
+*Potential FCSM talking point — probably only lands with the few nerds who care about precision. Which is exactly the audience.*
+
+---
 *Add entries chronologically. Append corrections as new entries, don't edit old ones.*

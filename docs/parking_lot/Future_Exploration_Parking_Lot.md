@@ -157,5 +157,34 @@
 
 ---
 
+## 🧪 Extraction Pipeline Improvements
+
+### EP-1: LangExtract for Source Grounding
+**Source**: [google/langextract](https://github.com/google/langextract) — 17K stars, Apache 2.0
+**Idea**: Replace or augment Docling+LLM extraction with LangExtract's character-level source grounding and multi-pass extraction. Maps every extraction to exact character offsets in source text. Interactive HTML visualization for review.
+**What it solves**: Current pipeline tracks chunk_index but not character-level provenance. Single-pass extraction may miss entities that multi-pass would catch.
+**What it doesn't solve**: Outputs flat JSONL, not typed knowledge graph nodes. No controlled vocabulary enforcement, no cross-document entity resolution, no harvest/validation. Graph layer would need to be rebuilt on top.
+**Steal-worthy ideas**: Character-level provenance, interactive extraction visualization, few-shot example-driven extraction.
+**Complexity**: Medium. Integration layer between LangExtract JSONL output and Neo4j graph writer.
+**When to evaluate**: Next batch of documents after FCSM sprint, or if provenance auditing becomes a requirement.
+
+### EP-2: MinerU 2.5 for PDF Parsing
+**Source**: [opendatalab/MinerU](https://github.com/opendatalab/MinerU) — 1.2B parameter VLM model
+**Idea**: Replace Docling with MinerU's hybrid VLM engine for PDF parsing. SOTA on OmniDocBench, surpassing Gemini 2.5 Pro and GPT-4o on document parsing. 10GB VRAM minimum for hybrid engine — runs on M1 Pro 32GB.
+**What it solves**: Better table structure detection, visual layout understanding for complex Census multi-level header tables that text-based parsers mangle.
+**What it doesn't solve**: Same downstream pipeline (chunks → LLM extraction → Neo4j). Improvement is in chunk quality, not extraction quality.
+**Complexity**: Low. Drop-in replacement for Docling chunking stage.
+**When to evaluate**: Next document batch. Compare chunk quality on a table-heavy Census document.
+
+### EP-3: Batch Chunk Extraction (3+ chunks per API call)
+**Source**: Internal — Brock implemented similar pattern in 12/2024
+**Idea**: Group 3-5 chunks per API call, amortize schema/prompt overhead. Reduces API calls by 60-80% and cost proportionally.
+**What it solves**: Quality Standards had 2476 chunks at ~$31 single-chunk. Batch-3 would be ~$10-12.
+**Risk**: Larger blast radius per failure. JSON array parsing more fragile.
+**Complexity**: Low-medium. Prompt modification + response array parsing.
+**When to evaluate**: Before any document >1000 chunks. Should have been built before Quality Standards extraction.
+
+---
+
 *Last updated: 2026-02-09*  
 *Gate rule reminder: Validate need before graduating any item from this lot.*

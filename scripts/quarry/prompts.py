@@ -140,3 +140,89 @@ TEXT TO EXTRACT FROM:
 Return the JSON now:"""
 
     return prompt
+
+
+def build_batch_extraction_prompt(
+    chunks: List,
+    source_doc: Dict[str, str],
+    existing_entities: Dict[str, List[str]],
+) -> str:
+    """Build extraction prompt for a batch of document chunks.
+
+    Args:
+        chunks: List of chunks to extract from
+        source_doc: Source document metadata from SOURCE_CATALOG
+        existing_entities: Existing entity names to MERGE with
+
+    Returns:
+        Complete batch extraction prompt
+    """
+    # Build chunk sections
+    chunk_sections = []
+    for i, chunk in enumerate(chunks, 1):
+        section = " > ".join(chunk.section_path[:2]) if chunk.section_path else "(root)"
+        chunk_sections.append(f"""=== CHUNK {i} ===
+Section: {section}
+
+{chunk.text}""")
+
+    chunks_text = "\n\n".join(chunk_sections)
+
+    prompt = f"""You are extracting structured knowledge from multiple text chunks from a U.S. Census Bureau methodology document.
+
+SOURCE DOCUMENT: {source_doc['title']} ({source_doc['survey']}, {source_doc['year']})
+
+TASK: Extract from {len(chunks)} chunks below. Return a JSON ARRAY with {len(chunks)} extraction objects, one per chunk in order.
+
+CRITICAL RULES:
+1. Extract FACTS and MEASUREMENTS only, not opinions or implications
+2. Use existing entity names when linking:
+   - DataProduct: {', '.join(existing_entities.get('DataProduct', [])[:5])}
+   - CanonicalConcept: {', '.join(existing_entities.get('CanonicalConcept', [])[:5])}
+   - SurveyProcess: {', '.join(existing_entities.get('SurveyProcess', [])[:5])}
+3. Node properties use controlled vocabularies:
+   - fact_category: {', '.join(config.FACT_CATEGORIES[:8])}...
+   - dimension: {', '.join(config.DIMENSIONS[:8])}...
+   - value_type: {', '.join(config.VALUE_TYPES)}
+4. Node IDs must be lowercase snake_case
+5. Fractions must be 0-1, NOT percentages
+6. **EVERY node MUST have 'id', 'type', and 'properties' fields**
+7. **EVERY relationship MUST have 'source', 'target', 'type', and 'properties' fields**
+
+OUTPUT FORMAT - Return a JSON ARRAY with {len(chunks)} objects:
+[
+  {{
+    "nodes": [
+      {{
+        "id": "node_id_in_snake_case",
+        "type": "MethodologicalChoice",
+        "properties": {{
+          "fact_category": "design",
+          "survey": "cps",
+          "assertion_type": "fact"
+        }}
+      }}
+    ],
+    "relationships": [
+      {{
+        "source": "source_node_id",
+        "target": "target_node_id",
+        "type": "APPLIES_TO",
+        "properties": {{
+          "valid_from": "2014-01-01",
+          "valid_until": null
+        }}
+      }}
+    ]
+  }},
+  ...
+]
+
+If a chunk contains no extractable entities, return {{"nodes": [], "relationships": []}} for that position.
+
+TEXT CHUNKS TO EXTRACT FROM:
+{chunks_text}
+
+Return a JSON ARRAY with {len(chunks)} extraction objects in order:"""
+
+    return prompt

@@ -212,6 +212,7 @@ This is WHY we moved to pragmatics (structured expert context with latitude) ins
 - Don't use web search for Census data — use Census API or project knowledge base
 - Tool is `get_census_data` not `get_acs_data` (legacy name accepted but deprecated)
 - Don't use the term "crystal" anywhere — it's purged
+- Don't use "hallucination" — the correct term is **confabulation** (pattern-completion from training distribution, not perception of nonexistent stimuli)
 - Don't build throwaway MVPs — build the real thing correctly from the start
 - Don't add external databases (Neo4j, Postgres, etc.) — SQLite only per SRS C-002
 - Don't add dependencies without justification — minimal footprint, prove we need it first
