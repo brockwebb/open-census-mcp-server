@@ -317,4 +317,373 @@ For a project built on auditable provenance and source-grounded expert judgment,
 *Potential FCSM talking point — probably only lands with the few nerds who care about precision. Which is exactly the audience.*
 
 ---
+
+## 2026-02-10: Harvest Curation — First Batch Complete
+
+### Temporal Comparability Curation Results
+34 harvest candidates from quarry → 13 curated pragmatic items (11 CPS, 2 ACS additions).
+
+Consolidation was mostly deduplication: the quarry extracted the same methodological event from multiple quality attribute angles (e.g., 6 nodes for the CPS rotation group design representing month-to-month overlap, year-to-year overlap, overlap rate, etc. — all one pragmatic item). The 2000 population control event was duplicated across two TemporalEvent nodes pointing at the same MethodologicalChoice. This is expected behavior from chunk-level extraction without entity resolution.
+
+New staging directory: `staging/cps/` for CPS-domain pragmatics.
+
+### Provenance Gap: Missing Page Numbers
+**Known limitation:** The quarry's SOURCED_FROM edges lack page-level provenance. The extraction pipeline captures `source_page` as a property on the SOURCED_FROM relationship, but the LLM extraction didn't reliably populate it. Section names in the curated items are approximate reconstructions from node IDs and context, not direct extractions.
+
+**Impact:** Curated items have document-level provenance (which source doc) but not page-level (where in the doc). This weakens auditability — someone verifying a pragmatic item has to search the full document rather than turning to a specific page.
+
+**Fix options (future):**
+1. Extraction prompt engineering: explicitly require page numbers in structured output
+2. Post-extraction enrichment: use chunk metadata (if Docling preserves page boundaries) to backfill page numbers on SOURCED_FROM edges
+3. Manual spot-check: for high-value items (latitude=none), manually verify and add page numbers
+
+For FCSM evaluation, document-level provenance is sufficient. Page-level is a quality improvement for production.
+
+### Latitude Distribution
+- `none`: 2 items (1994 redesign, 2003 race question) — hard breaks, no wiggle room
+- `narrow`: 7 items — strong guidance with rare exceptions
+- `wide`: 2 items (LAUS 2004, sample frame redraws) — background context
+- This distribution feels right: most temporal breaks ARE narrow-latitude because they're documented discontinuities with known boundaries.
+
+---
+
+## 2026-02-10: Confidence-Gap-Driven Curation — Second Batch
+
+### Harvest Exhaustion Analysis
+All existing harvest queries fully mined:
+
+| Harvest Category | Candidates | Curated Items | Notes |
+|---|---|---|---|
+| Temporal breaks | 34 | 13 | Done ✅ |
+| Threshold violations | 10 | 0 | Already covered by CPS-BRK-001 |
+| Unanticipated interactions | 147 | 0 | All noise — structural connections, not confounding |
+| Unconnected facts | 50 | not harvested | Need new queries |
+| Coverage/nonresponse/precision | untapped | — | Need new harvest approach |
+
+The interaction query (§6.4) is architecturally sound but produces false positives because "two methodology choices affect the same quality dimension" is taxonomy, not confounding. Real interactions require domain expert authoring.
+
+### Confidence Gap Analysis
+Asked: "What am I least confident about as a Census statistical consultant?" Identified 5 gaps in current packs:
+1. **CPS methodology** — zero CPS guidance before this session
+2. **Nonresponse bias / imputation** — ACS mentions noise injection but no allocation rate guidance
+3. **ACS weighting/imputation** — no hot-deck or B99 table guidance
+4. **Cross-survey comparability** — ACS vs CPS definitional differences undocumented
+5. **Group quarters** — ACS includes, CPS excludes; affects college towns, military, prisons
+
+Quarry confirmed source material exists for all 5 gaps (nodes from ACS D&M 2024 and CPS docs). Most quarry nodes on these topics lack PRODUCES edges — they're unconnected facts from the extraction. Authored pragmatics directly using quarry as confirmation of source coverage.
+
+### Second Batch Results (9 items)
+
+**ACS nonresponse (2 items):**
+- ACS-NRS-001: Allocation rates as quality signal (>30% = caution)
+- ACS-NRS-002: Hot-deck imputation and B99 tables
+
+**ACS group quarters (2 items):**
+- ACS-GQ-001: ACS includes GQ, CPS doesn't — divergence for college/military/prison areas
+- ACS-GQ-002: GQ imputation rates (30-50% wholly imputed)
+
+**CPS cross-survey (3 items):**
+- CPS-XSV-001: Universe differences (civilian noninst 16+ vs total pop)
+- CPS-XSV-002: Reference period differences (specific week vs rolling)
+- CPS-XSV-003: Income reference period (ASEC calendar year vs ACS past-12-months)
+
+**CPS sampling (2 items):**
+- CPS-SAM-001: ~60K households, national/state reliable, not for small-area
+- CPS-SAM-002: Complex survey design — SRS standard errors understate true error
+
+### Running Totals
+- **ACS pack:** 25 existing + 2 break + 2 nonresponse + 2 GQ = 31 items
+- **CPS pack:** 11 break + 3 cross-survey + 2 sampling = 16 items
+- **Total staged:** 47 items across 2 domains
+
+---
+
+## 2026-02-10: FCSM Thesis Crystallized
+
+### Core Thesis
+
+**Pragmatics is the missing layer that makes federal and open statistical data AI-ready.**
+
+Statistical data APIs currently ship estimates and margins of error. They do not ship the expert judgment required to *use* those numbers correctly. When LLMs consume this data on behalf of users, they confabulate fitness-for-use guidance from training data — plausible-sounding but unauditable, sometimes wrong, and untraceable to any methodology document.
+
+The fix is simple in concept: **ship pragmatics with the data.** Either the API host includes fitness-for-use context in the payload (best case), or a local system intercepts and enriches the response before it reaches the reasoning model. The local system needs nothing more than a search string back to the host — not a complicated architecture.
+
+### Two delivery models
+
+**Host-side (ideal):** Census API returns `{estimate, moe, pragmatics: [...]}`. The data producer knows the caveats better than any downstream consumer ever will. "This estimate has a CV of 47% because the sample in this tract is 38 households" is something only the Bureau can say authoritatively. Shipping data without pragmatics is shipping medication without prescribing information — technically complete, practically dangerous.
+
+**Client-side (current proof of concept):** The Census MCP server intercepts queries, retrieves data from the API, and bundles locally-curated pragmatics into the response. This works but is inherently second-best — it requires independent maintenance of expert judgment that the data producer already possesses.
+
+### What we actually built (architectural framing)
+
+Not novel components. Novel *composition* of existing patterns:
+
+- **RAG** — but the retrieval corpus is curated expert judgment, not raw documentation. Raw-document RAG fails in Census because the domain is too semantically homogeneous for embeddings to differentiate ("semantic smearing").
+- **Knowledge graph** — but as authoring scaffolding, not runtime infrastructure. GraphRAG assumes you need graph traversal at query time. You don't. You need it at *curation* time to find patterns and ensure coverage. Then you ship a flat pack. The graph is scaffolding, not load-bearing structure.
+- **MCP** — the protocol that makes tool-mediated data retrieval + pragmatics bundling tractable for any reasoning model.
+
+The contribution isn't the patterns — it's the *recognition* that statistical data has a pragmatics problem, not a search problem, and the architecture that follows from that diagnosis.
+
+### The grounding distinction
+
+| Approach | Grounded in | Failure mode |
+|----------|------------|-------------|
+| Standard RAG | Source documents (chunks) | Semantic smearing in homogeneous domains |
+| GraphRAG | Document-derived graph structure | Runtime overhead, community summarization costs |
+| This system | Curated expert judgment with provenance | Curation bottleneck (human-in-the-loop) |
+
+We don't ground in documents. We ground in *context-aware expertise* that's triggered by the questions and concepts near the decision edge. The retrieval store isn't "what the handbook says" — it's "what a senior statistician would tell you after reading the handbook."
+
+### The provocation for FCSM
+
+Statistical data APIs have a duty to ship pragmatics alongside estimates. MCP (or any tool-use protocol) makes it tractable. The Census MCP server is a proof of concept for what the Bureau itself should be doing.
+
+The alternative — every downstream LLM application independently reconstructing fitness-for-use judgment from training data — is a confabulation engine at scale. A thousand chatbots each independently guessing what "margin of error" means for a tract-level poverty estimate. The data producer can stop this by shipping the answer.
+
+### Terminology note (for the 3 FCSM attendees who care)
+
+**Confabulation**, not hallucination. Hallucination implies perception of nonexistent stimuli — LLMs don't perceive anything. Confabulation (from neuropsychology) is filling gaps with fabricated information without awareness of doing so. Mechanistically closer to what's happening: the model has incomplete information and pattern-completes confidently. The entire pragmatics layer exists because LLMs confabulate statistical guidance. Using the precise term points directly at the failure mode the architecture prevents.
+
+### Empirical Evidence: Why Embedding-Based RAG Fails in Statistical Domains
+
+Two separate bodies of evidence, both pointing to the same problem:
+
+**Evidence 1: Survey question semantic homogeneity (measured).** From the Federal Survey Concept Mapper project (Webb, 2025): RoBERTa-large pairwise similarity across 6,987 federal survey questions yielded mean 0.9916 with effectively zero SD. Concept-matching against 157 Census taxonomy concepts produced a perfectly flat distribution — 0.64% per concept (exactly 1/157, random chance). Adding survey context made zero difference. Root cause: information asymmetry between 100-word detailed questions and 2-word concept labels. Embeddings can't bridge that gap through similarity — it requires *reasoning*. Source: `federal-survey-concept-mapper/docs/project/lessons_learned_embedding_failure.md`, report Section 10.2.1.
+
+**Evidence 2: ACS variable metadata RAG failure (observed, not yet formally measured).** v1/v2 of the Census MCP server built a 1GB enriched variable metadata index covering all 2023 ACS variables with dual lookup, concept mappings, and multiple embedding indexes (FAISS). Retrieval struggled to surface correct variables in top-10 results — "median household income" vs "median family income" vs "aggregate income" couldn't be reliably discriminated. Enrichment (adding keywords, concept tags, dimensional metadata) helped marginally but couldn't overcome the baseline semantic compression. **This observation needs formal measurement** — a pairwise similarity analysis of ACS variable descriptions analogous to the survey question analysis would quantify the problem. Source: `archive-opencensusmcp/v2/knowledge-base/` (1GB enriched universe file, FAISS indexes).
+
+**The hypothesis:** Both corpora (survey questions AND variable metadata) exhibit semantic homogeneity because they share the same root cause — standardized statistical language produced by a single agency about a narrow domain. The concept mapper proved it for questions; the variable metadata analysis is pending but experientially consistent.
+
+**Why this matters for the pragmatics thesis:** If embedding-based RAG fails on BOTH the instruments (questions) and the outputs (variables), then the entire traditional RAG approach is structurally unsuited to Census data. The pragmatics architecture sidesteps this by not using embeddings at all — retrieval is tag-matching on curated triggers, not cosine similarity over dense vectors.
+
+### The Real Architectural Insight: RAG Was Solving the Wrong Problem
+
+The v1/v2 Census MCP server spent enormous effort on variable discovery via RAG: 1GB enriched metadata, FAISS indexes, concept mappings, dual-path search. The assumption was that the hard problem was *finding* the right Census variables given a natural language question.
+
+That assumption was wrong. **The LLM already knows how to find variables.**
+
+Look at raw Census API metadata:
+- `B19001B_014E` → label: "Estimate!!Total:!!$100,000 to $124,999", concept: "Household Income... (Black or African American Alone Householder)"
+- `B19001B_013E` → label: "Estimate!!Total:!!$75,000 to $99,999", same concept
+
+The naming convention IS the semantic layer. B19 = income tables. The suffix is the bin position. The concept field describes the universe. A reasoning LLM can parse this structure and construct the correct API call from a user question like "income distribution for Black households" — no embeddings needed, no enrichment needed.
+
+The enrichment made things worse. Each variable got a ~6,000-character domain specialist essay that was ~95% identical boilerplate ("The ACS is a continuous survey... self-reported... sampling error... consult MOE..."). The distinguishing content — which specific variable, which universe, which occupation — was 50 words buried in 6,000 words of shared methodology. The enrichment *homogenized* the embedding space by amplifying shared context over distinguishing features. It was a confabulation amplifier for retrieval.
+
+**What the MCP actually needs to do:**
+
+> **🎬 SLIDE MATERIAL** — This table is a candidate slide. Six rows. Left column = task, right = why the LLM can or can't do it. Audience sees immediately that variable discovery is the easy part, fitness-for-use is the hard part, and that's exactly what's missing from every data API today.
+
+| Task | Who should do it | Why |
+|------|-----------------|-----|
+| Variable discovery | LLM (reasoning) | Can parse naming conventions, table structure, concept fields |
+| API call construction | LLM + MCP validation | LLM builds query, MCP validates FIPS codes and variable existence |
+| Fitness-for-use judgment | Pragmatics layer | LLM CANNOT do this from training data — requires curated expert knowledge |
+| MOE interpretation | Pragmatics layer | Domain-specific thresholds, not generic statistics |
+| Temporal comparability | Pragmatics layer | Vintage-specific rules the LLM has no way to know |
+| Geographic pitfalls | Pragmatics layer | St. Louis independent city status, PUMA changes, etc. |
+
+The LLM handles variable discovery through reasoning. The MCP's job is everything the LLM *can't* do from training data: live API execution, and shipping the expert judgment (pragmatics) that makes the data interpretable.
+
+**This reframes the entire architecture.** It's not "RAG failed so we pivoted to pragmatics." It's "RAG was solving the wrong problem." The hard problem was never finding variables — it was knowing what to say about them once you found them. Pragmatics IS the product. Variable discovery is a solved problem that the LLM handles natively.
+
+**Evidence trail:**
+- Survey question semantic smearing: 0.9916 mean pairwise similarity (measured, RoBERTa, 6,987 questions)
+- Variable metadata enrichment: 36,918 variables, 809MB, avg 6,214 chars/variable of mostly-identical boilerplate (profiled)
+- Raw vs enriched comparison: CC task pending (`cc_tasks/2026-02-10_characterize_enriched_universe.md`)
+- v1/v2 MCP operational experience: RAG retrieval unreliable despite 1GB enriched index (observed)
+- v3 MCP: LLM handles variable discovery natively, MCP provides pragmatics + API execution (working)
+
+### Framing for federal audience
+
+"Not novel, not new — just using design patterns better" is the right tone for FCSM. Novel gets skepticism from federal statisticians. "We composed existing patterns in a way that actually works for statistical data dissemination" is more credible than "we invented a thing." The audience wants to know: does this solve a real problem, and can we do it too? Answer to both: yes, and it's not that hard — the hard part is curating the pragmatics, which is work statisticians already do informally every time they advise a data user.
+
+---
+
+## 2026-02-10: Sidecar Delivery Model & PPP Operationalization
+
+### Delivery Tiers (Future ConOps)
+
+Three realistic adoption paths, in order of integration depth:
+
+1. **Embedded (ideal, long-term):** Host API returns `{data, pragmatics}` in a single payload. Requires the data producer to adopt the pattern. Highest quality — they know the caveats best.
+
+2. **Sidecar (realistic near-term):** Separate pragmatics endpoint, same query parameters as the data API. LLM makes two calls: one for data, one for fitness-for-use context. Can be maintained independently — by the Bureau, by a third party, by the research community. Could be as simple as a static file server keyed by product/geography-level/variable-group. A CDN could serve it.
+
+3. **Local (current proof of concept):** SQLite packs bundled with the MCP server. Works offline, zero external dependencies, but stale the moment methodology updates.
+
+**Key insight:** The pragmatics content is delivery-agnostic. The same curated expert judgment items work whether embedded, sidecar-served, or locally bundled. The curation pipeline (quarry → harvest → curate → pack) produces content that's independent of delivery mechanism. The contribution is the content and its structure, not the plumbing.
+
+### OV-0: Sidecar Architecture (Future State)
+
+```mermaid
+flowchart TB
+    subgraph USER["End User"]
+        Q["Natural Language Question"]
+    end
+
+    subgraph LLM["Reasoning Model (Any)"]
+        R["LLM Agent"]
+    end
+
+    subgraph HOST["Federal Data Host"]
+        API["Census API\n/data/acs/acs5"]
+        SIDE["Pragmatics Sidecar\n/pragmatics/acs5"]
+    end
+
+    subgraph PPP["Pragmatics Pattern Pack"]
+        direction TB
+        C1["Fitness-for-Use\nContext Items"]
+        C2["Provenance &\nSource Citations"]
+        C3["Latitude\n(none → full)"]
+    end
+
+    Q -->|"ask"| R
+    R -->|"1. get data\n(FIPS, variables, year)"| API
+    R -->|"2. get pragmatics\n(same query params)"| SIDE
+    API -->|"estimates + MOE"| R
+    SIDE -->|"fitness context"| R
+    PPP -.->|"serves"| SIDE
+    R -->|"grounded answer\nwith caveats"| Q
+
+    style HOST fill:#e8f4e8,stroke:#2d5a2d
+    style PPP fill:#fff3e0,stroke:#e65100
+    style LLM fill:#e3f2fd,stroke:#1565c0
+    style SIDE fill:#fff3e0,stroke:#e65100
+```
+
+The sidecar accepts the same query parameters as the data API — product, geography, variables, year. No new query language. No complex integration. Just "give me the pragmatics for the data I just pulled." The pragmatics endpoint is backed by a Pragmatics Pattern Pack (PPP) — the same curated content structure whether served from a CDN, a database, or a local file.
+
+### Operationalizing PPPs: The Bootstrap Loop
+
+The objection to any "expert knowledge" system is always: "Who's going to spend 3 years in committee writing all this?" Nobody. That's why most knowledge engineering projects die.
+
+The operationalization path:
+
+**Phase 1 — Manual seed (done).** A domain expert writes 25-50 pragmatics items by hand. This takes hours, not months. These are the things a senior statistician says every time someone asks about the data. They already know them — they just haven't written them down in a structured format.
+
+**Phase 2 — Quarry extraction (done).** Run methodology documents through an LLM extraction pipeline. 238 pages → 13K nodes → harvest queries → candidate pragmatics. The quarry doesn't replace expert curation — it tells you *what to curate*. It surfaces patterns the expert might miss or forget.
+
+**Phase 3 — LLM-assisted expansion (next).** With a manually-curated seed set as exemplars, use LLM power to extract candidate PPP items from the quarry at scale. The seed set IS the few-shot prompt — "here are 25 good pragmatics items, find more like these in the knowledge graph." Claude Code or batch API can process the full quarry against the pattern. Expert reviews and approves — doesn't write from scratch.
+
+**Phase 4 — Empirical distillation.** With a larger authoritative set (100+ items), run the test bench. Which items actually change LLM behavior? Which ones fire but don't improve response quality? Which combinations create the best consultation quality scores? Distill the PPP to the items that empirically matter. The PPP gets *smaller and sharper* over time, not bigger and fuzzier.
+
+**Phase 5 — Community contribution.** Publish the PPP schema and authoring guide. Domain experts at other agencies author their own PPPs for their surveys (BLS for CPS employment, NCHS for NHIS, etc.). The sidecar pattern means each agency maintains their own pragmatics. No central committee. No 3-year process. Each agency knows their caveats — they just need the format to ship them.
+
+### Why this isn't ivory tower
+
+- The seed set took hours, not years
+- The extraction pipeline cost $55 for 5 documents
+- The curation step is "read 34 candidates, write 15 items" — an afternoon
+- The PPP schema is 8 fields (id, domain, category, latitude, context_text, triggers, thread_edges, provenance)
+- The delivery mechanism is a search string, not a graph database
+- The test bench validates empirically, not by committee consensus
+
+Every step is something one person can do in a week. The entire pipeline from "I have methodology PDFs" to "I have a shippable pragmatics pack" is a month of part-time work. That's the operationalization story for FCSM: not "here's a theoretical framework" but "here's what we built, here's what it cost, here's the evidence it works, and you can do it too."
+
+---
+
+## 2026-02-10: Anticipated Q&A — Adversarial Questions & Prepared Responses
+
+*These emerged from adversarial review of the thesis. Formatted for conference Q&A prep and paper discussion section.*
+
+### Q1: "You say the host should ship pragmatics, but Census doesn't know the use case. 'CV of 47% is unreliable' — unreliable *for what*?"
+
+**A:** Pragmatics are use-case-*agnostic* expert facts. The LLM handles use-case translation — that's the whole point of the architecture. The pragmatic item says "CV > 30% indicates low reliability for this estimate." The LLM reads that, reasons about the user's context, and says to a 5th grader: "this number might not be very accurate because not many people were surveyed in this area." To a policy analyst: "this estimate has a coefficient of variation of 47%, which exceeds the Census Bureau's reliability threshold. Consider aggregating geographies or using 5-year estimates." Same pragmatic, different audience. The LLM is the translator; the pragmatic is the expert knowledge it translates.
+
+### Q2: "How is this novel? You're describing RAG + knowledge engineering + MCP. All existing patterns."
+
+**A:** Correct. The contribution isn't the patterns — it's the *recognition* that statistical data has a pragmatics problem, not a search problem, and an architecture that follows from that diagnosis. Standard RAG over methodology documents fails in this domain because the corpus is too semantically homogeneous (mean pairwise similarity 0.9916 across 6,987 survey questions). GraphRAG assumes you need graph traversal at runtime; you don't — you need it at *curation* time. MCP is the protocol that makes tool-mediated pragmatics delivery tractable. The novelty is the composition, the empirical evidence that motivated it, and the operationalization path.
+
+### Q3: "Without test bench results showing pragmatics actually improve outcomes, this is elegant architecture solving an assumed problem."
+
+**A:** Fair. This is acknowledged as the primary gap. The thesis depends on Phase 4B showing measurable improvement in consultation quality when pragmatics are present vs. absent. The architecture is motivated by observed failure modes (LLM confabulation of statistical guidance), but the empirical demonstration is pending. The conference contribution is the architecture, operationalization path, and negative results (why RAG fails) — the positive results (pragmatics improve outcomes) are future work.
+
+### Q4: "The curation bottleneck undermines scalability. 'One person, one week' for ACS. Census has dozens of surveys. BLS has dozens more."
+
+**A:** Two responses. First, the curation effort is front-loaded and amortized. Once expert knowledge is encoded for a survey, it doesn't need re-curating unless methodology changes. ACS methodology doesn't change every year. Second, Phase 3 (LLM-assisted expansion) uses the manually-curated seed set as few-shot exemplars to extract candidates at scale — the expert reviews rather than writes from scratch. The bottleneck is real but bounded: it's "read 34 candidates, approve 15" not "write 500 items from memory." And the sidecar model means each agency curates their own survey's pragmatics — no central committee.
+
+### Q5: "What about versioning? ACS methodology changes. Pragmatics cite specific documents with page numbers. When Bureau updates methodology, your pack is wrong."
+
+**A:** Provenance-based diff checking is the concrete staleness detection mechanism. Each pragmatic item cites source document, section, and page. When a new methodology document is published, run a diff against cited sections. Changed sections flag items for re-review. Unchanged sections remain valid. Additionally, old pragmatics don't become *wrong* — they become *historical context* for cross-vintage comparison. "In 2022, the threshold was X; in 2024, it changed to Y" is itself a pragmatic item. Temporal discontinuity is a feature, not a bug.
+
+### Q6: "The medication analogy is misleading. Census has no regulatory obligation to ship fitness-for-use guidance."
+
+**A:** The analogy isn't regulatory — it's about harm reduction. The practical alternative to shipping pragmatics is every downstream LLM application independently reconstructing fitness-for-use judgment from training data. That's a thousand chatbots each independently guessing what "margin of error" means for a tract-level poverty estimate. Some will guess right, some won't, and none are auditable. The data producer can stop this by shipping the answer. The obligation isn't legal — it's epistemic. If your mission is to inform the public, shipping data without interpretation context is shipping half the product.
+
+### Q7: "You claim 'the LLM already knows how to find variables.' Prove it. What about edge cases — Puerto Rico tables, group quarters, race iteration tables?"
+
+**A:** The LLM handles ~90% of variable discovery natively through reasoning about naming conventions and table structure (the 90/10 rule). The remaining 10% — PR-specific tables (B07007PR), group quarters (B26xxx), race iteration suffixes (A/B/C/D/E/F/G/H/I) — is where the `explore_variables` fallback tool exists. The architectural point isn't that the LLM is perfect at discovery; it's that variable discovery is not the hard problem. The hard problem is fitness-for-use judgment, which no amount of variable discovery improvement addresses.
+
+### Q8: "RoBERTa similarity of 0.9916 was for survey questions, not variable metadata. You're extrapolating."
+
+**A:** Correct, and the notes now explicitly separate measured evidence (survey questions, 0.9916) from observed-but-unquantified evidence (variable metadata RAG failure). A formal pairwise similarity analysis of raw vs enriched ACS variable metadata is in progress. However, visual inspection of the enriched metadata tells the story: 36,918 variables, each with ~6,000 characters of enrichment text, ~95% identical boilerplate methodology. The measurement will confirm what inspection shows. The hypothesis is that both corpora exhibit semantic homogeneity from the same root cause — standardized language from a single agency about a narrow domain.
+
+### Q9: "If pragmatics require human curation, how is this better than just having a statistician answer the question?"
+
+**A:** It's not better for one question. It's better for the millionth question. A senior statistician answering one data user's question is the gold standard. But that doesn't scale. Pragmatics encode the statistician's judgment once, then serve it to every LLM-mediated interaction indefinitely. The statistician writes 50 items in a day; those items improve every subsequent consultation across every downstream application. It's the difference between answering questions and publishing answers.
+
+---
+
+## 2026-02-10: The Full Arc — Flowchart & Speaker Notes
+
+> **🎬 SLIDE MATERIAL** — This flowchart tells the story arc from problem to solution. Suitable for an overview slide early in the talk.
+
+```mermaid
+flowchart TD
+    P["📊 Problem: Statistical Data APIs\nship estimates + MOE\nbut NOT fitness-for-use judgment"]
+    
+    F1["❌ Attempt 1: RAG over variable metadata\n1GB enriched index, FAISS, concept mappings\nResult: Retrieval can't discriminate"]
+    
+    E1["📏 Evidence: Semantic Smearing\nSurvey questions: 0.9916 mean similarity\nEnriched metadata: ~95% identical boilerplate"]
+    
+    I1["💡 Insight 1: LLM already handles\nvariable discovery through reasoning\nRAG was solving the wrong problem"]
+    
+    I2["💡 Insight 2: The hard problem is\nfitness-for-use judgment — what to SAY\nabout data, not how to FIND it"]
+    
+    S["✅ Solution: Pragmatics Layer\nCurated expert judgment\nwith provenance & triggers"]
+    
+    O["🔧 Operationalization\nSeed → Quarry → LLM-expand → Distill → Community\nEach phase: one person, one week"]
+    
+    D["📦 Delivery: Sidecar Model\nSame query params as data API\nHost, third-party, or local"]
+    
+    V["🎯 Vision: AI-Readable = AI-Understandable\nData producers ship pragmatics\nalongside estimates"]
+
+    P --> F1
+    F1 --> E1
+    E1 --> I1
+    I1 --> I2
+    I2 --> S
+    S --> O
+    O --> D
+    D --> V
+
+    style P fill:#ffcdd2,stroke:#b71c1c
+    style F1 fill:#ffcdd2,stroke:#b71c1c
+    style E1 fill:#fff9c4,stroke:#f57f17
+    style I1 fill:#fff9c4,stroke:#f57f17
+    style I2 fill:#fff9c4,stroke:#f57f17
+    style S fill:#c8e6c9,stroke:#2e7d32
+    style O fill:#c8e6c9,stroke:#2e7d32
+    style D fill:#c8e6c9,stroke:#2e7d32
+    style V fill:#bbdefb,stroke:#1565c0
+```
+
+### Speaker Notes for Arc Slide
+
+**Opening (Problem):** "Federal statistical data APIs are machine-readable. Structured, documented, well-maintained. But machine-readable doesn't mean machine-understandable. When an LLM pulls Census data through an API, it gets estimates and margins of error. What it doesn't get is the expert judgment about whether those numbers are fit for the user's purpose."
+
+**The failure (Attempts):** "We tried the obvious approach first — build a RAG system over enriched variable metadata. One gigabyte of enriched descriptions, FAISS indexes, concept mappings. It didn't work. We measured why: in this domain, the semantic space is so compressed that embedding-based retrieval can't discriminate between variables. Mean pairwise similarity of 0.99+ across thousands of items. Every variable sounds like every other variable to an embedding model."
+
+**The insight (Pivot):** "Two realizations. First, the LLM doesn't need help finding variables — it can reason about table naming conventions and concept descriptions directly. Second, the hard problem was never variable *discovery*. It was knowing what to *say* about the data once you found it. Is this estimate reliable at this geography? Can you compare 2019 to 2023? What does this margin of error actually mean for policy decisions? That's expert judgment, and no amount of retrieval improvement gives you that."
+
+**The solution (Pragmatics):** "So we built a pragmatics layer — curated expert judgment items with full provenance tracing to methodology documents. Not generated by the LLM. Not extracted and served raw. Written or reviewed by domain experts, with source citations, structured for machine delivery."
+
+**Operationalization:** "The question everyone asks is 'who's going to write all this?' Here's the answer: one person, one week per phase. Seed set of 50 items takes a day. Extraction pipeline processes five methodology documents for $55. LLM-assisted expansion uses the seed set as few-shot examples. Empirical distillation keeps only items that measurably improve consultation quality. The pack gets smaller and sharper over time, not bigger and fuzzier."
+
+**Delivery:** "The content is delivery-agnostic. Same pragmatics whether the host embeds them in API responses, serves them from a sidecar endpoint, or we bundle them locally. The sidecar model is the realistic near-term path — same query parameters as the data API, separate endpoint. A CDN could serve it."
+
+**Vision:** "If the goal is genuinely AI-ready federal data, we need to ship pragmatics alongside estimates. The alternative is every downstream application independently confabulating fitness-for-use guidance from training data. Plausible-sounding, unauditable, sometimes wrong. The data producer can prevent this by shipping the answer."
+
+---
 *Add entries chronologically. Append corrections as new entries, don't edit old ones.*
