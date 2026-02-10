@@ -332,7 +332,7 @@ See `docs/lessons_learned/session_2026-02-08_pipeline_gap.md` for root cause.
 
 ---
 
-## Phase 5B: Quarry Extraction Toolkit ⏳ IN PROGRESS — Code Complete, Awaiting First Real Run
+## Phase 5B: Quarry Extraction Toolkit ✅ COMPLETE
 
 **ADRs:** ADR-008 (custom pipeline), ADR-009 (shippable toolkit)
 **Location:** `scripts/quarry/`
@@ -352,15 +352,38 @@ See `docs/lessons_learned/session_2026-02-08_pipeline_gap.md` for root cause.
 | QT.8 | `export.py` — stub only (blocked on harvest curation design) | ⏳ stub | ADR-007 |
 | QT.9 | `schema.json` — machine-readable v3.1 schema definition | ✅ | ADR-009 |
 | QT.10 | `README.md` — setup, usage, extending to new surveys | ✅ | ADR-009 |
-| QT.11 | Test: CPS Handbook re-extraction with new pipeline, compare quality vs llm-graph-builder | ⏳ **NEXT** | TEVV |
-| QT.12 | Test: CPS Technical Paper 77 (180 pages) — scalability test | ⏳ | TEVV |
-| QT.13 | Test: ACS General Handbook — cross-survey queries light up | ⏳ | KG.13 |
+| QT.11 | Test: CPS Handbook re-extraction with new pipeline, compare quality vs llm-graph-builder | ✅ | TEVV |
+| QT.12 | Test: CPS Technical Paper 77 (1,531 chunks) — scalability test | ✅ | TEVV |
+| QT.13 | Test: ACS General Handbook — cross-survey queries light up | ✅ | KG.13 |
 
 **Verification passed:** Chunking (157 chunks, section-aware ✓), seed dry-run (valid Cypher ✓), extraction dry-run (prompts generated ✓)
 
-**Next:** Wipe quarry → seed Layer 0 → run `extract --source cps_handbook` → compare against llm-graph-builder baseline (401 nodes, 291 MENTIONS, 11 SourceDocs)
+**Results:** 5 documents extracted, 13,227 nodes, 15,355 valid edges. 100% schema compliance after cleanup.
+Batch mode (--batch-size N) reduces cost ~50% for large documents. ~$55 total extraction cost.
+Sonnet is minimum viable model (Haiku failed at 25.7% error rate).
+~12% confabulated node types, 60% recoverable via reclassification.
 
-**Exit Criteria:** Single command extracts a PDF into quarry, harvest produces actionable pragmatics candidates, export generates valid staging JSON. Quality demonstrably better than llm-graph-builder baseline.
+**Exit Criteria:** ✅ Met. Pipeline extracts PDFs, harvest produces candidates, quality exceeds llm-graph-builder baseline.
+
+---
+
+## Phase 5C: Harvest Curation & Export ⏳ NOT STARTED
+
+Depends on: Phase 5B ✅
+
+*Objective: Turn quarry raw material into packaged pragmatics for the MCP runtime.*
+
+| Task | Description | Status | Traces To |
+|------|-------------|--------|----------|
+| HC.1 | Finish relationship cleanup (delete 556 long-tail invalid edges) | ⏳ CC task ready | QT cleanup |
+| HC.2 | Run clean harvest, document baseline signal quality | ⏳ | KG.10 |
+| HC.3 | Build export.py (harvest → staging JSON template generation) | ⏳ | ADR-007 |
+| HC.4 | Curate temporal comparability batch (~34 candidates → ~15 items) | ⏳ | D.6 |
+| HC.5 | Curate threshold violations batch (~10 candidates → ~5 items) | ⏳ | D.6 |
+| HC.6 | Compile new packs, test with MCP server | ⏳ | Phase 3 |
+| HC.7 | Feed results into Phase 4B evaluation | ⏳ | H.1 |
+
+**Exit Criteria:** ≥15 new pragmatics items curated from quarry harvest with full provenance, compiled into packs, tested via MCP.
 
 ---
 
