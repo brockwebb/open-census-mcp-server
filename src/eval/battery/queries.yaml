@@ -1,0 +1,280 @@
+queries:
+  # H.5: Normal Baseline Queries (15 queries)
+  - id: "NORM-001"
+    text: "What is the total population of California according to the most recent Census data?"
+    category: "normal"
+    difficulty: "normal"
+    pragmatics_exercised: []
+    cqs_dimensions_tested: ["D1", "D5", "D6"]
+
+  - id: "NORM-002"
+    text: "What is the median household income in Cook County, Illinois?"
+    category: "normal"
+    difficulty: "normal"
+    pragmatics_exercised: ["ACS-MOE-001"]
+    cqs_dimensions_tested: ["D1", "D3", "D5"]
+
+  - id: "NORM-003"
+    text: "How many housing units are in Harris County, Texas?"
+    category: "normal"
+    difficulty: "normal"
+    pragmatics_exercised: []
+    cqs_dimensions_tested: ["D1", "D4", "D5"]
+
+  - id: "NORM-004"
+    text: "What percentage of people in New York City have a bachelor's degree or higher?"
+    category: "normal"
+    difficulty: "normal"
+    pragmatics_exercised: ["ACS-MOE-001"]
+    cqs_dimensions_tested: ["D1", "D2", "D5"]
+
+  - id: "NORM-005"
+    text: "What is the poverty rate in Maricopa County, Arizona?"
+    category: "normal"
+    difficulty: "normal"
+    pragmatics_exercised: ["ACS-MOE-003"]
+    cqs_dimensions_tested: ["D1", "D2", "D4", "D5"]
+
+  - id: "NORM-006"
+    text: "What percentage of households in Miami-Dade County rent rather than own their home?"
+    category: "normal"
+    difficulty: "normal"
+    pragmatics_exercised: []
+    cqs_dimensions_tested: ["D1", "D2", "D5"]
+
+  - id: "NORM-007"
+    text: "How many people in King County, Washington are 65 or older?"
+    category: "normal"
+    difficulty: "normal"
+    pragmatics_exercised: []
+    cqs_dimensions_tested: ["D1", "D5", "D6"]
+
+  - id: "NORM-008"
+    text: "What is the unemployment rate in Wayne County, Michigan?"
+    category: "normal"
+    difficulty: "normal"
+    pragmatics_exercised: []
+    cqs_dimensions_tested: ["D1", "D2", "D4", "D5"]
+
+  - id: "NORM-009"
+    text: "What is the median age in Travis County, Texas?"
+    category: "normal"
+    difficulty: "normal"
+    pragmatics_exercised: []
+    cqs_dimensions_tested: ["D1", "D5"]
+
+  - id: "NORM-010"
+    text: "What percentage of people in Hennepin County, Minnesota have health insurance?"
+    category: "normal"
+    difficulty: "normal"
+    pragmatics_exercised: []
+    cqs_dimensions_tested: ["D1", "D4", "D5"]
+
+  - id: "NORM-011"
+    text: "How many people in Fulton County, Georgia were born in another country?"
+    category: "normal"
+    difficulty: "normal"
+    pragmatics_exercised: []
+    cqs_dimensions_tested: ["D1", "D4", "D5"]
+
+  - id: "NORM-012"
+    text: "What is the average household size in Salt Lake County, Utah?"
+    category: "normal"
+    difficulty: "normal"
+    pragmatics_exercised: []
+    cqs_dimensions_tested: ["D1", "D4", "D5"]
+
+  - id: "NORM-013"
+    text: "What percentage of workers in Alameda County, California commute by public transit?"
+    category: "normal"
+    difficulty: "normal"
+    pragmatics_exercised: []
+    cqs_dimensions_tested: ["D1", "D2", "D5"]
+
+  - id: "NORM-014"
+    text: "How many single-mother households are there in Philadelphia County, Pennsylvania?"
+    category: "normal"
+    difficulty: "normal"
+    pragmatics_exercised: []
+    cqs_dimensions_tested: ["D1", "D4", "D5"]
+
+  - id: "NORM-015"
+    text: "What is the median gross rent in Denver County, Colorado?"
+    category: "normal"
+    difficulty: "normal"
+    pragmatics_exercised: []
+    cqs_dimensions_tested: ["D1", "D5"]
+
+  # H.6: Geographic Edge Cases (7 queries)
+  - id: "GEO-001"
+    text: "What is the median household income in Alexandria, Virginia?"
+    category: "geographic_edge"
+    difficulty: "tricky"
+    pragmatics_exercised: ["ACS-IND-001", "ACS-IND-002"]
+    cqs_dimensions_tested: ["D1", "D4", "D5"]
+
+  - id: "GEO-002"
+    text: "Compare poverty rates in the Bronx and Manhattan."
+    category: "geographic_edge"
+    difficulty: "tricky"
+    pragmatics_exercised: ["ACS-GEO-001"]
+    cqs_dimensions_tested: ["D1", "D3", "D4", "D5"]
+
+  - id: "GEO-003"
+    text: "What is the population of Washington?"
+    category: "geographic_edge"
+    difficulty: "trap"
+    pragmatics_exercised: ["ACS-GEO-001"]
+    cqs_dimensions_tested: ["D1", "D4"]
+
+  - id: "GEO-004"
+    text: "What is the median income in Portland?"
+    category: "geographic_edge"
+    difficulty: "trap"
+    pragmatics_exercised: ["ACS-GEO-001"]
+    cqs_dimensions_tested: ["D1", "D4"]
+
+  - id: "GEO-005"
+    text: "What is the homeownership rate in Nashville, Tennessee?"
+    category: "geographic_edge"
+    difficulty: "tricky"
+    pragmatics_exercised: ["ACS-GEO-001", "ACS-IND-001"]
+    cqs_dimensions_tested: ["D1", "D4", "D5"]
+
+  - id: "GEO-006"
+    text: "Give me tract-level median income data for rural Loving County, Texas."
+    category: "geographic_edge"
+    difficulty: "trap"
+    pragmatics_exercised: ["ACS-POP-001", "ACS-MOE-002", "ACS-MOE-003", "ACS-SAM-001"]
+    cqs_dimensions_tested: ["D1", "D3", "D6"]
+
+  - id: "GEO-007"
+    text: "What is the unemployment rate in Washington, DC?"
+    category: "geographic_edge"
+    difficulty: "tricky"
+    pragmatics_exercised: ["ACS-GEO-001"]
+    cqs_dimensions_tested: ["D1", "D2", "D4", "D5"]
+
+  # H.7: Small-Area Reliability Cases (4 queries)
+  - id: "SML-001"
+    text: "What is the median household income in Kalawao County, Hawaii?"
+    category: "small_area"
+    difficulty: "trap"
+    pragmatics_exercised: ["ACS-POP-001", "ACS-MOE-002", "ACS-SUP-001"]
+    cqs_dimensions_tested: ["D1", "D3", "D6"]
+
+  - id: "SML-002"
+    text: "Compare the poverty rates across all census tracts in rural Wyoming."
+    category: "small_area"
+    difficulty: "trap"
+    pragmatics_exercised: ["ACS-MOE-002", "ACS-MOE-003", "ACS-MOE-004", "ACS-PCL-001"]
+    cqs_dimensions_tested: ["D1", "D2", "D3", "D4"]
+
+  - id: "SML-003"
+    text: "What is the income of Asian Americans in Boise, Idaho?"
+    category: "small_area"
+    difficulty: "tricky"
+    pragmatics_exercised: ["ACS-POP-001", "ACS-MOE-002", "ACS-SUP-001"]
+    cqs_dimensions_tested: ["D1", "D3", "D4"]
+
+  - id: "SML-004"
+    text: "I need ACS 1-year data for Gallatin County, Montana."
+    category: "small_area"
+    difficulty: "tricky"
+    pragmatics_exercised: ["ACS-POP-001"]
+    cqs_dimensions_tested: ["D1", "D3"]
+
+  # H.8: Temporal Edge Cases (4 queries)
+  - id: "TMP-001"
+    text: "How has median household income in Philadelphia changed from 2010 to 2022?"
+    category: "temporal"
+    difficulty: "tricky"
+    pragmatics_exercised: ["ACS-DOL-001", "ACS-CMP-001", "ACS-CMP-002"]
+    cqs_dimensions_tested: ["D1", "D2", "D3", "D4"]
+
+  - id: "TMP-002"
+    text: "Compare the 2019 and 2020 ACS estimates for health insurance coverage in Florida."
+    category: "temporal"
+    difficulty: "trap"
+    pragmatics_exercised: ["ACS-BRK-001", "ACS-CMP-001"]
+    cqs_dimensions_tested: ["D1", "D3", "D4"]
+
+  - id: "TMP-003"
+    text: "Has the percentage of people working from home in Denver increased since 2015?"
+    category: "temporal"
+    difficulty: "tricky"
+    pragmatics_exercised: ["ACS-BRK-001", "ACS-DOL-001", "ACS-CMP-003"]
+    cqs_dimensions_tested: ["D1", "D3", "D4"]
+
+  - id: "TMP-004"
+    text: "What was the median home value in San Francisco in 2005 dollars?"
+    category: "temporal"
+    difficulty: "tricky"
+    pragmatics_exercised: ["ACS-DOL-001"]
+    cqs_dimensions_tested: ["D2", "D4"]
+
+  # H.9: Ambiguity Cases (3 queries)
+  - id: "AMB-001"
+    text: "How many families are in poverty in Springfield?"
+    category: "ambiguity"
+    difficulty: "trap"
+    pragmatics_exercised: ["ACS-GEO-001"]
+    cqs_dimensions_tested: ["D1", "D4"]
+
+  - id: "AMB-002"
+    text: "What's the income gap between whites and minorities in my area?"
+    category: "ambiguity"
+    difficulty: "trap"
+    pragmatics_exercised: []
+    cqs_dimensions_tested: ["D1", "D4"]
+
+  - id: "AMB-003"
+    text: "Is the economy better in Texas or California?"
+    category: "ambiguity"
+    difficulty: "trap"
+    pragmatics_exercised: []
+    cqs_dimensions_tested: ["D1", "D2", "D4"]
+
+  # H.10: Product Mismatch Cases (3 queries)
+  - id: "MIS-001"
+    text: "Give me ACS 1-year estimates for Sioux County, Nebraska."
+    category: "product_mismatch"
+    difficulty: "tricky"
+    pragmatics_exercised: ["ACS-POP-001"]
+    cqs_dimensions_tested: ["D1", "D3"]
+
+  - id: "MIS-002"
+    text: "What does the decennial census say about income levels in Ohio?"
+    category: "product_mismatch"
+    difficulty: "tricky"
+    pragmatics_exercised: ["ACS-PER-001"]
+    cqs_dimensions_tested: ["D1", "D4"]
+
+  - id: "MIS-003"
+    text: "I need monthly employment data from the ACS."
+    category: "product_mismatch"
+    difficulty: "tricky"
+    pragmatics_exercised: ["ACS-PER-001"]
+    cqs_dimensions_tested: ["D1", "D4"]
+
+  # H.11: Persona-Based Query Variants (3 queries)
+  - id: "PER-001a"
+    text: "My 8th grade class is doing a project on our town. How many people live in Bozeman, Montana and is it growing?"
+    category: "persona_8th_grader"
+    difficulty: "normal"
+    pragmatics_exercised: ["ACS-PER-001", "ACS-CMP-003"]
+    cqs_dimensions_tested: ["D1", "D3", "D5", "D6"]
+
+  - id: "PER-001b"
+    text: "I'm analyzing population trends in Bozeman, MT for a comprehensive plan update. I need the most recent ACS estimates with margins of error, and guidance on comparing to the 2010 baseline."
+    category: "persona_city_planner"
+    difficulty: "tricky"
+    pragmatics_exercised: ["ACS-MOE-001", "ACS-CMP-001", "ACS-CMP-002", "ACS-CMP-003", "ACS-DOL-001"]
+    cqs_dimensions_tested: ["D1", "D2", "D3", "D4", "D5"]
+
+  - id: "PER-001c"
+    text: "I'm writing a story about whether Bozeman is really 'booming' as people claim. What do the Census numbers actually show, and how confident should I be in those numbers?"
+    category: "persona_journalist"
+    difficulty: "tricky"
+    pragmatics_exercised: ["ACS-MOE-001", "ACS-MOE-003", "ACS-CMP-003"]
+    cqs_dimensions_tested: ["D1", "D3", "D4", "D5"]
