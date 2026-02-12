@@ -65,7 +65,7 @@
 | D.3 | ACS-specific rules | ✅ (17 items) |
 | D.4 | Thread edges between related rules | ✅ (6 threads) |
 | D.5 | Validate against schema | ✅ |
-| D.6 | ACS General Handbook deep extraction (7 non-obvious findings) — author with provenance | ⏳ | ACS-GEN-001 |
+| D.6 | ACS General Handbook deep extraction (7 non-obvious findings) — author with provenance | ✅ | ACS-GEN-001 |
 
 **ACS Pack Details (17 contexts):**
 - Population thresholds: 3 (65K rule, 20K supplemental, 5-year coverage)

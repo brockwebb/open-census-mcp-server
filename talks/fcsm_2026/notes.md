@@ -450,11 +450,48 @@ Two separate bodies of evidence, both pointing to the same problem:
 
 **Evidence 1: Survey question semantic homogeneity (measured).** From the Federal Survey Concept Mapper project (Webb, 2025): RoBERTa-large pairwise similarity across 6,987 federal survey questions yielded mean 0.9916 with effectively zero SD. Concept-matching against 157 Census taxonomy concepts produced a perfectly flat distribution — 0.64% per concept (exactly 1/157, random chance). Adding survey context made zero difference. Root cause: information asymmetry between 100-word detailed questions and 2-word concept labels. Embeddings can't bridge that gap through similarity — it requires *reasoning*. Source: `federal-survey-concept-mapper/docs/project/lessons_learned_embedding_failure.md`, report Section 10.2.1.
 
-**Evidence 2: ACS variable metadata RAG failure (observed, not yet formally measured).** v1/v2 of the Census MCP server built a 1GB enriched variable metadata index covering all 2023 ACS variables with dual lookup, concept mappings, and multiple embedding indexes (FAISS). Retrieval struggled to surface correct variables in top-10 results — "median household income" vs "median family income" vs "aggregate income" couldn't be reliably discriminated. Enrichment (adding keywords, concept tags, dimensional metadata) helped marginally but couldn't overcome the baseline semantic compression. **This observation needs formal measurement** — a pairwise similarity analysis of ACS variable descriptions analogous to the survey question analysis would quantify the problem. Source: `archive-opencensusmcp/v2/knowledge-base/` (1GB enriched universe file, FAISS indexes).
+**Evidence 2: ACS variable metadata semantic smearing (measured, 2026-02-10).** Matched-pairs analysis of 2,500 ACS 5-year variables (seed=20260210), comparing raw Census metadata (label + concept, ~166 chars) against LLM-enriched metadata (~6,358 chars per variable). Two embedding models: MiniLM-L6-v2 (384d) and RoBERTa-large (1024d).
 
-**The hypothesis:** Both corpora (survey questions AND variable metadata) exhibit semantic homogeneity because they share the same root cause — standardized statistical language produced by a single agency about a narrow domain. The concept mapper proved it for questions; the variable metadata analysis is pending but experientially consistent.
+> **🎬 SLIDE MATERIAL** — Core results table.
 
-**Why this matters for the pragmatics thesis:** If embedding-based RAG fails on BOTH the instruments (questions) and the outputs (variables), then the entire traditional RAG approach is structurally unsuited to Census data. The pragmatics architecture sidesteps this by not using embeddings at all — retrieval is tag-matching on curated triggers, not cosine similarity over dense vectors.
+| Metric | Raw (label+concept) | Enriched (full text) | Change |
+|--------|-------------------|---------------------|--------|
+| Mean pairwise similarity (RoBERTa) | 0.4199 | 0.7651 | **+82%** |
+| Within-group similarity | 0.6331 | 0.8199 | +30% |
+| Cross-group similarity | 0.3996 | 0.7599 | **+90%** |
+| Group discrimination (Δ) | 0.2334 (58.4%) | 0.0600 (7.9%) | **−86.5% collapse** |
+| Cohen's d (paired t-test) | — | 4.85 | massive effect |
+| Paired t-test | — | t=180.2, p<0.001 | — |
+| Wilcoxon signed-rank (nonparametric) | — | p<0.001 | confirms t-test |
+
+**The smoking gun: asymmetric homogenization.** Cross-group similarity (unrelated variables) increased 90% under enrichment while within-group similarity (related variables) increased only 30%. The enrichment text is more similar across unrelated variables than the distinguishing content is within related ones. This asymmetry is the mechanism proof — boilerplate dominates the embedding space.
+
+**Larger models amplify the effect:**
+
+| Metric | MiniLM (384d) | RoBERTa (1024d) |
+|--------|--------------|------------------|
+| Raw mean similarity | 0.4297 | 0.4199 |
+| Enriched mean similarity | 0.6271 | 0.7651 |
+| Enrichment increase | +46% | +82% |
+| Discrimination collapse | 63.7% | 86.5% |
+
+RoBERTa-large is MORE sensitive to semantic smearing, not less. The larger model is better at encoding the shared methodology content that causes smearing. This eliminates the "use a better model" objection.
+
+**Income variable example:** B19131_012E (family type income) vs B25122_081E (housing costs by income) — raw similarity 0.69 (related but distinguishable), enriched similarity **0.96** (approaching the 0.9916 survey question failure baseline). An income variable and a housing variable became virtually identical in embedding space.
+
+**Trajectory toward failure mode:**
+```
+Raw ACS (0.42) -----> Enriched ACS (0.77) -----> Survey Questions (0.99)
+   Good retrieval        Poor retrieval            Failed retrieval
+
+Enrichment moved ACS variables 60% toward the survey question failure baseline.
+```
+
+Source: `talks/fcsm_2026/analysis/semantic_smearing_report.md`, full reproducibility artifacts in `talks/fcsm_2026/analysis/results/`.
+
+**Both corpora confirmed.** Survey questions (0.9916) and enriched variable metadata (0.7651) both exhibit severe semantic homogeneity from the same root cause — standardized statistical language from a single agency about a narrow domain. The concept mapper proved it for questions; the variable metadata analysis now confirms it for outputs.
+
+**Why this matters for the pragmatics thesis:** Embedding-based RAG fails on BOTH the instruments (questions) and the outputs (variables). The entire traditional RAG approach is structurally unsuited to Census data. The pragmatics architecture sidesteps this by not using embeddings at all — retrieval is tag-matching on curated triggers, not cosine similarity over dense vectors.
 
 ### The Real Architectural Insight: RAG Was Solving the Wrong Problem
 
@@ -488,11 +525,14 @@ The LLM handles variable discovery through reasoning. The MCP's job is everythin
 **This reframes the entire architecture.** It's not "RAG failed so we pivoted to pragmatics." It's "RAG was solving the wrong problem." The hard problem was never finding variables — it was knowing what to say about them once you found them. Pragmatics IS the product. Variable discovery is a solved problem that the LLM handles natively.
 
 **Evidence trail:**
-- Survey question semantic smearing: 0.9916 mean pairwise similarity (measured, RoBERTa, 6,987 questions)
-- Variable metadata enrichment: 36,918 variables, 809MB, avg 6,214 chars/variable of mostly-identical boilerplate (profiled)
-- Raw vs enriched comparison: CC task pending (`cc_tasks/2026-02-10_characterize_enriched_universe.md`)
-- v1/v2 MCP operational experience: RAG retrieval unreliable despite 1GB enriched index (observed)
+- Survey question semantic smearing: 0.9916 mean pairwise similarity (measured, RoBERTa-large, 6,987 questions)
+- Variable metadata semantic smearing: 0.7651 enriched vs 0.4199 raw mean similarity, 86.5% discrimination collapse (measured, RoBERTa-large, n=2,500, seed=20260210)
+- Cross-model validation: MiniLM-384 confirms same pattern; larger model amplifies effect (+82% vs +46%)
+- Asymmetric homogenization: cross-group similarity +90%, within-group only +30% — mechanism identified
+- Income-housing pair at 0.96 enriched similarity (approaching 0.9916 failure baseline)
+- v1/v2 MCP operational experience: RAG retrieval unreliable despite 1GB enriched index (observed, now explained)
 - v3 MCP: LLM handles variable discovery natively, MCP provides pragmatics + API execution (working)
+- Full analysis: `talks/fcsm_2026/analysis/semantic_smearing_report.md`
 
 ### Framing for federal audience
 
@@ -617,7 +657,7 @@ Every step is something one person can do in a week. The entire pipeline from "I
 
 ### Q8: "RoBERTa similarity of 0.9916 was for survey questions, not variable metadata. You're extrapolating."
 
-**A:** Correct, and the notes now explicitly separate measured evidence (survey questions, 0.9916) from observed-but-unquantified evidence (variable metadata RAG failure). A formal pairwise similarity analysis of raw vs enriched ACS variable metadata is in progress. However, visual inspection of the enriched metadata tells the story: 36,918 variables, each with ~6,000 characters of enrichment text, ~95% identical boilerplate methodology. The measurement will confirm what inspection shows. The hypothesis is that both corpora exhibit semantic homogeneity from the same root cause — standardized language from a single agency about a narrow domain.
+**A:** We were, and then we measured it. Matched-pairs analysis of 2,500 ACS 5-year variables (RoBERTa-large, seed=20260210): raw metadata mean similarity 0.4199, enriched metadata 0.7651. Enrichment collapsed group discrimination by 86.5%. Cross-group similarity increased 90% while within-group increased only 30% — asymmetric homogenization that erases semantic boundaries. A larger model (RoBERTa vs MiniLM) amplifies the effect, not corrects it. Both corpora — survey questions AND variable metadata — exhibit semantic homogeneity from the same root cause: standardized language from a single agency about a narrow domain. Full analysis with QC checks and reproducibility artifacts: `talks/fcsm_2026/analysis/semantic_smearing_report.md`.
 
 ### Q9: "If pragmatics require human curation, how is this better than just having a statistician answer the question?"
 
@@ -635,7 +675,7 @@ flowchart TD
     
     F1["❌ Attempt 1: RAG over variable metadata\n1GB enriched index, FAISS, concept mappings\nResult: Retrieval can't discriminate"]
     
-    E1["📏 Evidence: Semantic Smearing\nSurvey questions: 0.9916 mean similarity\nEnriched metadata: ~95% identical boilerplate"]
+    E1["📏 Evidence: Semantic Smearing\nSurvey questions: 0.9916 mean similarity\nEnriched metadata: 0.7651 mean, 86.5% discrimination collapse\nLarger models amplify the effect"]
     
     I1["💡 Insight 1: LLM already handles\nvariable discovery through reasoning\nRAG was solving the wrong problem"]
     
@@ -673,7 +713,7 @@ flowchart TD
 
 **Opening (Problem):** "Federal statistical data APIs are machine-readable. Structured, documented, well-maintained. But machine-readable doesn't mean machine-understandable. When an LLM pulls Census data through an API, it gets estimates and margins of error. What it doesn't get is the expert judgment about whether those numbers are fit for the user's purpose."
 
-**The failure (Attempts):** "We tried the obvious approach first — build a RAG system over enriched variable metadata. One gigabyte of enriched descriptions, FAISS indexes, concept mappings. It didn't work. We measured why: in this domain, the semantic space is so compressed that embedding-based retrieval can't discriminate between variables. Mean pairwise similarity of 0.99+ across thousands of items. Every variable sounds like every other variable to an embedding model."
+**The failure (Attempts):** "We tried the obvious approach first — build a RAG system over enriched variable metadata. One gigabyte of enriched descriptions, FAISS indexes, concept mappings. It didn't work. We measured why. Across 2,500 ACS variables, enrichment increased mean pairwise similarity by 82% and collapsed the system's ability to tell topic areas apart by 86.5%. An income variable and a housing variable reached 0.96 similarity — virtually identical to the embedding model. And here's the kicker: a larger, more capable embedding model made it worse, not better. The problem is in the data, not the model."
 
 **The insight (Pivot):** "Two realizations. First, the LLM doesn't need help finding variables — it can reason about table naming conventions and concept descriptions directly. Second, the hard problem was never variable *discovery*. It was knowing what to *say* about the data once you found it. Is this estimate reliable at this geography? Can you compare 2019 to 2023? What does this margin of error actually mean for policy decisions? That's expert judgment, and no amount of retrieval improvement gives you that."
 
