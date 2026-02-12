@@ -164,9 +164,9 @@ census-mcp-server/
 
 | ID | Requirement | Priority |
 |----|------------|----------|
-| FR-PC-001 | System SHALL classify incoming queries by domain, geography type, variable category, and time period | Must |
+| FR-PC-001 | System SHALL provide pragmatic guidance when queried by topic (domain, geography, variable characteristics, time period), where topics are identified by the calling LLM [Updated 2026-02-11 per ADR-003/004] | Must |
 | FR-PC-002 | System SHALL retrieve relevant pragmatic context based on query classification | Must |
-| FR-PC-003 | System SHALL compile retrieved context into natural language and inject it into MCP tool descriptions | Must |
+| FR-PC-003 | System SHALL return pragmatic context as structured data bundled with tool responses, where the calling LLM interprets and applies the guidance [Updated 2026-02-11 per ADR-003/004] | Must |
 | FR-PC-004 | System SHALL respect latitude levels: none-latitude context MUST NOT be overridden by the LLM | Must |
 | FR-PC-005 | System SHALL support pack inheritance (ACS inherits from Census inherits from General) | Must |
 | FR-PC-006 | System SHALL load context from compiled SQLite packs at runtime | Must |

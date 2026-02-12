@@ -67,15 +67,22 @@
 | D.5 | Validate against schema | ✅ |
 | D.6 | ACS General Handbook deep extraction (7 non-obvious findings) — author with provenance | ✅ | ACS-GEN-001 |
 
-**ACS Pack Details (17 contexts):**
-- Population thresholds: 3 (65K rule, 20K supplemental, 5-year coverage)
-- MOE/reliability: 3 (SE formula, CV threshold, precision comparison)
-- Comparison rules: 3 (no 1yr/5yr mixing, overlapping periods, significance testing)
+**ACS Pack Details (35 contexts):**
+- Population thresholds: 5 (65K rule, 20K supplemental, 5-year coverage, tract/BG controls, independent cities)
+- MOE/reliability: 4 (SE formula, CV threshold, precision comparison, covariance bias)
+- Comparison rules: 4 (no 1yr/5yr mixing, overlapping periods, significance testing, 4/5 smoothing, CI anti-pattern)
 - Period estimates: 1 (labeling guidance)
-- Dollar values: 1 (inflation adjustment)
-- Geography: 4 (block groups, PUMAs, congressional districts, boundary dates)
-- Breaks/discontinuities: 1 (2009-2010 population controls)
+- Dollar values: 1 (inflation adjustment, CPI-U-RS limitation)
+- Geography: 5 (block groups, PUMAs, congressional districts, boundary dates, independent cities)
+- Breaks/discontinuities: 3 (2009-2010 population controls)
 - Suppression: 1 (data availability)
+- Disclosure: 3 (swapping, perturbation, thresholds)
+- Equivalence: 2 (geographic, temporal)
+- Group quarters: 2 (inclusion, imputation)
+- Nonresponse: 2 (allocation rates, hot-deck)
+- Residence rules: 1 (current vs usual)
+- Sampling: 1 (non-uniform rates)
+- Independent cities: 1 (county-equivalent)
 
 **Latitude Distribution:**
 - `none`: 5 (hard constraints)
@@ -85,7 +92,7 @@
 
 **Source:** ACS-GEN-001 (Understanding and Using ACS Data handbook, 2020)
 
-**Pending:** 7 additional items from ACS General Handbook deep read (D.6). See `handoffs/2026-02-08_provenance_schema.md` for findings list.
+**D.6 Complete:** 7 non-obvious findings from ACS handbook authored with page-level provenance (2026-02-11). New categories: population_controls, residence_rules, sampling. Strengthened: comparison (CMP-002, CMP-003), dollar_values (DOL-001), margin_of_error (MOE-004).
 
 ---
 
@@ -161,7 +168,7 @@ Depends on: Phase 3 ✅
 | G.2 | Restart Claude Desktop, verify MCP connection healthy | ✅ | VR-002 |
 | G.3 | Test: "What's the median income in Mercer, PA?" (MCP tools live) | ✅ | VR-012 |
 | G.4 | Test: Owsley County, KY poverty — three-model comparison (Sonnet 4, 4.5, Opus 4.6) | ✅ | VR-012 |
-| G.5 | SRS reconciliation: update FR-PC-001, FR-PC-003 to align with ADR-003/004 | ⏳ | ADR-003, ADR-004 |
+| G.5 | SRS reconciliation: update FR-PC-001, FR-PC-003 to align with ADR-003/004 | ✅ | ADR-003, ADR-004 |
 | G.6 | Prompt slimming: removed domain rules, renamed tool, FSS-general language | ✅ | Decision log (prompt specificity) |
 | G.7 | Add independent cities pack content (ACS-IND-001/002/003) | ✅ | VR-011 |
 | G.8 | Document results of manual tests in `docs/verification/` | ✅ (partial) | — |
