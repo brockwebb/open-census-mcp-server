@@ -335,6 +335,8 @@ The system requires a geographic lookup capability for resolving place names to 
 
 ## 6. Quality Requirements
 
+### 6.1 Performance
+
 | ID | Requirement | Priority |
 |----|------------|----------|
 | QR-001 | System SHALL respond to single queries within 10 seconds (excluding Census API latency) | Should |
@@ -342,6 +344,22 @@ The system requires a geographic lookup capability for resolving place names to 
 | QR-003 | System SHALL log all Census API calls for debugging | Must |
 | QR-004 | System SHALL be installable via `pip install` with no system dependencies beyond Python 3.11+ | Must |
 | QR-005 | Compiled packs SHALL be under 10MB each | Should |
+
+### 6.2 Reproducibility & Configuration Management
+
+| ID | Requirement | Priority |
+|----|------------|----------|
+| QR-010 | ALL parameters that affect system outputs SHALL be externalized to configuration files. No output-affecting defaults SHALL be hardcoded in application logic. | Must |
+| QR-011 | Configuration SHALL be managed through a single-source-of-truth config module (`src/census_mcp/config.py`) with environment variable overrides for deployment flexibility. | Must |
+| QR-012 | Configuration module SHALL load `.env` from project root when `python-dotenv` is available, falling back gracefully when it is not. | Must |
+| QR-013 | Data product defaults (year, product type) SHALL be documented with comments indicating release schedule and update procedures. | Must |
+| QR-014 | Evaluation harness SHALL record all configuration state (model strings, default year, default product, system prompts) in output metadata for every run. | Must |
+| QR-015 | Model version strings SHALL be pinned to exact checkpoint identifiers (e.g., `claude-sonnet-4-5-20250929`), never aliases (e.g., `claude-sonnet`). | Must |
+| QR-016 | Evaluation results SHALL be fully reproducible given: (a) the config file state, (b) the pack content hash, (c) the test battery version, and (d) the pinned model strings. | Must |
+
+**Rationale (QR-010):** A hardcoded `default: 2022` in a tool schema silently determined every query result when the caller did not specify year. When ACS 2024 5-year data was released, the system served stale data and claimed it was current — a D6 (Groundedness) failure. Hidden parameters that affect outputs are the most dangerous class of bug because they produce systematically wrong results that look correct. See DEC-4B-019.
+
+**Rationale (QR-016):** Evaluation results that cannot be reproduced have no scientific value. The four components (config, packs, battery, models) fully determine the experimental conditions. Any change to any of these components produces a new experiment, not a reproduction of the old one.
 
 ---
 
@@ -354,6 +372,7 @@ The system requires a geographic lookup capability for resolving place names to 
 | C-003 | Census API is the sole data source for demographic data. No scraping. |
 | C-004 | Pragmatic context is pre-compiled, not generated at query time. |
 | C-005 | The term "crystal" SHALL NOT appear in any code, documentation, or file names. |
+| C-006 | No output-affecting parameter SHALL be hardcoded in application code. All such parameters SHALL reside in `src/census_mcp/config.py` with environment variable overrides. This is a permanent, non-negotiable project rule. See QR-010, DEC-4B-019. |
 
 ---
 
@@ -388,7 +407,7 @@ Test dimensions:
 
 | ID | Requirement | Priority |
 |----|------------|----------|
-| VR-010 | Test battery SHALL weight 80% edge cases, 20% normal queries | Must |
+| VR-010 | Test battery split SHALL be driven by statistical power analysis: sufficient normal queries for equivalence testing (no-harm claim) and sufficient edge cases for superiority testing (treatment effect). Current design: 41% normal / 59% edge cases (n=39 total). See DEC-4B-009. | Must |
 | VR-011 | Test battery SHALL include geographic edge cases: independent cities (St. Louis MO, 38 Virginia independent cities), consolidated city-counties, NYC boroughs, DC as state-equivalent | Must |
 | VR-012 | Test battery SHALL include small-area reliability cases: places under 65K, under 20K, tract-level requests | Must |
 | VR-013 | Test battery SHALL include temporal edge cases: cross-vintage comparison, overlapping ACS periods, break-in-series years, inflation-unadjusted dollar comparisons | Must |

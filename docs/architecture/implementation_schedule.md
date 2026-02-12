@@ -180,33 +180,73 @@ Depends on: Phase 3 ✅
 
 ---
 
-## Phase 4B: Systematic Evaluation ⏳ NOT STARTED
+## Phase 4B: Systematic Evaluation ⏳ IN PROGRESS
 
-Depends on: Phase 4A
+Depends on: Phase 4A ✅
 
-*Objective: Multi-model empirical evaluation for FCSM talk.*
+*Objective: Empirical evaluation for FCSM talk. Does pragmatics improve statistical consultation quality?*
+
+### Experimental Design
+- **Treatment:** Claude + MCP (live tools, live pragmatics, full agent loop)
+- **Control:** Claude alone (same query, no tools, no pragmatics)
+- **Scoring:** CQS rubric applied to paired responses by LLM judge panel + human expert calibration
+- **Judge panel:** Gemini, OpenAI, Claude (3-model panel for inter-rater reliability, bias mitigation)
+- **Human calibration:** Expert-scored subset (10-15 queries) to anchor automated scoring validity
+
+### Build Order
+
+**Step 1: CQS Rubric Definition**
 
 | Task | Description | Status | Traces To |
 |------|-------------|--------|----------|
-| H.1 | API testbench CLI skeleton: launch MCP, execute queries, collect results | ⏳ | VR-001 |
-| H.2 | Health check: verify MCP connection before test run | ⏳ | VR-002 |
-| H.3 | Multi-model backend support (Claude, OpenAI, Gemini) | ⏳ | VR-003, VR-004 |
-| H.4 | Structured result recording (query, model, response, tool calls, pragmatics, latency) | ⏳ | VR-005 |
-| H.5 | Output format: CSV/JSON for CQS scoring | ⏳ | VR-006 |
-| H.6 | Data-driven test definitions (no code changes to add queries) | ⏳ | VR-007 |
-| H.7 | Test battery: 80/20 edge case weighting | ⏳ | VR-010 |
-| H.8 | Geographic edge cases (independent cities, NYC boroughs, DC, consolidated city-counties) | ⏳ | VR-011 |
-| H.9 | Small-area reliability cases (<65K, <20K, tract-level) | ⏳ | VR-012 |
-| H.10 | Temporal edge cases (cross-vintage, overlapping periods, breaks, inflation) | ⏳ | VR-013 |
-| H.11 | Ambiguity cases (Portland, Springfield, Washington) | ⏳ | VR-014 |
-| H.12 | Product-mismatch cases (1-year for small geo, decennial→ACS) | ⏳ | VR-015 |
-| H.13 | Persona-based query variants (8th grader, city planner, journalist) | ⏳ | VR-016 |
-| H.14 | Ensemble prompt testing: same queries across Claude/OpenAI/Gemini/others | ⏳ | VR-003, VR-004 |
-| H.15 | Expert judgment baseline for CQS scoring | ⏳ | — |
-| H.16 | CQS scoring and results documentation | ⏳ | — |
-| H.17 | Bug fixes and pack content expansion from evaluation failures | ⏳ | — |
+| H.1 | Define CQS scoring dimensions and scale | ✅ | VR-006 |
+| H.2 | Draft scoring prompt template for LLM judge panel | ✅ | VR-006 |
+| H.3 | Validate rubric against 3-5 manually scored examples (depends on H.4) | ⏳ | — |
 
-**Exit Criteria:** Documented CQS scores across ≥2 models, with and without pragmatics. Results in `docs/verification/`.
+**Step 2: Test Query Battery**
+
+| Task | Description | Status | Traces To |
+|------|-------------|--------|----------|
+| H.4 | Data-driven test definitions (YAML/JSON, no code changes to add queries) | ⏳ | VR-007 |
+| H.5 | Test battery: 80/20 edge case weighting | ⏳ | VR-010 |
+| H.6 | Geographic edge cases (independent cities, NYC boroughs, DC, consolidated city-counties) | ⏳ | VR-011 |
+| H.7 | Small-area reliability cases (<65K, <20K, tract-level) | ⏳ | VR-012 |
+| H.8 | Temporal edge cases (cross-vintage, overlapping periods, breaks, inflation) | ⏳ | VR-013 |
+| H.9 | Ambiguity cases (Portland, Springfield, Washington) | ⏳ | VR-014 |
+| H.10 | Product-mismatch cases (1-year for small geo, decennial→ACS) | ⏳ | VR-015 |
+| H.11 | Persona-based query variants (8th grader, city planner, journalist) | ⏳ | VR-016 |
+
+**Step 3: Test Harness**
+
+| Task | Description | Status | Traces To |
+|------|-------------|--------|----------|
+| H.12 | MCP client: programmatic subprocess launch + stdio JSON-RPC connection | ⏳ | VR-001 |
+| H.13 | Health check: verify MCP connection before test run | ⏳ | VR-002 |
+| H.14 | Agent loop: Claude API tool_use → MCP tool execution → tool_result → final response | ⏳ | VR-001 |
+| H.15 | Control path: Claude API same query, no tools, no system prompt augmentation | ⏳ | VR-001 |
+| H.16 | Structured result recording (query, condition, model, response, tool calls, pragmatics returned, latency) | ⏳ | VR-005 |
+| H.17 | Output format: JSON lines for scoring pipeline | ⏳ | VR-006 |
+
+**Step 4: Judge Prompt & Scoring Pipeline**
+
+| Task | Description | Status | Traces To |
+|------|-------------|--------|----------|
+| H.18 | Scoring prompt: domain-specific rubric for LLM judges (Gemini, OpenAI, Claude) | ⏳ | VR-006 |
+| H.19 | Judge harness: send paired responses to 3 models, collect dimension scores | ⏳ | VR-003, VR-004 |
+| H.20 | Inter-rater agreement calculation (Krippendorff's α or Fleiss' κ) | ⏳ | — |
+| H.21 | Human calibration set: expert-scored 10-15 queries, compare to LLM judge scores | ⏳ | — |
+
+**Step 5: Run & Analyze**
+
+| Task | Description | Status | Traces To |
+|------|-------------|--------|----------|
+| H.22 | Execute full battery: control + treatment for all queries | ⏳ | — |
+| H.23 | Execute judge panel scoring on all paired results | ⏳ | — |
+| H.24 | Aggregate results: CQS by dimension, treatment effect, agreement stats | ⏳ | — |
+| H.25 | Bug fixes and pack content expansion from evaluation failures | ⏳ | — |
+| H.26 | Results documentation in `docs/verification/` | ⏳ | — |
+
+**Exit Criteria:** Documented CQS scores for Claude with vs without pragmatics. LLM judge panel + human calibration. Results in `docs/verification/`.
 
 **Deliverable:** Empirical evaluation suitable for FCSM talk.
 

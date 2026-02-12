@@ -31,21 +31,30 @@ from census_mcp.api.census_client import (
     CensusAPIError,
     CensusInvalidQueryError,
 )
+from census_mcp.config import (
+    DEFAULT_YEAR,
+    DEFAULT_PRODUCT,
+    SUPPORTED_PRODUCTS,
+    PACKS_DIR,
+    LOG_LEVEL,
+    LOG_FILE,
+    SERVER_NAME,
+    CENSUS_API_KEY,
+)
 
 # Configure logging
-log_level = os.environ.get("LOG_LEVEL", "WARNING")
 logging.basicConfig(
-    level=getattr(logging, log_level),
+    level=getattr(logging, LOG_LEVEL),
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     handlers=[
-        logging.FileHandler("/tmp/census-mcp.log"),
+        logging.FileHandler(LOG_FILE),
         logging.StreamHandler(),
     ],
 )
 logger = logging.getLogger(__name__)
 
 # Initialize server
-server = Server("census-mcp")
+server = Server(SERVER_NAME)
 
 # Lazy-initialized context
 _loader: PackLoader | None = None
@@ -57,12 +66,11 @@ def _ensure_initialized():
     """Initialize server dependencies on first use."""
     global _loader, _retriever, _census_client
     if _loader is None:
-        packs_dir = os.environ.get("PACKS_DIR", "packs")
-        _loader = PackLoader(packs_dir)
+        _loader = PackLoader(PACKS_DIR)
         _loader.load_pack("acs")
         _retriever = PragmaticsRetriever(_loader)
         _census_client = CensusClient()
-        logger.info(f"Census MCP initialized. Packs loaded from {packs_dir}")
+        logger.info(f"Census MCP initialized. Packs loaded from {PACKS_DIR}")
 
 
 # =============================================================================
@@ -143,13 +151,13 @@ Always review the pragmatics field before interpreting results.""",
                     },
                     "year": {
                         "type": "integer",
-                        "description": "Data year (default 2022)",
-                        "default": 2022,
+                        "description": f"Data year (default {DEFAULT_YEAR})",
+                        "default": DEFAULT_YEAR,
                     },
                     "product": {
                         "type": "string",
-                        "description": '"acs5" or "acs1" (default "acs5")',
-                        "default": "acs5",
+                        "description": f'"{DEFAULT_PRODUCT}" or "acs1" (default "{DEFAULT_PRODUCT}")',
+                        "default": DEFAULT_PRODUCT,
                     },
                 },
                 "required": ["variables", "state"],
@@ -175,13 +183,13 @@ keyword matching. Results may be incomplete.""",
                     },
                     "year": {
                         "type": "integer",
-                        "description": "Data year (default 2022)",
-                        "default": 2022,
+                        "description": f"Data year (default {DEFAULT_YEAR})",
+                        "default": DEFAULT_YEAR,
                     },
                     "product": {
                         "type": "string",
-                        "description": '"acs5" or "acs1" (default "acs5")',
-                        "default": "acs5",
+                        "description": f'"{DEFAULT_PRODUCT}" or "acs1" (default "{DEFAULT_PRODUCT}")',
+                        "default": DEFAULT_PRODUCT,
                     },
                 },
                 "required": ["concept"],
@@ -225,8 +233,8 @@ async def call_tool_handler(name: str, arguments: dict) -> list[types.TextConten
             county = arguments.get("county")
             place = arguments.get("place")
             tract = arguments.get("tract")
-            year = arguments.get("year", 2022)
-            product = arguments.get("product", "acs5")
+            year = arguments.get("year", DEFAULT_YEAR)
+            product = arguments.get("product", DEFAULT_PRODUCT)
 
             # Validation: hard stops on impossible requests
             if product == "acs1" and tract is not None:
@@ -252,11 +260,11 @@ async def call_tool_handler(name: str, arguments: dict) -> list[types.TextConten
                     }),
                 )]
 
-            if product not in ("acs5", "acs1"):
+            if product not in SUPPORTED_PRODUCTS:
                 return [types.TextContent(
                     type="text",
                     text=json.dumps({
-                        "error": f"Invalid product '{product}'. Must be 'acs5' or 'acs1'."
+                        "error": f"Invalid product '{product}'. Must be one of {SUPPORTED_PRODUCTS}."
                     }),
                 )]
 
@@ -329,8 +337,8 @@ async def call_tool_handler(name: str, arguments: dict) -> list[types.TextConten
     elif name == "explore_variables":
         try:
             concept = arguments["concept"]
-            year = arguments.get("year", 2022)
-            product = arguments.get("product", "acs5")
+            year = arguments.get("year", DEFAULT_YEAR)
+            product = arguments.get("product", DEFAULT_PRODUCT)
 
             all_variables = await _census_client.get_variables(year=year, product=product)
 
