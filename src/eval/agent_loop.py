@@ -48,7 +48,7 @@ class AgentLoop:
         mcp_client: MCPClient,
         model: str = "claude-sonnet-4-5-20250929",
         max_tokens: int = 2048,
-        max_tool_rounds: int = 5,
+        max_tool_rounds: int = 20,  # Increased from 5 — Census queries need 6-8 rounds
         api_key: Optional[str] = None,
     ):
         """Initialize agent loop.
@@ -107,6 +107,8 @@ class AgentLoop:
             output_tokens=response.usage.output_tokens,
             timestamp=datetime.utcnow(),
             tools_offered=False,
+            tool_rounds_used=0,
+            tool_rounds_exhausted=False,
         )
 
     async def run_treatment(self, query: str, query_id: str) -> ResponseRecord:
@@ -220,6 +222,27 @@ class AgentLoop:
             messages.append({"role": "assistant", "content": assistant_content})
             messages.append({"role": "user", "content": tool_results})
 
+        # Check if loop exhausted without final answer
+        tool_rounds_exhausted = False
+        if rounds >= self.max_tool_rounds and response.stop_reason == "tool_use":
+            # Model wanted more tool calls but hit the limit. Force synthesis.
+            tool_rounds_exhausted = True
+            synthesis_response = await self.client.messages.create(
+                model=self.model,
+                max_tokens=self.max_tokens,
+                system=TREATMENT_SYSTEM_PROMPT,
+                messages=messages + [
+                    {"role": "user", "content": [{"type": "text", "text":
+                        "You have reached the maximum number of tool calls. "
+                        "Please provide your best answer based on the data "
+                        "you have already retrieved."}]}
+                ],
+                # NO tools parameter — forces text-only response
+            )
+            total_input_tokens += synthesis_response.usage.input_tokens
+            total_output_tokens += synthesis_response.usage.output_tokens
+            response = synthesis_response  # Use this for final text extraction
+
         # Extract final text from last response
         response_text = ""
         for block in response.content:
@@ -241,6 +264,8 @@ class AgentLoop:
             output_tokens=total_output_tokens,
             timestamp=datetime.utcnow(),
             tools_offered=True,
+            tool_rounds_used=rounds,
+            tool_rounds_exhausted=tool_rounds_exhausted,
         )
 
     def _extract_context_ids(self, tool_result: dict) -> set[str]:
