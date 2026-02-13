@@ -9,6 +9,9 @@ knowledge-base/model_cache/
 # Compiled packs (build artifacts)
 packs/*.db
 
+# Evaluation results (large JSONL files, expensive to regenerate but not tracked)
+results/
+
 # Working directories (gitignored by convention)
 handoffs/
 cc_tasks/
