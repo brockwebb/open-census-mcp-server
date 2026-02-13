@@ -229,3 +229,4 @@
 | DEC-4B-018 | Pin exact model strings | Reproducibility hygiene |
 | DEC-4B-019 | No hardcoded defaults | Auditability vs convenience |
 | DEC-4B-020 | Mandatory grounding even for clarification | Tool compliance vs model autonomy |
+| DEC-4B-021 | 6 judge passes, 234 calls/judge | Measurement precision vs rate limits vs statistical power |
