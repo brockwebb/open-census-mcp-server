@@ -10,6 +10,39 @@ import httpx
 logger = logging.getLogger(__name__)
 
 
+# Product-to-Dataset mapping
+PRODUCT_TO_DATASET = {
+    "acs5": "acs/acs5",
+    "acs1": "acs/acs1",
+    "acs5/profile": "acs/acs5/profile",
+    "acs5/subject": "acs/acs5/subject",
+    "acs1/profile": "acs/acs1/profile",
+    "acs1/subject": "acs/acs1/subject",
+    "sf1": "dec/sf1",
+    "dhc": "dec/dhc",
+    "pl": "dec/pl",
+    "pep": "pep/population",
+}
+
+
+def resolve_dataset(product: str) -> str:
+    """Resolve shorthand product code to Census API dataset path.
+
+    Args:
+        product: Shorthand product code (e.g., "acs5") or full dataset path
+
+    Returns:
+        Full dataset path (e.g., "acs/acs5")
+
+    Examples:
+        >>> resolve_dataset("acs5")
+        "acs/acs5"
+        >>> resolve_dataset("acs/acs5")  # passthrough if already full path
+        "acs/acs5"
+    """
+    return PRODUCT_TO_DATASET.get(product, product)
+
+
 # Exceptions
 class CensusAPIError(Exception):
     """Base exception for Census API errors."""
@@ -245,18 +278,20 @@ class CensusClient:
         year: int,
     ) -> dict:
         """Get variable metadata for a dataset.
-        
+
         Args:
-            dataset: Dataset name (e.g., "acs/acs5")
+            dataset: Dataset name (e.g., "acs5" or "acs/acs5")
             year: Data year
-            
+
         Returns:
             Variable metadata dictionary
-            
+
         Raises:
             CensusAPIError: On API errors
         """
-        url = f"{self.BASE_URL}/{year}/{dataset}/variables.json"
+        # Resolve shorthand product codes to full dataset paths
+        dataset_path = resolve_dataset(dataset)
+        url = f"{self.BASE_URL}/{year}/{dataset_path}/variables.json"
         
         # Variable endpoint doesn't use query params the same way
         response = await self.client.get(url)

@@ -340,7 +340,7 @@ async def call_tool_handler(name: str, arguments: dict) -> list[types.TextConten
             year = arguments.get("year", DEFAULT_YEAR)
             product = arguments.get("product", DEFAULT_PRODUCT)
 
-            all_variables = await _census_client.get_variables(year=year, product=product)
+            all_variables = await _census_client.get_variables(year=year, dataset=product)
 
             concept_lower = concept.lower()
             keywords = concept_lower.split()
