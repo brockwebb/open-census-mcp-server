@@ -1,0 +1,14 @@
+ANSWER KEY — DO NOT SHARE WITH RATERS
+==================================================
+
+Random seed: 42
+
+NORM-001: A=treatment, B=control
+NORM-008: A=treatment, B=control
+NORM-015: A=control, B=treatment
+GEO-006: A=treatment, B=control
+SML-001: A=treatment, B=control
+TMP-002: A=treatment, B=control
+MIS-002: A=treatment, B=control
+AMB-002: A=treatment, B=control
+PER-001a: A=control, B=treatment

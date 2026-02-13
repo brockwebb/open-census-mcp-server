@@ -25,6 +25,7 @@ class ResponseRecord(BaseModel):
     input_tokens: int
     output_tokens: int
     timestamp: datetime
+    tools_offered: bool = False  # True when tools were passed to the API
 
 
 class QueryPair(BaseModel):

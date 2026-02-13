@@ -29,7 +29,12 @@ Always provide:
 - Appropriate caveats about fitness-for-use
 
 If the data is unavailable or unreliable for the stated purpose, say so and explain why.
-Recommend alternatives when possible."""
+Recommend alternatives when possible.
+
+IMPORTANT: ALWAYS call get_methodology_guidance first, even when you plan to ask for
+clarification. Use the guidance to provide informed clarification that helps the user
+understand what data is available and what limitations apply to their request.
+Grounding first produces better questions."""
 
 CONTROL_SYSTEM_PROMPT = """You are a helpful assistant answering questions about U.S. Census data.
 Provide accurate, well-sourced information."""
@@ -101,6 +106,7 @@ class AgentLoop:
             input_tokens=response.usage.input_tokens,
             output_tokens=response.usage.output_tokens,
             timestamp=datetime.utcnow(),
+            tools_offered=False,
         )
 
     async def run_treatment(self, query: str, query_id: str) -> ResponseRecord:
@@ -234,6 +240,7 @@ class AgentLoop:
             input_tokens=total_input_tokens,
             output_tokens=total_output_tokens,
             timestamp=datetime.utcnow(),
+            tools_offered=True,
         )
 
     def _extract_context_ids(self, tool_result: dict) -> set[str]:

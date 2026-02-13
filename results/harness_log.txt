@@ -1,0 +1,694 @@
+2026-02-12 18:44:00,323 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 18:44:20,578 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 18:44:45,181 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 18:44:47,765 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 18:44:52,854 - __main__ - ERROR - Census API error: Invalid query parameters: error: unknown variable 'S1501_C02_015E'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 289, in call_tool_handler
+    data_response = await _census_client.get_acs5(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/api/census_client.py", line 201, in get_acs5
+    return await self._request(url, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/api/census_client.py", line 111, in _request
+    raise CensusInvalidQueryError(f"Invalid query parameters: {response.text}")
+census_mcp.api.census_client.CensusInvalidQueryError: Invalid query parameters: error: unknown variable 'S1501_C02_015E'
+2026-02-12 18:45:10,150 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 18:45:12,509 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 18:45:16,523 - __main__ - ERROR - Census API error: Invalid query parameters: error: unknown variable 'S1701_C03_001E'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 289, in call_tool_handler
+    data_response = await _census_client.get_acs5(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/api/census_client.py", line 201, in get_acs5
+    return await self._request(url, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/api/census_client.py", line 111, in _request
+    raise CensusInvalidQueryError(f"Invalid query parameters: {response.text}")
+census_mcp.api.census_client.CensusInvalidQueryError: Invalid query parameters: error: unknown variable 'S1701_C03_001E'
+2026-02-12 18:45:32,439 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 18:45:34,730 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 18:46:01,153 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 18:46:03,651 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 18:46:38,198 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 18:46:39,860 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 18:47:08,501 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 18:47:36,596 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 18:47:38,861 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 18:47:40,897 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 18:47:46,152 - __main__ - ERROR - Census API error: Invalid query parameters: error: unknown variable 'S2701_C03_001E'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 289, in call_tool_handler
+    data_response = await _census_client.get_acs5(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/api/census_client.py", line 201, in get_acs5
+    return await self._request(url, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/api/census_client.py", line 111, in _request
+    raise CensusInvalidQueryError(f"Invalid query parameters: {response.text}")
+census_mcp.api.census_client.CensusInvalidQueryError: Invalid query parameters: error: unknown variable 'S2701_C03_001E'
+2026-02-12 18:48:01,679 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 18:48:30,044 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 18:48:54,396 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 18:48:56,631 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 18:49:27,707 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 18:49:31,278 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 18:49:59,895 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 18:50:01,997 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 18:50:28,531 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 18:50:53,209 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 18:50:55,654 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 18:51:02,525 - __main__ - ERROR - Census API error: Invalid query parameters: error: unknown variable 'S1701_C03_001E'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 289, in call_tool_handler
+    data_response = await _census_client.get_acs5(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/api/census_client.py", line 201, in get_acs5
+    return await self._request(url, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/api/census_client.py", line 111, in _request
+    raise CensusInvalidQueryError(f"Invalid query parameters: {response.text}")
+census_mcp.api.census_client.CensusInvalidQueryError: Invalid query parameters: error: unknown variable 'S1701_C03_001E'
+2026-02-12 18:51:02,601 - __main__ - ERROR - Census API error: Invalid query parameters: error: unknown variable 'S1701_C03_001E'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 289, in call_tool_handler
+    data_response = await _census_client.get_acs5(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/api/census_client.py", line 201, in get_acs5
+    return await self._request(url, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/api/census_client.py", line 111, in _request
+    raise CensusInvalidQueryError(f"Invalid query parameters: {response.text}")
+census_mcp.api.census_client.CensusInvalidQueryError: Invalid query parameters: error: unknown variable 'S1701_C03_001E'
+2026-02-12 18:51:48,816 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 18:51:51,878 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 18:52:28,549 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 18:52:57,729 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 18:53:00,583 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 18:53:34,665 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 18:54:09,624 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 18:54:12,776 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 18:54:18,811 - __main__ - ERROR - Census API error: Invalid query parameters: error: unknown variable 'S1701_C03_001E'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 289, in call_tool_handler
+    data_response = await _census_client.get_acs5(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/api/census_client.py", line 201, in get_acs5
+    return await self._request(url, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/api/census_client.py", line 111, in _request
+    raise CensusInvalidQueryError(f"Invalid query parameters: {response.text}")
+census_mcp.api.census_client.CensusInvalidQueryError: Invalid query parameters: error: unknown variable 'S1701_C03_001E'
+2026-02-12 18:54:39,405 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 18:54:42,378 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 18:55:40,951 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 18:56:23,052 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 18:56:25,462 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 18:56:33,570 - __main__ - ERROR - Census API error: Invalid query parameters: error: unknown variable 'S2701_C01_001E'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 289, in call_tool_handler
+    data_response = await _census_client.get_acs5(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/api/census_client.py", line 201, in get_acs5
+    return await self._request(url, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/api/census_client.py", line 111, in _request
+    raise CensusInvalidQueryError(f"Invalid query parameters: {response.text}")
+census_mcp.api.census_client.CensusInvalidQueryError: Invalid query parameters: error: unknown variable 'S2701_C01_001E'
+2026-02-12 18:56:33,607 - __main__ - ERROR - Census API error: Invalid query parameters: error: unknown variable 'S2701_C01_001E'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 289, in call_tool_handler
+    data_response = await _census_client.get_acs5(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/api/census_client.py", line 201, in get_acs5
+    return await self._request(url, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/api/census_client.py", line 111, in _request
+    raise CensusInvalidQueryError(f"Invalid query parameters: {response.text}")
+census_mcp.api.census_client.CensusInvalidQueryError: Invalid query parameters: error: unknown variable 'S2701_C01_001E'
+2026-02-12 18:56:55,037 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 18:56:57,461 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 18:57:29,788 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 18:57:32,007 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 18:58:15,115 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 18:58:18,046 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 18:58:18,055 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 18:59:42,892 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 19:00:21,947 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 19:01:24,304 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 19:01:24,310 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+2026-02-12 19:01:24,314 - __main__ - ERROR - Error in explore_variables: CensusClient.get_variables() got an unexpected keyword argument 'product'
+Traceback (most recent call last):
+  File "/Users/brock/Documents/GitHub/census-mcp-server/src/census_mcp/server.py", line 343, in call_tool_handler
+    all_variables = await _census_client.get_variables(year=year, product=product)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: CensusClient.get_variables() got an unexpected keyword argument 'product'
+============================================================
+CQS Test Harness - Phase 4B Evaluation
+============================================================
+
+Starting MCP server...
+Running health check...
+✓ MCP server healthy
+
+Running all 39 queries
+Queries remaining: 39
+
+[1/39] NORM-001: What is the total population of California according to the ...
+  Running CONTROL...
+  ✓ Control complete (4.9s, 656 chars)
+  Running TREATMENT...
+  ✓ Treatment complete (11.8s, 1052 chars, 2 tool calls, 16 pragmatics)
+  ✓ Saved to /Users/brock/Documents/GitHub/census-mcp-server/results/cqs_responses_20260212_184334.jsonl
+
+[2/39] NORM-002: What is the median household income in Cook County, Illinois...
+  Running CONTROL...
+  ✓ Control complete (6.6s, 1174 chars)
+  Running TREATMENT...
+  ✓ Treatment complete (15.7s, 1415 chars, 2 tool calls, 20 pragmatics)
+  ✓ Saved to /Users/brock/Documents/GitHub/census-mcp-server/results/cqs_responses_20260212_184334.jsonl
+
+[3/39] NORM-003: How many housing units are in Harris County, Texas?...
+  Running CONTROL...
+  ✓ Control complete (4.8s, 705 chars)
+  Running TREATMENT...
+  ✓ Treatment complete (18.6s, 1256 chars, 3 tool calls, 20 pragmatics)
+  ✓ Saved to /Users/brock/Documents/GitHub/census-mcp-server/results/cqs_responses_20260212_184334.jsonl
+
+[4/39] NORM-004: What percentage of people in New York City have a bachelor's...
+  Running CONTROL...
+  ✓ Control complete (5.9s, 888 chars)
+  Running TREATMENT...
+  ✓ Treatment complete (18.0s, 62 chars, 4 tool calls, 23 pragmatics)
+  ✓ Saved to /Users/brock/Documents/GitHub/census-mcp-server/results/cqs_responses_20260212_184334.jsonl
+
+[5/39] NORM-005: What is the poverty rate in Maricopa County, Arizona?...
+  Running CONTROL...
+  ✓ Control complete (7.0s, 1151 chars)
+  Running TREATMENT...
+  ✓ Treatment complete (16.1s, 56 chars, 4 tool calls, 16 pragmatics)
+  ✓ Saved to /Users/brock/Documents/GitHub/census-mcp-server/results/cqs_responses_20260212_184334.jsonl
+
+[6/39] NORM-006: What percentage of households in Miami-Dade County rent rath...
+  Running CONTROL...
+  ✓ Control complete (6.3s, 967 chars)
+  Running TREATMENT...
+  ✓ Treatment complete (20.8s, 1410 chars, 2 tool calls, 26 pragmatics)
+  ✓ Saved to /Users/brock/Documents/GitHub/census-mcp-server/results/cqs_responses_20260212_184334.jsonl
+
+[7/39] NORM-007: How many people in King County, Washington are 65 or older?...
+  Running CONTROL...
+  ✓ Control complete (7.3s, 1070 chars)
+  Running TREATMENT...
+  ✓ Treatment complete (30.2s, 1853 chars, 3 tool calls, 23 pragmatics)
+  ✓ Saved to /Users/brock/Documents/GitHub/census-mcp-server/results/cqs_responses_20260212_184334.jsonl
+
+[8/39] NORM-008: What is the unemployment rate in Wayne County, Michigan?...
+  Running CONTROL...
+  ✓ Control complete (7.5s, 1254 chars)
+  Running TREATMENT...
+  ✓ Treatment complete (23.6s, 1981 chars, 2 tool calls, 16 pragmatics)
+  ✓ Saved to /Users/brock/Documents/GitHub/census-mcp-server/results/cqs_responses_20260212_184334.jsonl
+
+[9/39] NORM-009: What is the median age in Travis County, Texas?...
+  Running CONTROL...
+  ✓ Control complete (6.9s, 1077 chars)
+  Running TREATMENT...
+  ✓ Treatment complete (19.8s, 1316 chars, 3 tool calls, 16 pragmatics)
+  ✓ Saved to /Users/brock/Documents/GitHub/census-mcp-server/results/cqs_responses_20260212_184334.jsonl
+
+[10/39] NORM-010: What percentage of people in Hennepin County, Minnesota have...
+  Running CONTROL...
+  ✓ Control complete (8.2s, 1442 chars)
+  Running TREATMENT...
+  ✓ Treatment complete (16.4s, 51 chars, 3 tool calls, 16 pragmatics)
+  ✓ Saved to /Users/brock/Documents/GitHub/census-mcp-server/results/cqs_responses_20260212_184334.jsonl
+
+[11/39] NORM-011: How many people in Fulton County, Georgia were born in anoth...
+  Running CONTROL...
+  ✓ Control complete (7.9s, 1088 chars)
+  Running TREATMENT...
+  ✓ Treatment complete (22.2s, 1642 chars, 3 tool calls, 16 pragmatics)
+  ✓ Saved to /Users/brock/Documents/GitHub/census-mcp-server/results/cqs_responses_20260212_184334.jsonl
+
+[12/39] NORM-012: What is the average household size in Salt Lake County, Utah...
+  Running CONTROL...
+  ✓ Control complete (6.7s, 1097 chars)
+  Running TREATMENT...
+  ✓ Treatment complete (16.0s, 1338 chars, 2 tool calls, 20 pragmatics)
+  ✓ Saved to /Users/brock/Documents/GitHub/census-mcp-server/results/cqs_responses_20260212_184334.jsonl
+
+[13/39] NORM-013: What percentage of workers in Alameda County, California com...
+  Running CONTROL...
+  ✓ Control complete (8.3s, 1247 chars)
+  Running TREATMENT...
+  ✓ Treatment complete (25.8s, 1774 chars, 3 tool calls, 23 pragmatics)
+  ✓ Saved to /Users/brock/Documents/GitHub/census-mcp-server/results/cqs_responses_20260212_184334.jsonl
+
+[14/39] NORM-014: How many single-mother households are there in Philadelphia ...
+  Running CONTROL...
+  ✓ Control complete (7.3s, 1242 chars)
+  Running TREATMENT...
+  ✓ Treatment complete (27.3s, 1893 chars, 3 tool calls, 23 pragmatics)
+  ✓ Saved to /Users/brock/Documents/GitHub/census-mcp-server/results/cqs_responses_20260212_184334.jsonl
+
+[15/39] NORM-015: What is the median gross rent in Denver County, Colorado?...
+  Running CONTROL...
+  ✓ Control complete (5.7s, 1004 chars)
+  Running TREATMENT...
+  ✓ Treatment complete (22.6s, 1548 chars, 3 tool calls, 20 pragmatics)
+  ✓ Saved to /Users/brock/Documents/GitHub/census-mcp-server/results/cqs_responses_20260212_184334.jsonl
+
+[16/39] GEO-001: What is the median household income in Alexandria, Virginia?...
+  Running CONTROL...
+  ✓ Control complete (5.6s, 1103 chars)
+  Running TREATMENT...
+  ✓ Treatment complete (15.6s, 1385 chars, 2 tool calls, 20 pragmatics)
+  ✓ Saved to /Users/brock/Documents/GitHub/census-mcp-server/results/cqs_responses_20260212_184334.jsonl
+
+[17/39] GEO-002: Compare poverty rates in the Bronx and Manhattan....
+  Running CONTROL...
+  ✓ Control complete (9.1s, 1438 chars)
+  Running TREATMENT...
+  ✓ Treatment complete (23.4s, 115 chars, 7 tool calls, 30 pragmatics)
+  ✓ Saved to /Users/brock/Documents/GitHub/census-mcp-server/results/cqs_responses_20260212_184334.jsonl
+
+[18/39] GEO-003: What is the population of Washington?...
+  Running CONTROL...
+  ✓ Control complete (4.4s, 711 chars)
+  Running TREATMENT...
+  ✓ Treatment complete (5.9s, 148 chars, 1 tool calls, 16 pragmatics)
+  ✓ Saved to /Users/brock/Documents/GitHub/census-mcp-server/results/cqs_responses_20260212_184334.jsonl
+
+[19/39] GEO-004: What is the median income in Portland?...
+  Running CONTROL...
+  ✓ Control complete (6.5s, 1122 chars)
+  Running TREATMENT...
+  ✓ Treatment complete (7.9s, 829 chars, 1 tool calls, 19 pragmatics)
+  ✓ Saved to /Users/brock/Documents/GitHub/census-mcp-server/results/cqs_responses_20260212_184334.jsonl
+
+[20/39] GEO-005: What is the homeownership rate in Nashville, Tennessee?...
+  Running CONTROL...
+  ✓ Control complete (7.4s, 1175 chars)
+  Running TREATMENT...
+  ✓ Treatment complete (29.6s, 2194 chars, 3 tool calls, 26 pragmatics)
+  ✓ Saved to /Users/brock/Documents/GitHub/census-mcp-server/results/cqs_responses_20260212_184334.jsonl
+
+[21/39] GEO-006: Give me tract-level median income data for rural Loving Coun...
+  Running CONTROL...
+  ✓ Control complete (10.0s, 1448 chars)
+  Running TREATMENT...
+  ✓ Treatment complete (22.8s, 2413 chars, 2 tool calls, 28 pragmatics)
+  ✓ Saved to /Users/brock/Documents/GitHub/census-mcp-server/results/cqs_responses_20260212_184334.jsonl
+
+[22/39] GEO-007: What is the unemployment rate in Washington, DC?...
+  Running CONTROL...
+  ✓ Control complete (5.9s, 1171 chars)
+  Running TREATMENT...
+  ✓ Treatment complete (29.3s, 2091 chars, 3 tool calls, 18 pragmatics)
+  ✓ Saved to /Users/brock/Documents/GitHub/census-mcp-server/results/cqs_responses_20260212_184334.jsonl
+
+[23/39] SML-001: What is the median household income in Kalawao County, Hawai...
+  Running CONTROL...
+  ✓ Control complete (8.6s, 1380 chars)
+  Running TREATMENT...
+  ✓ Treatment complete (25.2s, 2039 chars, 3 tool calls, 23 pragmatics)
+  ✓ Saved to /Users/brock/Documents/GitHub/census-mcp-server/results/cqs_responses_20260212_184334.jsonl
+
+[24/39] SML-002: Compare the poverty rates across all census tracts in rural ...
+  Running CONTROL...
+  ✓ Control complete (9.4s, 1477 chars)
+  Running TREATMENT...
+  ✓ Treatment complete (22.0s, 254 chars, 4 tool calls, 33 pragmatics)
+  ✓ Saved to /Users/brock/Documents/GitHub/census-mcp-server/results/cqs_responses_20260212_184334.jsonl
+
+[25/39] SML-003: What is the income of Asian Americans in Boise, Idaho?...
+  Running CONTROL...
+  ✓ Control complete (7.7s, 1323 chars)
+  Running TREATMENT...
+  ✓ Treatment complete (26.7s, 2013 chars, 2 tool calls, 28 pragmatics)
+  ✓ Saved to /Users/brock/Documents/GitHub/census-mcp-server/results/cqs_responses_20260212_184334.jsonl
+
+[26/39] SML-004: I need ACS 1-year data for Gallatin County, Montana....
+  Running CONTROL...
+  ✓ Control complete (8.1s, 1365 chars)
+  Running TREATMENT...
+  ✓ Treatment complete (12.0s, 1286 chars, 1 tool calls, 16 pragmatics)
+  ✓ Saved to /Users/brock/Documents/GitHub/census-mcp-server/results/cqs_responses_20260212_184334.jsonl
+
+[27/39] TMP-001: How has median household income in Philadelphia changed from...
+  Running CONTROL...
+  ✓ Control complete (7.2s, 1180 chars)
+  Running TREATMENT...
+  ✓ Treatment complete (41.2s, 2953 chars, 5 tool calls, 23 pragmatics)
+  ✓ Saved to /Users/brock/Documents/GitHub/census-mcp-server/results/cqs_responses_20260212_184334.jsonl
+
+[28/39] TMP-002: Compare the 2019 and 2020 ACS estimates for health insurance...
+  Running CONTROL...
+  ✓ Control complete (8.3s, 1320 chars)
+  Running TREATMENT...
+  ✓ Treatment complete (25.1s, 85 chars, 7 tool calls, 18 pragmatics)
+  ✓ Saved to /Users/brock/Documents/GitHub/census-mcp-server/results/cqs_responses_20260212_184334.jsonl
+
+[29/39] TMP-003: Has the percentage of people working from home in Denver inc...
+  Running CONTROL...
+  ✓ Control complete (7.1s, 1101 chars)
+  Running TREATMENT...
+  ✓ Treatment complete (25.2s, 1699 chars, 3 tool calls, 25 pragmatics)
+  ✓ Saved to /Users/brock/Documents/GitHub/census-mcp-server/results/cqs_responses_20260212_184334.jsonl
+
+[30/39] TMP-004: What was the median home value in San Francisco in 2005 doll...
+  Running CONTROL...
+  ✓ Control complete (7.1s, 1045 chars)
+  Running TREATMENT...
+  ✓ Treatment complete (17.6s, 277 chars, 3 tool calls, 26 pragmatics)
+  ✓ Saved to /Users/brock/Documents/GitHub/census-mcp-server/results/cqs_responses_20260212_184334.jsonl
+
+[31/39] AMB-001: How many families are in poverty in Springfield?...
+  Running CONTROL...
+  ✓ Control complete (3.9s, 761 chars)
+  Running TREATMENT...
+  ✓ Treatment complete (3.8s, 681 chars, 0 tool calls, 0 pragmatics)
+  ✓ Saved to /Users/brock/Documents/GitHub/census-mcp-server/results/cqs_responses_20260212_184334.jsonl
+
+[32/39] AMB-002: What's the income gap between whites and minorities in my ar...
+  Running CONTROL...
+  ✓ Control complete (5.4s, 979 chars)
+  Running TREATMENT...
+  ✓ Treatment complete (4.7s, 705 chars, 0 tool calls, 0 pragmatics)
+  ✓ Saved to /Users/brock/Documents/GitHub/census-mcp-server/results/cqs_responses_20260212_184334.jsonl
+
+[33/39] AMB-003: Is the economy better in Texas or California?...
+  Running CONTROL...
+  ✓ Control complete (8.1s, 1482 chars)
+  Running TREATMENT...
+  ✓ Treatment complete (23.4s, 91 chars, 5 tool calls, 26 pragmatics)
+  ✓ Saved to /Users/brock/Documents/GitHub/census-mcp-server/results/cqs_responses_20260212_184334.jsonl
+
+[34/39] MIS-001: Give me ACS 1-year estimates for Sioux County, Nebraska....
+  Running CONTROL...
+  ✓ Control complete (7.9s, 1256 chars)
+  Running TREATMENT...
+  ✓ Treatment complete (10.8s, 1385 chars, 1 tool calls, 26 pragmatics)
+  ✓ Saved to /Users/brock/Documents/GitHub/census-mcp-server/results/cqs_responses_20260212_184334.jsonl
+
+[35/39] MIS-002: What does the decennial census say about income levels in Oh...
+  Running CONTROL...
+  ✓ Control complete (8.0s, 1317 chars)
+  Running TREATMENT...
+  ✓ Treatment complete (12.2s, 1538 chars, 1 tool calls, 19 pragmatics)
+  ✓ Saved to /Users/brock/Documents/GitHub/census-mcp-server/results/cqs_responses_20260212_184334.jsonl
+
+[36/39] MIS-003: I need monthly employment data from the ACS....
+  Running CONTROL...
+  ✓ Control complete (8.4s, 1257 chars)
+  Running TREATMENT...
+  ✓ Treatment complete (12.9s, 1643 chars, 1 tool calls, 4 pragmatics)
+  ✓ Saved to /Users/brock/Documents/GitHub/census-mcp-server/results/cqs_responses_20260212_184334.jsonl
+
+[37/39] PER-001a: My 8th grade class is doing a project on our town. How many ...
+  Running CONTROL...
+  ✓ Control complete (7.8s, 1132 chars)
+  Running TREATMENT...
+  ✓ Treatment complete (22.4s, 1556 chars, 4 tool calls, 27 pragmatics)
+  ✓ Saved to /Users/brock/Documents/GitHub/census-mcp-server/results/cqs_responses_20260212_184334.jsonl
+
+[38/39] PER-001b: I'm analyzing population trends in Bozeman, MT for a compreh...
+  Running CONTROL...
+  ✓ Control complete (16.2s, 2063 chars)
+  Running TREATMENT...
+  ✓ Treatment complete (47.5s, 4782 chars, 3 tool calls, 32 pragmatics)
+  ✓ Saved to /Users/brock/Documents/GitHub/census-mcp-server/results/cqs_responses_20260212_184334.jsonl
+
+[39/39] PER-001c: I'm writing a story about whether Bozeman is really 'booming...
+  Running CONTROL...
+  ✓ Control complete (11.7s, 1601 chars)
+  Running TREATMENT...
+  ✓ Treatment complete (57.4s, 4305 chars, 7 tool calls, 25 pragmatics)
+  ✓ Saved to /Users/brock/Documents/GitHub/census-mcp-server/results/cqs_responses_20260212_184334.jsonl
+
+Stopping MCP server...
+
+============================================================
+Run Summary
+============================================================
+Completed: 39
+Failed: 0
+Total time: 1120.4s
+Output: /Users/brock/Documents/GitHub/census-mcp-server/results/cqs_responses_20260212_184334.jsonl
+============================================================

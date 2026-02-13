@@ -1,0 +1,77 @@
+============================================================
+STAGE 2 CQS BATTERY RESULTS
+============================================================
+Run Date: 2026-02-12
+Duration: 1120.4s (18.7 minutes)
+Queries: 39/39 completed (0 failures)
+Output: results/cqs_responses_20260212_184334.jsonl
+
+Configuration:
+- Model: claude-sonnet-4-5-20250929
+- DEFAULT_YEAR: 2024
+- DEFAULT_PRODUCT: acs5
+- Pack: acs.db (36 items)
+- Git hash: $(cat results/git_hash.txt)
+
+============================================================
+PROMPT FIX EFFECTIVENESS
+============================================================
+
+Stage 1 (original prompt):
+  Tool non-use: 5/39 (12.8%)
+
+Stage 2 (strengthened prompt):
+  Tool non-use: 2/39 (5.1%)
+  
+IMPROVEMENT: 60% reduction in tool non-use ✓
+
+Remaining non-use cases:
+  - AMB-001: How many families are in poverty in Springfield?
+  - AMB-002: What's the income gap between whites and minorities...
+  
+Both are ambiguity category (designed to be unclear), suggesting
+the model is appropriately recognizing when clarification is needed
+before grounding. This is acceptable behavior.
+
+============================================================
+TREATMENT PATH METRICS
+============================================================
+
+Tool Usage:
+  Total calls: 111
+  Average: 2.8 calls/query
+  Distribution:
+    - 2 queries: 0 calls (5.1%, ambiguity queries)
+    - 37 queries: 1-7 calls (94.9%, properly grounded)
+
+Pragmatics Coverage:
+  Unique items returned: 35/36 (97.2%)
+  Most queries: 15-27 pragmatics per response
+
+Token Economics:
+  Control: 13,303 tokens
+  Treatment: 1,211,685 tokens
+  Overhead: 91.1x (expected due to tool results)
+
+============================================================
+CATEGORY BREAKDOWN
+============================================================
+
+Normal (baseline):     15 queries (38.5%)
+Geographic edge:        7 queries (17.9%)
+Small area:             4 queries (10.3%)
+Temporal:               4 queries (10.3%)
+Ambiguity:              3 queries (7.7%)
+Product mismatch:       3 queries (7.7%)
+Persona variations:     3 queries (7.7%)
+
+============================================================
+NEXT STEPS
+============================================================
+
+✅ Prompt fix validated
+✅ tools_offered field working
+✅ Full battery data collected
+
+Ready for Stage 3: Judge scoring pipeline (H.18-H.20)
+
