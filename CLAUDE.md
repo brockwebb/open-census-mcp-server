@@ -8,8 +8,12 @@ Pure Python. No R dependency. Pragmatics-first architecture.
 WHICH data to use and HOW to interpret it matters more than finding it.
 
 ## Current State
-Fresh rebuild. v1/v2 archived to `/Users/brock/Documents/GitHub/archive-opencensusmcp/v2`.
-Week 1 of 5-week sprint toward FCSM conference talk (empirical evaluation of pragmatic rules).
+**Current Phase:** 4B — Systematic Evaluation
+- Stage 1 (response generation): ✅ Complete (39 queries, v3)
+- Stage 2 (judge scoring): ⏳ OpenAI done, Anthropic + Google pending
+- Stage 3 (pipeline fidelity): ✅ Complete (39 queries)
+
+v1/v2 archived to `/Users/brock/Documents/GitHub/archive-opencensusmcp/v2`.
 
 ## FCSM Talk Lab Notebook
 `talks/fcsm_2026/notes.md` is a **chronological lab notebook**. Add dated entries with lessons learned, insights, and observations. Never edit old entries — append corrections as new entries. Reference files in the same directory store polished context (e.g., `reference_*.md`).
@@ -30,6 +34,9 @@ packs/                 # Compiled SQLite packs (build artifacts, gitignored)
 knowledge-base/        # Source material (source-docs/ gitignored)
 scripts/               # Build, compile, extraction scripts
 tests/                 # unit/, integration/, evaluation/
+src/eval/              # CQS evaluation pipeline (harness, judges, fidelity)
+results/               # Evaluation outputs (gitignored)
+docs/test/             # Human evaluator scoring materials
 talks/fcsm_2026/       # FCSM conference talk materials
 handoffs/              # Thread handoff docs (gitignored)
 cc_tasks/              # Claude Code task files (gitignored)
@@ -106,7 +113,7 @@ Manifest in `staging/{domain}/manifest.json`. Compile with `python scripts/compi
 ## Implementation Schedule
 **See:** `docs/architecture/implementation_schedule.md` for detailed task breakdown.
 
-**Current Phase:** 4A — Manual Validation
+**Current Phase:** 4B — Systematic Evaluation
 
 **Dependency order:**
 ```
@@ -176,7 +183,8 @@ All terms defined in `docs/design/pragmatics_vocabulary.md` (normative). Key ter
 ## Technical Context
 - **Census API:** Direct Python HTTP calls to `api.census.gov`
 - **Pragmatic context:** Authored in Neo4j (`USE pragmatics`), exported to JSON in `staging/`, compiled to SQLite packs in `packs/`
-- **Evaluation:** Conversational Quality Score (CQS) protocol comparing baseline LLM vs pragmatics-augmented responses
+- **Evaluation:** Three-stage CQS pipeline: (1) response generation, (2) multi-model judge scoring on D1-D5, (3) automated pipeline fidelity verification
+- **Eval config:** `src/eval/judge_config.yaml` (all parameters, SRS C-006)
 - **No vector DB, no RAG over metadata** — structured context with latitude, not embeddings
 - **No ontology layer** — the LLM's weights are the semantic layer; we supply pragmatics only
 

@@ -205,6 +205,25 @@
 **Files:** `src/eval/agent_loop.py` (prompt + logging), `src/eval/models.py` (new field)
 **Lesson learned:** `docs/lessons_learned/2026-02-12_tool_nonuse_treatment_path.md`
 
+## DEC-4B-023: D6 Rubric Revision — Groundedness → Pipeline Fidelity
+
+**Date:** 2026-02-13
+**Context:** D6 "Groundedness & Faithfulness" consistently scored treatment LOWER than control (d=-0.23) across all judge vendors. Investigation revealed a rubric design flaw: judges reward vagueness and penalize specificity because they have no verification capability.
+**Decision:** Replace D6 subjective judge scoring with automated Pipeline Fidelity metric. CQS composite becomes D1-D5 (5 dimensions). Fidelity reported separately.
+**Rationale:** Groundedness of API-retrieved data is a deterministic measurement, not a subjective judgment. Stage 1 data contains both tool call results and response text — fidelity is a diff operation. This is "arbitrary coherence" — judges score plausibility without verification tools.
+**Implementation:** `src/eval/fidelity_check.py` extracts claims from response_text, compares against tool_call data, computes match rate. Treatment gets fidelity score (verified claims / total claims). Control gets auditability classification (how specific are claims for external verification).
+**Framework mapping:** NIST AI RMF (Valid and reliable outputs), OMB A-130 (Auditability), FCSM (Transparency).
+**Full documentation:** `docs/verification/phase4b_decision_log_DEC023.md`
+
+## DEC-4B-024: Symmetric Measurement — Both Conditions Get All Instruments
+
+**Date:** 2026-02-13
+**Context:** Initial Stage 3 design only measured treatment fidelity and control auditability, producing an asymmetric comparison table with N/A cells.
+**Decision:** Run the auditability classifier on BOTH conditions. Fidelity checking remains treatment-only (control has no tool logs to diff against).
+**Rationale:** Both conditions must receive the same measurement instruments. Asymmetric measurement invites reviewer objection ("why didn't you measure X on both?") and the only honest answer is "we assumed" — an untested assumption in a paper about testing assumptions. The asymmetry in fidelity (measurable for treatment, unmeasurable for control) is itself a finding: control claims lack sufficient specificity for independent verification.
+**Impact:** Stage 3 outputs now include both `treatment_fidelity` and `treatment_auditability` plus `control_auditability`. Treatment can be compared to control on auditability dimension, demonstrating specificity improvement.
+**Files:** `src/eval/fidelity_check.py` (symmetric measurement)
+
 ## Decision Index
 
 | ID | Short Title | Key Trade-off |
@@ -230,3 +249,5 @@
 | DEC-4B-019 | No hardcoded defaults | Auditability vs convenience |
 | DEC-4B-020 | Mandatory grounding even for clarification | Tool compliance vs model autonomy |
 | DEC-4B-021 | 6 judge passes, 234 calls/judge | Measurement precision vs rate limits vs statistical power |
+| DEC-4B-023 | D6 → Pipeline Fidelity | Subjective judging vs automated verification |
+| DEC-4B-024 | Symmetric measurement | Experimental rigor vs assumed equivalence |

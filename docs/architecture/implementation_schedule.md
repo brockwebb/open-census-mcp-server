@@ -156,7 +156,7 @@ Depends on: Phase 0A (API client) ✅, Phase 2 (retriever) ✅
 
 ---
 
-## Phase 4A: Manual Validation ⏳ IN PROGRESS
+## Phase 4A: Manual Validation ✅ COMPLETE
 
 Depends on: Phase 3 ✅
 
@@ -176,7 +176,7 @@ Depends on: Phase 3 ✅
 | G.10 | **PACK:** Disclosure avoidance (ACS-DIS-001/002/003) | ✅ | G.4 finding |
 | G.11 | **PACK:** Population thresholds (ACS-THR-001/002) + geographic equivalence (ACS-EQV-001/002) | ✅ | G.4 finding |
 
-**Exit Criteria:** System produces pragmatics-grounded responses for test queries. Tract-level geography works. SRS reflects actual architecture. Agent prompt slim (no domain overfitting).
+**Exit Criteria:** ✅ Met. System produces pragmatics-grounded responses for test queries. Tract-level geography works. SRS reflects actual architecture. Agent prompt slim (no domain overfitting).
 
 ---
 
@@ -201,50 +201,60 @@ Depends on: Phase 4A ✅
 |------|-------------|--------|----------|
 | H.1 | Define CQS scoring dimensions and scale | ✅ | VR-006 |
 | H.2 | Draft scoring prompt template for LLM judge panel | ✅ | VR-006 |
-| H.3 | Validate rubric against 3-5 manually scored examples (depends on H.4) | ⏳ | — |
+| H.3 | Validate rubric against manually scored examples | ✅ | Manual calibration packet |
 
 **Step 2: Test Query Battery**
 
 | Task | Description | Status | Traces To |
 |------|-------------|--------|----------|
-| H.4 | Data-driven test definitions (YAML/JSON, no code changes to add queries) | ⏳ | VR-007 |
-| H.5 | Test battery: 80/20 edge case weighting | ⏳ | VR-010 |
-| H.6 | Geographic edge cases (independent cities, NYC boroughs, DC, consolidated city-counties) | ⏳ | VR-011 |
-| H.7 | Small-area reliability cases (<65K, <20K, tract-level) | ⏳ | VR-012 |
-| H.8 | Temporal edge cases (cross-vintage, overlapping periods, breaks, inflation) | ⏳ | VR-013 |
-| H.9 | Ambiguity cases (Portland, Springfield, Washington) | ⏳ | VR-014 |
-| H.10 | Product-mismatch cases (1-year for small geo, decennial→ACS) | ⏳ | VR-015 |
-| H.11 | Persona-based query variants (8th grader, city planner, journalist) | ⏳ | VR-016 |
+| H.4 | Data-driven test definitions (YAML/JSON, no code changes to add queries) | ✅ | VR-007 |
+| H.5 | Test battery: 41% normal / 59% edge case weighting (power-based) | ✅ | DEC-4B-009 |
+| H.6 | Geographic edge cases (independent cities, NYC boroughs, DC, consolidated city-counties) | ✅ | GEO-001 through GEO-006 |
+| H.7 | Small-area reliability cases (<65K, <20K, tract-level) | ✅ | SML-001 through SML-004 |
+| H.8 | Temporal edge cases (cross-vintage, overlapping periods, breaks, inflation) | ✅ | TMP-001 through TMP-004 |
+| H.9 | Ambiguity cases (Portland, Springfield, Washington) | ✅ | AMB-001 through AMB-003 |
+| H.10 | Product-mismatch cases (1-year for small geo, decennial→ACS) | ✅ | MIS-001 through MIS-003 |
+| H.11 | Persona-based query variants (8th grader, city planner, journalist) | ✅ | PER-001a through PER-001c |
 
 **Step 3: Test Harness**
 
 | Task | Description | Status | Traces To |
 |------|-------------|--------|----------|
-| H.12 | MCP client: programmatic subprocess launch + stdio JSON-RPC connection | ⏳ | VR-001 |
-| H.13 | Health check: verify MCP connection before test run | ⏳ | VR-002 |
-| H.14 | Agent loop: Claude API tool_use → MCP tool execution → tool_result → final response | ⏳ | VR-001 |
-| H.15 | Control path: Claude API same query, no tools, no system prompt augmentation | ⏳ | VR-001 |
-| H.16 | Structured result recording (query, condition, model, response, tool calls, pragmatics returned, latency) | ⏳ | VR-005 |
-| H.17 | Output format: JSON lines for scoring pipeline | ⏳ | VR-006 |
+| H.12 | MCP client: programmatic subprocess launch + stdio JSON-RPC connection | ✅ | VR-001 |
+| H.13 | Health check: verify MCP connection before test run | ✅ | VR-002 |
+| H.14 | Agent loop: Claude API tool_use → MCP tool execution → tool_result → final response | ✅ | VR-001 |
+| H.15 | Control path: Claude API same query, no tools, no system prompt augmentation | ✅ | VR-001 |
+| H.16 | Structured result recording (query, condition, model, response, tool calls, pragmatics returned, latency) | ✅ | VR-005 |
+| H.17 | Output format: JSON lines for scoring pipeline | ✅ | VR-006 |
 
 **Step 4: Judge Prompt & Scoring Pipeline**
 
 | Task | Description | Status | Traces To |
 |------|-------------|--------|----------|
-| H.18 | Scoring prompt: domain-specific rubric for LLM judges (Gemini, OpenAI, Claude) | ⏳ | VR-006 |
-| H.19 | Judge harness: send paired responses to 3 models, collect dimension scores | ⏳ | VR-003, VR-004 |
-| H.20 | Inter-rater agreement calculation (Krippendorff's α or Fleiss' κ) | ⏳ | — |
-| H.21 | Human calibration set: expert-scored 10-15 queries, compare to LLM judge scores | ⏳ | — |
+| H.18 | Scoring prompt: domain-specific rubric for LLM judges (Gemini, OpenAI, Claude) | ✅ | VR-006 |
+| H.19 | Judge harness: send paired responses to 3 models, collect dimension scores | ✅ | VR-003, VR-004 |
+| H.20 | Inter-rater agreement calculation (Krippendorff's α or Fleiss' κ) | ⏳ | Aggregate analysis pending |
+| H.21 | Human calibration set: expert-scored subset | ⏳ | Manual scoring packet created |
 
 **Step 5: Run & Analyze**
 
 | Task | Description | Status | Traces To |
 |------|-------------|--------|----------|
-| H.22 | Execute full battery: control + treatment for all queries | ⏳ | — |
-| H.23 | Execute judge panel scoring on all paired results | ⏳ | — |
-| H.24 | Aggregate results: CQS by dimension, treatment effect, agreement stats | ⏳ | — |
-| H.25 | Bug fixes and pack content expansion from evaluation failures | ⏳ | — |
+| H.22 | Execute full battery: control + treatment for all queries | ✅ | Stage 1 v3 complete |
+| H.23 | Execute judge panel scoring on all paired results | ⏳ | OpenAI ✅, Anthropic + Google pending |
+| H.24 | Aggregate results: CQS by dimension, treatment effect, agreement stats | ⏳ | Pending all vendors |
+| H.25 | Bug fixes and pack content expansion from evaluation failures | ✅ | Truncation + temporal + dataset mapping |
 | H.26 | Results documentation in `docs/verification/` | ⏳ | — |
+
+**Step 6: Pipeline Fidelity (Stage 3)**
+
+| Task | Description | Status | Traces To |
+|------|-------------|--------|----------|
+| H.27 | Design automated fidelity metric (DEC-4B-023) | ✅ | D6 revision |
+| H.28 | Build fidelity extraction pipeline (`src/eval/fidelity_check.py`) | ✅ | VR pipeline |
+| H.29 | Run fidelity verification on all Stage 1 data | ✅ | H.22 |
+| H.30 | Symmetric auditability measurement (both conditions) | ✅ | Experimental design |
+| H.31 | Integrate fidelity results into aggregate analysis | ⏳ | H.24 |
 
 **Exit Criteria:** Documented CQS scores for Claude with vs without pragmatics. LLM judge panel + human calibration. Results in `docs/verification/`.
 
@@ -271,13 +281,15 @@ Phase 1D (Seed Content) ✅ ────┘
 | 0A: API Client | ✅ Complete | 14/14 |
 | ~~0B: Geography~~ | ❌ Deleted | — |
 | 1C: Pack Pipeline | ✅ Complete | 15/15 |
-| 1D: Seed Content | ✅ Complete (initial) | — |
-| 2: Retriever | ✅ Complete (revised) | 9/9 |
+| 1D: Seed Content | ✅ Complete | — |
+| 2: Retriever | ✅ Complete | 9/9 |
 | 3: MCP Server | ✅ Complete | 10/10 |
-| 4A: Manual Validation | ⏳ In Progress | — |
-| 4B: Systematic Evaluation | ⏳ Not Started | — |
+| 4A: Manual Validation | ✅ Complete | — |
+| 4B: Systematic Evaluation | ⏳ Stage 2-3 in progress | — |
 
 **Total Tests:** 47/47 (all passing)
+
+**Last Updated:** 2026-02-13
 
 ---
 
