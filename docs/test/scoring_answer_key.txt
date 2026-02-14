@@ -1,6 +1,19 @@
 ANSWER KEY — DO NOT SHARE WITH RATERS
 ==================================================
 
+RUBRIC VERSION: v3 (5-dimension CQS, D1-D5)
+STAGE 1 DATA: cqs_responses_20260213_091530.jsonl
+DATE GENERATED: 2026-02-13
+
+NOTES:
+- D6 (Groundedness) removed from human scoring. Measured via automated
+  Pipeline Fidelity (Stage 3).
+- Total score per response: /10 (was /12 in v2)
+
+KNOWN ISSUES:
+- PER-001a treatment: Reports ~117K for Bozeman city. Actual city pop ~53K.
+  This is Gallatin County data. Known FIPS resolution bug in MCP tool.
+
 Random seed: 42
 
 NORM-001: A=treatment, B=control

@@ -1,7 +1,7 @@
 # CQS Manual Calibration Scoring Packet
 
-**Date:** 2026-02-12
-**Battery:** cqs_responses_20260212_184334.jsonl
+**Date:** 2026-02-13
+**Battery:** cqs_responses_20260213_091530.jsonl
 **Queries:** 9 (3 normal, 6 edge/sentinel)
 **Rater:** ___________________
 
@@ -9,7 +9,7 @@
 
 ## Scoring Instructions
 
-For each query below, you will see the original user question and two responses labeled **A** and **B**. You do not know which response used tools or expert guidance. Score each response independently on the six CQS dimensions using the 0-1-2 scale below.
+For each query below, you will see the original user question and two responses labeled **A** and **B**. You do not know which response used tools or expert guidance. Score each response independently on the five CQS dimensions using the 0-1-2 scale below.
 
 ### Scale
 
@@ -28,14 +28,16 @@ For each query below, you will see the original user question and two responses 
 | D3 | Uncertainty Communication | MOE/SE provided? Reliability assessed? Proper confidence level? |
 | D4 | Definitional Accuracy | Official Census concepts used correctly? Period vs point-in-time? |
 | D5 | Reproducibility & Traceability | Table IDs, variable codes, FIPS codes — can you replicate? |
-| D6 | Groundedness & Faithfulness | All claims traceable? No fabricated data or hallucinated codes? |
+
+> **Note:** Groundedness/faithfulness (formerly D6) is measured separately via
+> automated Pipeline Fidelity verification, not by human raters. This metric
+> compares response claims against API tool call logs and is reported independently.
 
 ### Key Principles
 
 1. **Informed refusal > confident delivery of unfit data.** A response that says 'this estimate is too unreliable' scores higher than one that delivers a number with CV > 40%.
-2. **D6 = 0 is a gate failure.** If a response fabricates data, the other scores are unreliable.
-3. **Score each response independently** before comparing them.
-4. After scoring both, indicate your **overall preference** (A, B, or Tie).
+2. **Score each response independently** before comparing them.
+3. After scoring both, indicate your **overall preference** (A, B, or Tie).
 
 ---
 
@@ -49,37 +51,38 @@ For each query below, you will see the original user question and two responses 
 
 ### Response A
 
-Based on the most recent American Community Survey (ACS) data, **California's total population is 39,287,377**.
+Based on the most recent Census data, **California's total population is 39,287,377** according to the 2024 American Community Survey 5-year estimates (2020-2024).
 
-## Data Details:
+## Key Details:
 
-- **Variable**: B01003_001E (Total Population)
-- **Geography**: California (State FIPS code 06)
-- **Dataset**: 2024 ACS 5-Year Estimates
-- **Data Period**: This represents data collected over the 60-month period (2020-2024)
+- **Data Source**: ACS 5-year estimate (ACS Table B01003_001E - Total Population)
+- **State FIPS Code**: 06 (California)
+- **Year**: 2024 (representing data collected from 2020-2024)
+- **Geography Level**: State
 
 ## Important Context:
 
-This is a **period estimate**, not a point-in-time count. The ACS 5-year estimate represents data collected continuously over 5 years, so it should be referenced as a 2020-2024 estimate rather than a single year.
+**Period Estimate**: This is a period estimate representing data collected over 60 months (2020-2024), not a single point in time. It should be referred to as the "2020-2024 ACS estimate," not just "2024."
 
-For state-level population totals like California's, the data is highly reliable. ACS state-level estimates are controlled to independent population estimates and have very small margins of error relative to the population size.
+**Data Quality**: For a large geography like California (state level), this estimate is highly reliable. State-level ACS estimates are controlled to independent population estimates and have very small margins of error relative to the population size. The data is suitable for virtually any analytical purpose.
 
-**Note**: If you need the most recent point-in-time count, the 2020 Decennial Census provides that data, though it's now several years old. The ACS provides more current estimates but averages across the 5-year collection period.
+**Note about "Most Recent"**: The 2024 ACS 5-year estimate is the most recent available American Community Survey data. If you need the official decennial census count (point-in-time), that would be from the 2020 Census, which reported California's population as of April 1, 2020.
+
+Would you like me to retrieve any additional demographic information about California, or would you prefer the 2020 Decennial Census count instead?
 
 ---
 
 ### Response B
 
-According to the most recent Census data from the **2020 Census**, California's total population is **39,538,223**.
+According to the most recent 2020 Census data, **California's total population is 39,538,223**.
 
-This makes California the most populous state in the United States, representing about 12% of the total U.S. population. 
+This makes California the most populous state in the United States, accounting for approximately 12% of the nation's total population. 
 
-Key points about California's 2020 Census count:
+Key facts about California's 2020 Census population:
 - California maintained its position as the #1 most populous state
-- The state experienced slower growth compared to previous decades (6.1% growth from 2010-2020)
-- This population count determines California's 52 seats in the U.S. House of Representatives (reduced from 53 after the 2020 Census reapportionment)
-
-**Source:** U.S. Census Bureau, 2020 Decennial Census
+- The state grew by about 2.3 million people (6.1%) since the 2010 Census
+- However, this represented California's slowest growth rate in any decade since statehood
+- Due to slower-than-average growth, California lost one congressional seat following the 2020 Census, dropping from 53 to 52 House representatives
 
 ---
 
@@ -92,8 +95,7 @@ Key points about California's 2020 Census count:
 | D3: Uncertainty | | |
 | D4: Definitions | | |
 | D5: Traceability | | |
-| D6: Groundedness | | |
-| **Total A** | **/12** | |
+| **Total A** | **/10** | |
 
 ### Scoring — Response B
 
@@ -104,8 +106,7 @@ Key points about California's 2020 Census count:
 | D3: Uncertainty | | |
 | D4: Definitions | | |
 | D5: Traceability | | |
-| D6: Groundedness | | |
-| **Total B** | **/12** | |
+| **Total B** | **/10** | |
 
 ### Overall Preference: ◻ A  ◻ B  ◻ Tie
 
@@ -123,47 +124,44 @@ Key points about California's 2020 Census count:
 
 ### Response A
 
-Perfect! Now let me calculate the unemployment rate from this data. Let me break down what these variables represent:
+Perfect! Now I have all the data I need. Let me calculate the unemployment rate and its margin of error.
 
-## **Unemployment Rate in Wayne County, Michigan**
+## Unemployment Rate in Wayne County, Michigan
 
-### **Data Source:**
-- **Product:** ACS 5-year estimates (2020-2024)
-- **Geography:** Wayne County, Michigan (FIPS: 26163)
-- **Table:** B23025 - Employment Status for the Population 16 Years and Over
+**Data Source:** American Community Survey 2019-2023 5-Year Estimates, Table B23025 (Employment Status for the Population 16 Years and Over)
 
-### **Key Figures:**
+**Geography:** Wayne County, Michigan (State FIPS: 26, County FIPS: 163)
 
-From Table B23025:
-- **B23025_001E:** Total population 16+ = **1,401,632** (±985)
-- **B23025_002E:** In labor force = **829,173** (±5,271)
-- **B23025_003E:** Civilian labor force = **828,838** (±5,277)
-- **B23025_004E:** Employed = **757,073** (±5,167)
-- **B23025_005E:** Unemployed = **71,765** (±2,820)
+### Key Findings:
 
-### **Unemployment Rate Calculation:**
+**Unemployment Rate: 8.7%** (±0.3 percentage points at 90% confidence)
 
-**Unemployment Rate = (Unemployed ÷ Civilian Labor Force) × 100**
+### Detailed Breakdown:
 
-**= (71,765 ÷ 828,838) × 100 = 8.66%**
+| Category | Estimate | Margin of Error |
+|----------|----------|-----------------|
+| **Total Population 16+ years** | 1,399,940 | ±1,131 |
+| In Labor Force | 831,269 | ±4,619 |
+| - Civilian Labor Force | 830,901 | ±4,606 |
+|   - Employed | 758,808 | ±4,571 |
+|   - **Unemployed** | **72,093** | ±2,363 |
+| Not in Labor Force | 368 | - |
 
-### **Margin of Error for Unemployment Rate:**
+**Labor Force Participation Rate:** 59.4%
 
-Using the formula for derived estimates (ratios):
-- SE(unemployed) = 2,820 / 1.645 = 1,714
-- SE(civilian labor force) = 5,277 / 1.645 = 3,208
+**Calculation:** The unemployment rate = (Unemployed ÷ Civilian Labor Force) × 100 = (72,093 ÷ 830,901) × 100 = 8.67%
 
-The approximate standard error for the rate requires the formula for ratios. Using a simplified approximation, the **90% confidence interval is approximately 8.66% ± 0.37%**, giving a range of roughly **8.3% to 9.0%**.
+### Important Context:
 
-### **Important Context:**
+1. **Period Estimate:** This represents data collected over the 60-month period from 2019-2023, not a single point in time. It reflects average conditions over this entire period, including the COVID-19 pandemic and subsequent recovery.
 
-1. **Period Estimate:** This represents data collected over 60 months (2020-2024), not a point-in-time snapshot. This period includes the COVID-19 pandemic's economic impacts and recovery.
+2. **Reliability:** The coefficient of variation (CV) for the unemployment count is approximately 1.9%, which indicates this is a reliable estimate. The relatively small margin of error (±2,363 on 72,093) suggests good precision.
 
-2. **Reliability:** The coefficient of variation for the unemployed count is about 3.9%, which indicates this is a reliable estimate (well below the 40% threshold for concern).
+3. **Margin of Error on the Rate:** Using the standard error propagation formula for ratios (accounting for covariance since both numerator and denominator come from the same table), the unemployment rate MOE is approximately ±0.3 percentage points at 90% confidence level.
 
-3. **Interpretation Note:** Because this is a period estimate spanning 2020-2024, it captures employment conditions across multiple years including both pandemic disruption and recovery periods.
+4. **Geographic Coverage:** Wayne County includes Detroit and is Michigan's most populous county. County-level estimates receive population controls, making them more reliable than smaller geographic areas.
 
-Would you like me to compare this to other time periods, other counties, or break down unemployment by demographic characteristics?
+Would you like me to compare this to other time periods, other Michigan counties, or provide more detailed demographic breakdowns of unemployment in Wayne County?
 
 ---
 
@@ -171,28 +169,32 @@ Would you like me to compare this to other time periods, other counties, or brea
 
 I don't have access to real-time data, but I can provide you with guidance on finding the current unemployment rate for Wayne County, Michigan.
 
-## Where to Find Current Data:
+## Where to Find Current Unemployment Data:
 
-1. **Bureau of Labor Statistics (BLS)**
-   - Visit: www.bls.gov/lau (Local Area Unemployment Statistics)
-   - Search for Wayne County, Michigan
-   - Provides monthly unemployment rates
+**1. Bureau of Labor Statistics (BLS)**
+- Website: bls.gov/lau (Local Area Unemployment Statistics)
+- Provides monthly unemployment rates for counties
+- Most reliable official source
 
-2. **U.S. Census Bureau**
-   - American Community Survey (ACS) at data.census.gov
-   - Note: Census data is typically 1-2 years behind current dates
+**2. Michigan Department of Technology, Management & Budget**
+- Website: michigan.gov/dtmb
+- Bureau of Labor Market Information and Strategic Initiatives
+- Often provides state-specific analysis
 
-3. **Michigan Department of Technology, Management & Budget**
-   - Provides state and county-level employment data
-   - Often more current for Michigan-specific information
+**3. SEMCOG (Southeast Michigan Council of Governments)**
+- Tracks economic data for the Detroit region, including Wayne County
 
 ## Recent Context:
+As of late 2023/early 2024, Wayne County's unemployment rate has typically been:
+- Higher than the national average
+- Similar to or slightly higher than Michigan's state average
+- Generally ranging between 4-6% (though this varies by month and economic conditions)
 
-As of late 2023/early 2024, Wayne County's unemployment rate has historically been slightly higher than both the Michigan state average and the national average, partly due to its reliance on the automotive industry. However, rates fluctuate monthly.
+Wayne County includes Detroit and is Michigan's most populous county, so its economic indicators are closely watched.
 
-For the most current unemployment rate, I recommend checking the BLS Local Area Unemployment Statistics page, which is updated monthly and is the official source for this data.
+**For the most current rate, I recommend checking the BLS website directly, as unemployment figures are updated monthly.**
 
-Would you like help interpreting unemployment data or information about related economic indicators for Wayne County?
+Would you like help interpreting unemployment data or finding information about specific time periods?
 
 ---
 
@@ -205,8 +207,7 @@ Would you like help interpreting unemployment data or information about related 
 | D3: Uncertainty | | |
 | D4: Definitions | | |
 | D5: Traceability | | |
-| D6: Groundedness | | |
-| **Total A** | **/12** | |
+| **Total A** | **/10** | |
 
 ### Scoring — Response B
 
@@ -217,8 +218,7 @@ Would you like help interpreting unemployment data or information about related 
 | D3: Uncertainty | | |
 | D4: Definitions | | |
 | D5: Traceability | | |
-| D6: Groundedness | | |
-| **Total B** | **/12** | |
+| **Total B** | **/10** | |
 
 ### Overall Preference: ◻ A  ◻ B  ◻ Tie
 
@@ -240,52 +240,55 @@ I don't have access to real-time U.S. Census data in my current context. However
 
 **To find the median gross rent for Denver County, Colorado:**
 
-1. **U.S. Census Bureau's Data Portal** (data.census.gov)
-   - Search for "median gross rent" and "Denver County, Colorado"
-   - Look for Table B25064 from the American Community Survey (ACS)
+1. **Census Bureau Website**: Visit the U.S. Census Bureau's data portal at data.census.gov
+   - Search for "median gross rent Denver County Colorado"
+   - Look for Table B25064 (Median Gross Rent) from the American Community Survey (ACS)
 
-2. **Quick Facts Page** (census.gov/quickfacts)
-   - Search for Denver County, Colorado
-   - Look for housing statistics
+2. **Quick Facts**: Check the Census Bureau's QuickFacts page for Denver County
 
-**Recent estimates** (as of my last update):
-- According to the 2020-2022 American Community Survey 5-year estimates, the median gross rent in Denver County was approximately **$1,400-$1,500 per month**
+3. **Most Recent Data**: The American Community Survey 5-Year Estimates are typically the most reliable for county-level data
 
-However, for the most current and accurate figure, I recommend checking the Census Bureau's website directly, as these numbers are updated regularly with new ACS releases.
+**Recent Context** (based on my training data through April 2024):
+- According to the 2022 American Community Survey 5-Year Estimates, the median gross rent in Denver County was approximately **$1,400-$1,500** per month
+- However, rental costs have been rising, so checking the most current ACS data will give you the most accurate figure
 
-Would you like guidance on interpreting the data or finding additional housing-related statistics for Denver County?
+Would you like help interpreting Census data tables or finding other demographic information about Denver County?
 
 ---
 
 ### Response B
 
-Perfect! Now I have the complete data. Let me calculate the reliability metrics and provide you with a comprehensive answer.
+Perfect! Now I have the complete data. Let me provide you with a comprehensive answer.
 
 ## Median Gross Rent in Denver County, Colorado
 
-**Estimate: $1,831** (±$17 at 90% confidence level)
+**Estimate: $1,831 per month**  
+**Margin of Error: ±$17** (at 90% confidence level)
 
-### Data Details:
-- **Variable:** B25064_001E (Median Gross Rent)
-- **Geography:** Denver County, Colorado (State FIPS: 08, County FIPS: 031)
-- **Data Source:** American Community Survey 5-Year Estimates (2020-2024)
-- **Margin of Error:** ±$17
+### Data Details
+- **Variable Code:** B25064_001E (Median Gross Rent)
+- **Geography:** Denver County, Colorado (FIPS: 08031)
+- **Data Source:** American Community Survey 5-Year Estimates, 2020-2024
+- **Product:** ACS5 (5-year estimate)
 
-### Reliability Assessment:
-This estimate is **highly reliable** for general use:
+### Reliability Assessment
+This estimate is **highly reliable** for Denver County:
+
 - **Standard Error:** $10.33 (calculated as MOE / 1.645)
-- **Coefficient of Variation:** 0.56% (well below the 40% threshold for unreliability)
-- The very small margin of error indicates high precision
+- **Coefficient of Variation:** 0.56% (well below the 40% threshold for reliability)
+- **90% Confidence Interval:** $1,814 to $1,848
 
-### Important Context:
+The very low margin of error and coefficient of variation indicate this is a precise estimate suitable for most analytical purposes.
 
-1. **Period Estimate:** This represents data collected over a 60-month period (2020-2024), not a single point in time. It reflects average conditions across this entire period.
+### Important Context
 
-2. **Dollar Values:** The ACS adjusts dollar-denominated values (like rent) to the final year of the period (2024 dollars). If comparing to other years, you should adjust for inflation using the CPI-U-RS index.
+1. **Period Estimate:** This represents data collected over 60 months (2020-2024), not a single point in time. It reflects average conditions over this period, with more recent data weighted more heavily.
 
-3. **What This Measures:** Median gross rent includes the contract rent plus the estimated average monthly cost of utilities (electricity, gas, water/sewer) and fuels (oil, coal, kerosene, wood). It's calculated for renter-occupied housing units paying cash rent.
+2. **Dollar Values:** The estimate is already inflation-adjusted to 2024 dollars. If you're comparing to estimates from other years, make sure those are also adjusted for inflation using the CPI-U-RS index.
 
-This is a robust estimate suitable for policy analysis, planning, and demographic research at the county level.
+3. **Definition:** Gross rent includes contract rent plus the estimated average monthly cost of utilities (electricity, gas, water/sewer) and fuels (oil, coal, kerosene, wood, etc.) if paid by the renter.
+
+Would you like information about rent for specific neighborhoods within Denver County, or comparisons to other areas?
 
 ---
 
@@ -298,8 +301,7 @@ This is a robust estimate suitable for policy analysis, planning, and demographi
 | D3: Uncertainty | | |
 | D4: Definitions | | |
 | D5: Traceability | | |
-| D6: Groundedness | | |
-| **Total A** | **/12** | |
+| **Total A** | **/10** | |
 
 ### Scoring — Response B
 
@@ -310,8 +312,7 @@ This is a robust estimate suitable for policy analysis, planning, and demographi
 | D3: Uncertainty | | |
 | D4: Definitions | | |
 | D5: Traceability | | |
-| D6: Groundedness | | |
-| **Total B** | **/12** | |
+| **Total B** | **/10** | |
 
 ### Overall Preference: ◻ A  ◻ B  ◻ Tie
 
@@ -329,49 +330,49 @@ This is a robust estimate suitable for policy analysis, planning, and demographi
 
 ### Response A
 
-## Tract-Level Median Income Data for Loving County, Texas
+## Summary: Median Income Data for Loving County, Texas
 
-**Critical Finding: Data is NOT AVAILABLE**
+**CRITICAL FINDING: Data is NOT Available**
 
-### Result Summary
+I attempted to retrieve tract-level median household income data for Loving County, Texas (FIPS 48301), but the data is **suppressed** at both the tract and county levels.
 
-For **Census Tract 950100** in Loving County, Texas (FIPS: 48301):
-- **Median Household Income**: **Data suppressed/unavailable** (code: -666666666)
-- **Margin of Error**: **Cannot be computed** (code: -222222222)
-- **Total Population**: 96 people
-- **Data Product**: ACS 5-Year Estimates (2018-2022)
+### What the Data Shows:
+- **Geography**: Census Tract 950100 in Loving County, Texas
+- **Median Household Income (B19013_001E)**: `-666666666` (suppression code)
+- **Total Population (B01003_001E)**: 96 people
+- **Data Source**: ACS 5-Year Estimates (2018-2022)
 
-### Why This Data Is Unavailable
+### Why This Data is Unavailable:
 
-The suppression codes indicate **insufficient sample size** to produce a reliable median income estimate. This is directly related to Loving County's unique characteristics:
+The value `-666666666` is a Census Bureau code indicating that **median household income cannot be calculated or is suppressed due to insufficient sample size**.
 
-1. **Extremely Small Population**: With only 96 people in the tract (which likely represents the entire county), Loving County is one of the least populous counties in the United States.
+**Key Context from Methodology Guidance:**
 
-2. **Sample Size Limitations**: Even though rural areas receive enhanced sampling rates (up to 15% of addresses), the absolute number of surveyed households is too small to produce publishable income estimates.
+1. **Extremely Small Population**: With only **96 residents**, Loving County is one of the least populated counties in the United States. The guidance explicitly warns that "for geographies with total population under approximately 1,000, ACS 5-year estimates become extremely unreliable even though they are published."
 
-3. **Special Suppression Codes**:
-   - `-666666666` = Data not available (too few sample cases)
-   - `-222222222` = Margin of error cannot be computed
+2. **Geographic Equivalence**: As noted in the guidance, "some census tracts contain an entire county's population — this occurs in very rural counties where a single tract covers the whole county." Loving County has only one census tract (950100), making tract-level data identical to county-level data (when available).
 
-### Important Context
+3. **Sample Size Issues**: Even with ACS's higher sampling rates for rural areas (up to 15% of addresses), the actual number of household responses is likely too small to produce a reliable median income estimate.
 
-**Geographic Equivalence**: In very rural counties like Loving County, there is typically only **one census tract that covers the entire county**. This means:
-- The tract-level data would normally be identical to county-level data
-- **County-level data should be preferred** when available
-- However, even at the county level, data may still be suppressed for such a small population
+### Recommendations:
 
-### Recommendations
+1. **No tract-level data is available** for median income in Loving County because the population is too small to generate reliable estimates.
 
-1. **Try County-Level Data**: Request data at the county level (without specifying tract) to see if county-level tabulations are available, though with 96 people, suppression is likely there as well.
+2. **Alternative approaches**:
+   - Consider aggregating to a **multi-county region** or using **Texas state-level data**
+   - Look at adjacent counties for regional context
+   - Consider using **Decennial Census data** (though income is not collected in recent decennial censuses)
+   - Use **Public Use Microdata Areas (PUMAs)**, though Loving County would be grouped with other counties
 
-2. **Consider Alternatives**:
-   - Aggregate to a larger geography (regional or multi-county)
-   - Use Decennial Census data (if available for income-related variables)
-   - Consider qualitative or administrative data sources
+3. **For research purposes**: You may need to acknowledge that reliable income statistics are simply not available for a population this small.
 
-3. **Data Reliability Warning**: Even if some income data were available, the Census Bureau guidance states that for populations under 1,000, "ACS 5-year estimates become extremely unreliable even though they are published."
+**Geographic Identifiers:**
+- State: Texas (FIPS 48)
+- County: Loving County (FIPS 301)
+- Tract: 950100
+- Product: ACS 5-Year 2018-2022
 
-Would you like me to check the county-level data, or would you be interested in data for a larger geographic area that includes Loving County?
+This is a case where the Census Bureau's disclosure avoidance and reliability standards prevent publication of the estimate, even in the most robust ACS product (5-year estimates).
 
 ---
 
@@ -381,38 +382,36 @@ Would you like me to check the county-level data, or would you be interested in 
 
 ## Important Context
 
-**Loving County** is the least populous county in the United States, with a 2020 Census population of only **64 people**. Due to its extremely small population, census tract-level data presents unique challenges.
+**Loving County** is the least populous county in the United States, with only **64 residents** as of the 2020 Census. Due to its extremely small population, Census data for Loving County has unique characteristics:
 
-## Census Tract Information
+## Geographic Coverage
 
-Loving County, Texas consists of:
-- **Census Tract 9501** (the only census tract in the county)
-- **FIPS Code**: 48301950100
+- **Census Tract**: 9501 (covers the entire county)
+- **State**: Texas (48)
+- **County**: Loving County (301)
 
 ## Median Household Income Data
 
-According to the most recent American Community Survey (ACS) 5-Year Estimates (2018-2022):
+According to the most recent **American Community Survey (ACS) 5-Year Estimates (2018-2022)**:
 
-- **Median Household Income**: Data is typically **not available** or **suppressed** for Loving County at the tract level due to:
-  - Extremely small population size
-  - Privacy protection requirements
-  - Statistical reliability thresholds not being met
+- **Median Household Income**: Data is often **suppressed or unavailable** due to the small population size
+- The Census Bureau typically doesn't release estimates when the sample size is too small to produce statistically reliable data
 
-## Alternative Data Points
+## Alternative Data Point
 
-For context, county-level estimates (when available) have shown:
-- Income data is highly variable year-to-year due to the small number of households
-- The county's economy is primarily oil and gas-based
-- Many workers are temporary residents associated with energy extraction
+For the limited data available:
+- **2020 Census Population**: 64 people
+- The county is classified as **entirely rural**
+- Economic activity is primarily centered around oil and gas production
 
-## Recommendation
+## Data Limitations
 
-For reliable income data about this area, consider:
-1. County-level data (though still limited)
-2. Combining with adjacent counties (Winkler, Ward, Reeves counties)
-3. Regional economic development district data
+Due to Loving County's tiny population:
+- Many ACS estimates are not published
+- Margins of error would exceed the estimates themselves
+- County-level aggregates may be available but are more reliable than tract-level data
 
-Would you like information about adjacent counties or a different geographic area?
+**Recommendation**: For Loving County specifically, county-level data from the Census Bureau's County Business Patterns or economic data from the Bureau of Economic Analysis may provide more reliable economic indicators than traditional household income surveys.
 
 ---
 
@@ -425,8 +424,7 @@ Would you like information about adjacent counties or a different geographic are
 | D3: Uncertainty | | |
 | D4: Definitions | | |
 | D5: Traceability | | |
-| D6: Groundedness | | |
-| **Total A** | **/12** | |
+| **Total A** | **/10** | |
 
 ### Scoring — Response B
 
@@ -437,8 +435,7 @@ Would you like information about adjacent counties or a different geographic are
 | D3: Uncertainty | | |
 | D4: Definitions | | |
 | D5: Traceability | | |
-| D6: Groundedness | | |
-| **Total B** | **/12** | |
+| **Total B** | **/10** | |
 
 ### Overall Preference: ◻ A  ◻ B  ◻ Tie
 
@@ -456,65 +453,57 @@ Would you like information about adjacent counties or a different geographic are
 
 ### Response A
 
-Perfect! Now I have all the information needed. Let me calculate the coefficient of variation to assess reliability:
+Perfect! Now I have the data. Let me analyze the reliability of this estimate given the extremely small population.
 
 ## Median Household Income for Kalawao County, Hawaii
 
-**Data Source:** American Community Survey 5-Year Estimates (2018-2022)  
-**Variable:** B19013_001E (Median Household Income in the Past 12 Months)  
-**Geography:** Kalawao County, Hawaii (FIPS: 15005)
+**Data Source:** American Community Survey 2018-2022 (5-year estimates)  
+**Variable:** B19013_001E (Median Household Income in the Past 12 Months)
 
-### Results:
-
+### The Estimate:
 - **Median Household Income:** $87,813
 - **Margin of Error (MOE):** ±$11,404 (at 90% confidence level)
-- **Population:** 50 people
+- **Total Population:** 50
 
-### Reliability Assessment:
+### Important Reliability Concerns:
 
-**Coefficient of Variation (CV):** 7.9%
+**This estimate should be used with extreme caution.** Kalawao County has a population of only 50 people, making it one of the smallest counties in the United States. Here's why this matters:
 
-- Standard Error (SE) = $11,404 / 1.645 = $6,932
-- CV = ($6,932 / $87,813) × 100 = 7.9%
+1. **Coefficient of Variation (CV):**
+   - Standard Error = $11,404 / 1.645 = $6,931
+   - CV = ($6,931 / $87,813) × 100 = **7.9%**
+   - While this CV is below the 40% threshold for unreliability, the extremely small sample size means this estimate is based on very few actual survey responses.
 
-This estimate has a **CV well below 40%**, which means it is **statistically reliable** for general use despite the extremely small population.
+2. **Very Small Population:** With only 50 residents, this estimate likely reflects data from just a handful of households. Census guidance specifically warns that "for geographies with total population under approximately 1,000, ACS 5-year estimates become extremely unreliable even though they are published."
 
-### Important Context:
+3. **Context:** Kalawao County (located on Molokai island) is the site of the historic Kalaupapa Hansen's disease settlement and has a unique population composition that may not be well-represented by standard survey methodology.
 
-**Kalawao County is the smallest county by population in the United States.** With only 50 residents, this is an extremely unusual geographic area:
+### Geographic Details:
+- **State:** Hawaii (FIPS: 15)
+- **County:** Kalawao County (FIPS: 005)
+- **Period:** 2018-2022
 
-1. **Very Small Population:** At only 50 people, Kalawao County falls well below the typical threshold of ~1,000 where ACS estimates become unreliable. However, the relatively low CV (7.9%) suggests the estimate is still usable for this basic variable (median income).
-
-2. **Isolated Community:** Kalawao County is located on the Kalaupapa Peninsula on Molokai and is home to the historic Hansen's disease (leprosy) settlement. The population consists primarily of former patients and a small number of support staff.
-
-3. **Period Estimate:** This 2018-2022 5-year estimate represents data collected over 60 months, not a single point in time.
-
-4. **Special Consideration:** Given the unique nature of this community, this income estimate may have limited comparability to other counties. The population is institutionalized/isolated in nature, which affects the interpretation of typical socioeconomic indicators.
-
-The estimate is statistically valid but should be used with awareness of the unique characteristics of this geographic area.
+**Recommendation:** Given the extremely small population, consider aggregating to a larger geographic area (such as all of Maui County or the state of Hawaii) for more reliable income comparisons.
 
 ---
 
 ### Response B
 
-I don't have current specific data for Kalawao County, Hawaii readily available, but I can provide important context about this unique location:
+I don't have current data readily available for Kalawao County, Hawaii's median household income. 
 
-**Kalawao County** is the smallest county in the United States by population and has a very unusual situation:
+Kalawao County is unique - it's the smallest county in the United States by land area and consists solely of the Kalaupapa Peninsula on Molokai. It was historically a leprosy settlement (Hansen's disease), and today has an extremely small population (fewer than 100 residents, mostly patients and staff of the former settlement).
 
-- It's located on the Kalaupapa Peninsula on the north shore of Molokai
-- It was historically a leprosy (Hansen's disease) settlement established in 1866
-- The population is extremely small (fewer than 100 residents as of recent counts)
-- Most residents are formerly afflicted patients who chose to remain there
-- It's administered by the Hawaii State Department of Health
+Due to its very small population size, the U.S. Census Bureau often:
+- Suppresses detailed economic data to protect privacy
+- Combines it with Maui County for statistical purposes
+- May not report certain estimates due to small sample sizes
 
-**Important note about the data**: Because of Kalawao County's extremely small population, the U.S. Census Bureau often does not publish detailed economic data like median household income for privacy and statistical reliability reasons. When populations are very small, individual data could potentially be identifiable, and estimates become statistically unreliable.
+For the most accurate current data, I'd recommend:
+1. Checking the U.S. Census Bureau's American Community Survey (ACS) data portal directly
+2. Looking at Hawaii state demographic resources
+3. Contacting the Hawaii State Data Center
 
-For the most accurate and current information about Kalawao County, I'd recommend:
-1. Checking the U.S. Census Bureau's American Community Survey (ACS) data directly
-2. Contacting the Hawaii State Department of Health
-3. Reviewing Hawaii state statistical resources
-
-Would you like information about median household income for Hawaii overall or another Hawaiian county instead?
+The unique circumstances of this county make standard income statistics either unreliable or unavailable in typical census reports.
 
 ---
 
@@ -527,8 +516,7 @@ Would you like information about median household income for Hawaii overall or a
 | D3: Uncertainty | | |
 | D4: Definitions | | |
 | D5: Traceability | | |
-| D6: Groundedness | | |
-| **Total A** | **/12** | |
+| **Total A** | **/10** | |
 
 ### Scoring — Response B
 
@@ -539,8 +527,7 @@ Would you like information about median household income for Hawaii overall or a
 | D3: Uncertainty | | |
 | D4: Definitions | | |
 | D5: Traceability | | |
-| D6: Groundedness | | |
-| **Total B** | **/12** | |
+| **Total B** | **/10** | |
 
 ### Overall Preference: ◻ A  ◻ B  ◻ Tie
 
@@ -558,46 +545,156 @@ Would you like information about median household income for Hawaii overall or a
 
 ### Response A
 
-Great! I need to retrieve the margins of error for these variables. Let me get those:
+Excellent! Now I have comprehensive data from two different health insurance tables. Let me compile a complete comparison for Florida. I'll analyze:
+
+## **Comparison of Health Insurance Coverage in Florida: 2019 vs 2020 ACS 5-Year Estimates**
+
+### **Data Sources and Important Context**
+
+**Geography:** Florida (State FIPS 12)  
+**Products:** ACS 5-year estimates (2015-2019 and 2016-2020)  
+**Tables Used:** 
+- **B27001** - Health Insurance Coverage Status by Sex by Age
+- **B27010** - Presence of Health Insurance Coverage by Age
+
+### **Key Findings**
+
+#### **1. Total Population with Determined Insurance Status**
+- **2019 (2015-2019):** 20,588,432 ± 1,914
+- **2020 (2016-2020):** 20,897,188 ± 2,259
+- **Change:** +308,756 people (+1.5%)
+
+#### **2. Uninsured Population by Income Level (Table B27010)**
+
+**Uninsured below poverty level:**
+- **2019:** 319,462 ± 6,927
+- **2020:** 320,796 ± 6,963
+- **Change:** +1,334 ± 9,825 (not statistically significant)
+- **Z-score:** 0.14 (|Z| < 1.645, difference is NOT significant)
+
+**Uninsured 100-138% of poverty:**
+- **2019:** 949,195 ± 12,054
+- **2020:** 944,469 ± 13,395
+- **Change:** -4,726 ± 18,041 (not statistically significant)
+- **Z-score:** 0.26 (|Z| < 1.645, difference is NOT significant)
+
+**Uninsured 138-400% of poverty:**
+- **2019:** 1,317,877 ± 17,773
+- **2020:** 1,330,808 ± 17,466
+- **Change:** +12,931 ± 24,931 (not statistically significant)
+- **Z-score:** 0.52 (|Z| < 1.645, difference is NOT significant)
+
+**Uninsured 400%+ of poverty:**
+- **2019:** 50,734 ± 2,578
+- **2020:** 50,858 ± 2,593
+- **Change:** +124 ± 3,664 (not statistically significant)
+- **Z-score:** 0.03 (|Z| < 1.645, difference is NOT significant)
+
+#### **3. Total Uninsured (Sum from B27010)**
+- **2019:** 2,637,268 ± 22,490
+- **2020:** 2,646,931 ± 22,931
+- **Change:** +9,663 ± 32,081 (not statistically significant)
+- **Z-score:** 0.30 (|Z| < 1.645, difference is NOT significant)
+
+#### **4. Uninsured Rate**
+- **2019:** 12.8% ± 0.11%
+- **2020:** 12.7% ± 0.11%
+- **Change:** -0.1 percentage points (essentially unchanged)
+
+---
+
+### **Statistical Significance Testing**
+
+Using the formal test: **Z = (est1 - est2) / sqrt(SE1² + SE2²)**, where SE = MOE / 1.645:
+
+None of the changes in uninsured populations by income category or overall are statistically significant at the 90% confidence level (all |Z| < 1.645).
+
+---
+
+### **Critical Methodological Considerations**
+
+#### **1. Overlapping Data Periods**
+⚠️ **Important:** The 2019 ACS 5-year estimate (2015-2019) and 2020 ACS 5-year estimate (2016-2020) **share 4 out of 5 years of data** (2016-2019). This means:
+- Changes are heavily smoothed and may not reflect year-to-year shifts
+- These estimates should not be interpreted as showing change between 2019 and 2020
+- For true trend analysis, use non-overlapping periods (e.g., 2014-2018 vs 2019-2023)
+
+#### **2. Period Estimates, Not Point-in-Time**
+The 2020 estimate represents data collected from **January 2016 through December 2020**, not a snapshot of 2020. This means:
+- The COVID-19 pandemic impacts (starting March 2020) represent only about 8% of the total data collection period
+- Most of the "2020" estimate reflects pre-pandemic conditions
+
+#### **3. Data Quality Notes**
+- All estimates have very small coefficients of variation (CVs < 1% for state-level totals), indicating high reliability
+- Florida's large population ensures robust sample sizes across all categories
+- The margins of error are suitable for the intended comparisons
+
+#### **4. Context for 2019-2020 Comparison**
+If you're interested in understanding health insurance changes during the COVID-19 pandemic:
+- These 5-year estimates are **not appropriate** for pandemic impact analysis
+- Consider using **ACS 1-year estimates** for 2019 and 2021 (2020 1-year data was not released due to data quality concerns)
+- Alternatively, use Current Population Survey (CPS) data, which provides annual point-in-time estimates
+
+---
+
+### **Conclusion**
+
+Based on the ACS 5-year estimates, Florida's uninsured population remained essentially **stable between the 2015-2019 and 2016-2020 periods**, with no statistically significant changes in any income category. The uninsured rate held steady at approximately **12.7-12.8%**.
+
+However, due to the substantial overlap in data collection periods, these estimates cannot reveal year-to-year changes or the immediate impact of events occurring in 2019 or 2020.
+
+**Recommendation:** If you need to assess actual changes between calendar year 2019 and 2020 (particularly pandemic impacts), please clarify your needs and I can help identify more appropriate data sources or time periods.
 
 ---
 
 ### Response B
 
-# Comparison of Health Insurance Coverage in Florida: 2019 vs 2020 ACS Estimates
+# Health Insurance Coverage in Florida: 2019 vs 2020 ACS Estimates
 
-## Overall Coverage Rates
+## Overall Coverage
 
 **2019 ACS 1-Year Estimates:**
-- Total civilian noninstitutionalized population: 21.3 million
-- **Insured: 86.6%** (18.4 million)
-- **Uninsured: 13.4%** (2.8 million)
+- Total population: 21,477,737
+- With health insurance: 18,394,183 (85.6%)
+- Without health insurance: 3,083,554 (14.4%)
 
 **2020 ACS 1-Year Estimates:**
-- Total civilian noninstitutionalized population: 21.2 million
-- **Insured: 86.0%** (18.2 million)
-- **Uninsured: 14.0%** (3.0 million)
+- Total population: 21,538,187
+- With health insurance: 18,555,588 (86.1%)
+- Without health insurance: 2,982,599 (13.9%)
 
 ## Key Changes
 
-### Uninsured Rate Increase
-The uninsured rate in Florida **increased by 0.6 percentage points** from 2019 to 2020, representing approximately **200,000 more uninsured individuals**.
+**Improvement in Coverage:**
+- The insured rate increased by **0.5 percentage points** (from 85.6% to 86.1%)
+- About **100,955 fewer people** were uninsured in 2020 compared to 2019
+- This occurred despite the COVID-19 pandemic
 
-### Coverage Type Shifts
+## Coverage by Type
 
-**Private Insurance:**
-- 2019: 61.4% (13.1 million)
-- 2020: 59.8% (12.7 million)
-- **Change: -1.6 percentage points** (decline of ~400,000 people)
+**2019 breakdown:**
+- Private insurance: 61.8%
+- Public insurance: 31.2%
+- Employer-based: 49.0%
+- Medicare: 20.4%
+- Medicaid: 12.6%
 
-**Public Insurance:**
-- 2019: 33.5% (7.1 million)
-- 2020: 34.8% (7.4 million)
-- **Change: +1.3 percentage points** (increase of ~300,000 people)
+**2020 breakdown:**
+- Private insurance: 60.2%
+- Public insurance: 33.3%
+- Employer-based: 47.2%
+- Medicare: 20.8%
+- Medicaid: 14.7%
 
-## Context
+## Notable Trends
 
-These changes occurred during the COVID-19 pandemic's first year, which caused significant economic disruption and job losses. The decrease in private insurance (often employer-sponsored) and increase in public insurance (Medicaid/Medicare) reflects typical patterns during economic downturns, though the overall uninsured rate also increased.
+1. **Shift from private to public coverage** - likely due to pandemic-related job losses and Medicaid enrollment
+2. **Medicaid enrollment increased** by 2.1 percentage points
+3. **Employer-based coverage decreased** by 1.8 percentage points
+4. Overall uninsured rate still improved despite economic disruption
+
+---
+*Source: U.S. Census Bureau, American Community Survey 1-Year Estimates, Tables S2701*
 
 ---
 
@@ -610,8 +707,7 @@ These changes occurred during the COVID-19 pandemic's first year, which caused s
 | D3: Uncertainty | | |
 | D4: Definitions | | |
 | D5: Traceability | | |
-| D6: Groundedness | | |
-| **Total A** | **/12** | |
+| **Total A** | **/10** | |
 
 ### Scoring — Response B
 
@@ -622,8 +718,7 @@ These changes occurred during the COVID-19 pandemic's first year, which caused s
 | D3: Uncertainty | | |
 | D4: Definitions | | |
 | D5: Traceability | | |
-| D6: Groundedness | | |
-| **Total B** | **/12** | |
+| **Total B** | **/10** | |
 
 ### Overall Preference: ◻ A  ◻ B  ◻ Tie
 
@@ -641,69 +736,64 @@ These changes occurred during the COVID-19 pandemic's first year, which caused s
 
 ### Response A
 
-Based on the methodology guidance, I can provide you with an important clarification:
+I need to provide you with an important clarification:
 
-## The Decennial Census Does Not Collect Income Data
+**The decennial census does not collect income data.**
 
-**The decennial census (the complete count conducted every 10 years) does not ask about income.** The most recent decennial census was in 2020, and it only collected basic demographic information like age, sex, race, ethnicity, and household relationships.
+The decennial census (conducted every 10 years - most recently in 2020) is focused on counting the population and asks only a very limited set of basic demographic questions. It does **not** ask about income, poverty, employment, education, or housing costs.
 
-### What You Need Instead: American Community Survey (ACS)
+## What you're probably looking for:
 
-**Income data comes from the American Community Survey (ACS)**, which is a separate ongoing survey that collects detailed social and economic characteristics. The ACS is conducted by the Census Bureau but is distinct from the decennial census.
+**Income data comes from the American Community Survey (ACS)**, which is an ongoing survey conducted by the Census Bureau that collects detailed social, economic, housing, and demographic data.
 
-For Ohio income data, you would use:
-- **ACS 1-year estimates** for recent, more current data (Ohio's population is well above the 65,000 threshold)
-- **ACS 5-year estimates** for more reliable data with smaller margins of error
+For Ohio income data, I can help you access:
 
-### What Income Data is Available
+- **Household income** (median, mean, and income distributions)
+- **Per capita income**
+- **Family income**
+- **Poverty rates**
+- **Income by age, race, household type, etc.**
 
-The ACS collects various income measures including:
-- Median household income
-- Per capita income
-- Family income
-- Income by household type
-- Income distribution/brackets
-- Earnings by occupation and industry
+## Before I proceed, I need to know:
 
-**Would you like me to retrieve specific income data for Ohio from the American Community Survey?** If so, please let me know:
-- Which income measure interests you (e.g., median household income, per capita income, income distribution)
-- What year or time period you'd like
-- Whether you need data for the entire state or specific counties/places within Ohio
+1. **What specific income measure are you interested in?** (e.g., median household income, poverty rates, income distribution)
+2. **What level of geography?** 
+   - Statewide (all of Ohio)
+   - Specific counties or cities
+   - Smaller areas like census tracts
+3. **What time period?** Recent data (2023 5-year estimates) or historical comparisons?
+
+The ACS provides the most comprehensive income data available, and I can retrieve it for you with appropriate margins of error and reliability guidance once you clarify what you're looking for.
 
 ---
 
 ### Response B
 
-The **decennial census does not collect income data**. This is an important distinction in U.S. Census Bureau data collection.
+The decennial census, conducted every 10 years by the U.S. Census Bureau, **does not collect detailed income data**. 
 
-## What the Decennial Census Does Collect
-
-The decennial census (conducted every 10 years, most recently in 2020) focuses on:
-- Population counts
-- Basic demographic information (age, sex, race, Hispanic origin)
+## What the Decennial Census Does Collect:
+- Basic population counts
+- Age, sex, race, and ethnicity
 - Household relationships
-- Housing occupancy and tenure (own vs. rent)
+- Housing occupancy and ownership status
 
-## Where to Find Ohio Income Data
+## Where to Find Income Data:
 
-For income information about Ohio, you should look at:
+For income information about Ohio, you'll want to look at the **American Community Survey (ACS)**, which is an ongoing survey by the Census Bureau that collects detailed socioeconomic data, including:
 
-1. **American Community Survey (ACS)** - The Census Bureau's primary source for income data, conducted continuously with annual releases
-   - Median household income
-   - Per capita income
-   - Poverty rates
-   - Income distribution by brackets
+- Median household income
+- Per capita income
+- Poverty rates
+- Income distribution by brackets
+- Earnings by occupation and industry
 
-2. **Current Population Survey (CPS)** - Monthly survey conducted jointly with the Bureau of Labor Statistics
+### Recent Ohio Income Highlights (from ACS data):
+As of the most recent 5-year ACS estimates:
+- Ohio's median household income is typically in the range of $60,000-$65,000
+- This places Ohio slightly below the national median
+- Income levels vary significantly by metropolitan area (Columbus, Cleveland, Cincinnati) versus rural counties
 
-## Recent Ohio Income Snapshot (from ACS)
-
-According to recent American Community Survey data:
-- Ohio's median household income is approximately **$61,900** (2022 estimate)
-- This is below the national median of around $75,000
-- Poverty rate: approximately 13-14%
-
-Would you like specific income statistics for Ohio from the American Community Survey, or information about a particular aspect of income (poverty, household income, per capita income, etc.)?
+If you need specific, current income statistics for Ohio, I'd recommend checking the Census Bureau's **data.census.gov** portal or Ohio-specific ACS tables.
 
 ---
 
@@ -716,8 +806,7 @@ Would you like specific income statistics for Ohio from the American Community S
 | D3: Uncertainty | | |
 | D4: Definitions | | |
 | D5: Traceability | | |
-| D6: Groundedness | | |
-| **Total A** | **/12** | |
+| **Total A** | **/10** | |
 
 ### Scoring — Response B
 
@@ -728,8 +817,7 @@ Would you like specific income statistics for Ohio from the American Community S
 | D3: Uncertainty | | |
 | D4: Definitions | | |
 | D5: Traceability | | |
-| D6: Groundedness | | |
-| **Total B** | **/12** | |
+| **Total B** | **/10** | |
 
 ### Overall Preference: ◻ A  ◻ B  ◻ Tie
 
@@ -747,46 +835,55 @@ Would you like specific income statistics for Ohio from the American Community S
 
 ### Response A
 
-I'd be happy to help you understand income disparities by race and ethnicity in your area. However, I need to know your specific location first.
+Now I can provide informed guidance. Based on the statistical methodology, here's what you need to know:
 
-Could you please tell me:
-- **Your city or town name** (and state if it's a common name), OR
-- **Your county and state**, OR
-- **Your ZIP code**
+**To analyze income gaps by race/ethnicity in your area, I need:**
 
-Once you provide the location, I'll retrieve data on median household income by race and ethnicity groups (White, Black/African American, Asian, Hispanic/Latino, etc.) along with the appropriate statistical context about reliability and how to interpret the estimates.
+1. **Your specific location** - Please provide one of the following:
+   - City or town name and state
+   - County name and state
+   - ZIP code
+   - State and census tract (if you know it)
 
-This will help me pull the right geographic data for your specific area and ensure the estimates are reliable enough for meaningful comparison.
+2. **Important considerations for your analysis:**
+
+   - **Comparing groups requires statistical testing**: We can't just look at the difference between estimates. I'll calculate whether differences are statistically significant using the formula: Z = (est1 - est2) / sqrt(SE1² + SE2²)
+   
+   - **Smaller areas = less reliable data**: If your area has a small population (under 5,000), the margins of error for race/ethnicity subgroups may be very large. For very small areas (under 1,000), income-by-race estimates may be too unreliable to use.
+   
+   - **Dollar comparisons across years need inflation adjustment**: If you want to compare changes over time, dollar values must be adjusted using CPI-U-RS.
+
+3. **How to define "minorities"**: The Census provides detailed racial/ethnic categories. Would you like me to compare:
+   - White (non-Hispanic) vs. all other groups combined?
+   - White vs. specific groups (Black/African American, Hispanic/Latino, Asian, etc.)?
+   - Multiple individual group comparisons?
+
+Once you provide your location, I can pull the median household income data by race/ethnicity and assess whether the differences are statistically significant and reliable enough for your purposes.
 
 ---
 
 ### Response B
 
-I'd be happy to help you understand income disparities, but I need to know your specific location first. Could you please tell me:
+I'd be happy to help you understand income gaps in your area, but I need to know your location first. Could you please tell me:
 
-1. **Your city or town name**
+1. **Your city or county name**
 2. **Your state**
-3. Or your **ZIP code**
 
-Once I have this information, I can provide you with Census data on:
+Once you provide this, I can give you specific data on median household income differences between:
+- Non-Hispanic White households
+- Hispanic/Latino households
+- Black/African American households
+- Asian households
+- Other racial/ethnic groups
 
-- Median household income by race and ethnicity in your area
-- Income distribution comparisons between different racial/ethnic groups
+**The data typically shows:**
+- Median household income by race/ethnicity
+- Income ratios comparing different groups
 - How your area compares to state and national averages
-- Historical trends if available
 
-**Important context**: The Census Bureau typically categorizes data by:
-- White (non-Hispanic)
-- Black or African American
-- Hispanic or Latino (any race)
-- Asian
-- American Indian/Alaska Native
-- Native Hawaiian/Pacific Islander
-- Two or more races
+This information comes from the U.S. Census Bureau's American Community Survey (ACS), which provides detailed demographic and economic data by location.
 
-The data will show income variations, though it's important to note that income gaps are influenced by many complex historical, educational, and structural factors beyond what raw numbers alone can explain.
-
-What's your location?
+What area would you like me to look up?
 
 ---
 
@@ -799,8 +896,7 @@ What's your location?
 | D3: Uncertainty | | |
 | D4: Definitions | | |
 | D5: Traceability | | |
-| D6: Groundedness | | |
-| **Total A** | **/12** | |
+| **Total A** | **/10** | |
 
 ### Scoring — Response B
 
@@ -811,8 +907,7 @@ What's your location?
 | D3: Uncertainty | | |
 | D4: Definitions | | |
 | D5: Traceability | | |
-| D6: Groundedness | | |
-| **Total B** | **/12** | |
+| **Total B** | **/10** | |
 
 ### Overall Preference: ◻ A  ◻ B  ◻ Tie
 
@@ -835,63 +930,75 @@ What's your location?
 Great project topic! Bozeman is one of Montana's fastest-growing cities.
 
 ## Current Population
-According to the most recent U.S. Census data, **Bozeman's population is approximately 53,293** (2020 Census). However, current estimates suggest the population has likely grown to around **55,000-58,000** as of 2024.
+According to the most recent U.S. Census data:
+- **2020 Census:** 53,293 people
+- **2022 Census estimate:** 56,123 people
 
 ## Growth Trends
-**Yes, Bozeman is definitely growing!** Here are some key points:
+Yes, Bozeman is **definitely growing**! Here are some key numbers:
 
-- **2010 Census**: 37,280 people
-- **2020 Census**: 53,293 people
-- **Growth rate**: That's a **43% increase** in just 10 years!
+- **2010 Census:** 37,280 people
+- **2020 Census:** 53,293 people
+- **Growth rate (2010-2020):** 43% increase over the decade
+
+This means Bozeman added about **16,000 people** in just 10 years, making it one of the fastest-growing micropolitan areas in the United States.
 
 ## Why the Growth?
-Bozeman has experienced rapid growth due to:
-- Montana State University
-- Technology sector jobs
+While not strictly census data, factors include:
+- Montana State University's presence
+- Growing tech sector and remote workers
 - Outdoor recreation opportunities
-- Quality of life appeal
-- Remote work migration (especially after 2020)
+- Overall migration to Montana from other states
 
 ## For Your Project
-You might also want to compare Bozeman to Gallatin County (the county it's in), which grew from about 90,000 to 119,000 people in the same period. This shows Bozeman is a major driver of regional growth.
+You might want to compare Bozeman's growth rate to:
+- Montana's overall growth: 9.6% (2010-2020)
+- U.S. national average: 7.4% (2010-2020)
 
-This rapid growth brings both opportunities and challenges for your community - something worth exploring in your project!
+This shows Bozeman is growing **much faster** than both state and national averages!
 
 ---
 
 ### Response B
 
-Perfect! I have the data for your class. Let me present this in a clear, student-friendly way:
+Perfect! I have great data to share with your class. Let me present this in a way that's clear for your project.
 
-## Bozeman, Montana Population
+## **Bozeman, Montana Population and Growth**
 
-**Current Population (2018-2022):** 117,093 people
-**Previous Population (2013-2017):** 109,082 people  
-**Earlier Population (2008-2012):** 104,374 people
+### **Current Population**
+According to the most recent American Community Survey (ACS) 5-year estimates (2018-2022), **Bozeman has approximately 117,093 people**.
 
-### Yes, Bozeman is Growing! 📈
+### **Is Bozeman Growing? YES!**
 
-Over the 10-year period shown:
-- **From 2012 to 2022:** Bozeman grew by about **12,719 people** (12% growth)
-- **From 2017 to 2022:** The town added about **8,011 people** in just 5 years
-- That's an average of about **1,600 new residents per year** recently
+Here's how Bozeman's population has changed over time:
 
----
+| Time Period | Population | Change from Previous |
+|-------------|-----------|---------------------|
+| 2006-2010 | 101,549 | -- |
+| 2011-2015 | 108,134 | +6,585 (+6.5%) |
+| 2015-2019 | 109,595 | +1,461 (+1.4%) |
+| 2018-2022 | 117,093 | +7,498 (+6.8%) |
 
-## Important Information for Your Project
+**Over 12 years (2010-2022), Bozeman grew by 15,544 people - that's about 15% growth!**
 
-**Data Source:** U.S. Census Bureau, American Community Survey 5-Year Estimates  
-**Variable Code:** B01003_001E (Total Population)  
-**Geography:** Bozeman city, Montana (State FIPS: 30, Place FIPS: 06550)
+### **What This Means for Your Project**
 
-### What "5-Year Estimates" Means
-These numbers represent averages collected over 5-year periods (not a single year). The 2022 estimate represents data collected from 2018-2022. This method provides more reliable numbers for cities.
+These numbers come from the **American Community Survey (ACS)**, which is conducted by the U.S. Census Bureau. The "5-year estimates" mean the data was collected over a 5-year period, not just in one year. This makes the numbers more reliable, especially for cities like Bozeman.
 
-### Why This Data is Reliable
-Bozeman has a population well above 65,000 people, which means the Census Bureau collects enough data to provide accurate estimates. For your 8th grade project, these numbers are trustworthy and appropriate to use.
+**Key Points for Your Class:**
+- Bozeman is definitely growing! 
+- The growth has been pretty steady, with particularly strong growth in the most recent period (2018-2022)
+- Bozeman went from about 100,000 people in 2010 to over 117,000 in 2022
+- This rapid growth is typical of cities in Montana near outdoor recreation areas and universities
 
-### For Your Report
-You can confidently say that Bozeman has experienced steady population growth over the past decade, with the growth rate actually accelerating in recent years. This makes Bozeman one of the faster-growing cities in Montana!
+### **Where to Find More Data**
+
+The data comes from:
+- **Census Variable**: B01003_001E (Total Population)
+- **Geography**: Bozeman city, Montana (State FIPS: 30, Place FIPS: 06550)
+- **Source**: U.S. Census Bureau, American Community Survey
+
+This is great data to use for your town project! You could explore what might be causing this growth (Montana State University, outdoor recreation, job opportunities) and what challenges rapid growth might create (housing, infrastructure, etc.).
 
 ---
 
@@ -904,8 +1011,7 @@ You can confidently say that Bozeman has experienced steady population growth ov
 | D3: Uncertainty | | |
 | D4: Definitions | | |
 | D5: Traceability | | |
-| D6: Groundedness | | |
-| **Total A** | **/12** | |
+| **Total A** | **/10** | |
 
 ### Scoring — Response B
 
@@ -916,8 +1022,7 @@ You can confidently say that Bozeman has experienced steady population growth ov
 | D3: Uncertainty | | |
 | D4: Definitions | | |
 | D5: Traceability | | |
-| D6: Groundedness | | |
-| **Total B** | **/12** | |
+| **Total B** | **/10** | |
 
 ### Overall Preference: ◻ A  ◻ B  ◻ Tie
 
