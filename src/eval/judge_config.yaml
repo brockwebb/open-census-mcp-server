@@ -48,8 +48,18 @@ scoring:
   request_confidence: true     # Ask judges for per-dimension confidence
   confidence_scale: [1, 2, 3, 4, 5]
 
+fidelity:
+  model: 'claude-haiku-4-5-20251001'
+  provider: 'anthropic'
+  api_key_env: 'ANTHROPIC_API_KEY'
+  temperature: 0.0
+  max_tokens: 4096
+  max_retries: 3
+  rate_limit_delay: 0.5
+
 paths:
-  stage1_results: 'results/cqs_responses_20260212_184334.jsonl'
+  stage1_results: 'results/cqs_responses_20260213_091530.jsonl'
   output_dir: 'results/stage2'
   checkpoint_dir: 'results/stage2/checkpoints'
   analysis_output: 'results/stage2/analysis'
+  stage3_output_dir: 'results/stage3'
