@@ -182,7 +182,7 @@ def build_judge_prompt(query_text: str, response_a: str, response_b: str) -> str
         Complete judge prompt requesting structured JSON scoring
     """
 
-    prompt = f"""Today's date is February 13, 2026. Score based on data availability as of this date.
+    prompt = f"""Today's date is February 13, 2026. When evaluating source selection, you must assess data availability based on what has been published as of this date, not based on your training data. Logically, if API calls use a date to obtain data, and that date was not valid, no data would be retrieved to judge. Do not penalize citations of recently released products that you may not have been trained on.
 
 {CQS_RUBRIC}
 

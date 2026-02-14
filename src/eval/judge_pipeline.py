@@ -550,8 +550,20 @@ def process_vendor(
     return successful, failed
 
 
-def run_pipeline(config_path: str = 'src/eval/judge_config.yaml'):
-    """Main judge scoring pipeline."""
+def run_pipeline(
+    config_path: str = 'src/eval/judge_config.yaml',
+    vendor_filter: Optional[set] = None,
+    batch_limit: Optional[int] = None,
+    input_override: Optional[str] = None,
+):
+    """Main judge scoring pipeline.
+
+    Args:
+        config_path: Path to YAML config file
+        vendor_filter: If set, only run these vendors (e.g., {'anthropic', 'openai'})
+        batch_limit: Max number of tasks to run (None = all)
+        input_override: Override stage1_results path from config
+    """
 
     print("="*60)
     print("JUDGE SCORING PIPELINE - Stage 2")
@@ -569,6 +581,10 @@ def run_pipeline(config_path: str = 'src/eval/judge_config.yaml'):
     output_file = output_dir / f'judge_scores_{timestamp}.jsonl'
     run_id = timestamp
 
+    # Apply input override if specified
+    if input_override:
+        config['paths']['stage1_results'] = input_override
+
     print(f"\nRun ID: {run_id}")
     print(f"Output: {output_file}")
 
@@ -583,11 +599,20 @@ def run_pipeline(config_path: str = 'src/eval/judge_config.yaml'):
     # Seed RNG for reproducibility
     random.seed(config['pipeline']['random_seed'])
 
+    # Determine active judges
+    active_judges = set(config['judges'].keys())
+    if vendor_filter:
+        active_judges = active_judges & vendor_filter
+        if not active_judges:
+            print(f"\nERROR: No matching judges. Available: {list(config['judges'].keys())}")
+            return
+        print(f"Vendor filter: {sorted(active_judges)}")
+
     # Build task list with 6-pass design
     num_passes = config['pipeline'].get('num_passes', 6)
     tasks = []
     for pair in query_pairs:
-        for judge_key in config['judges'].keys():
+        for judge_key in active_judges:
             for pass_num in range(1, num_passes + 1):
                 # Alternate ordering: odd passes = control_first, even passes = treatment_first
                 ordering = 'control_first' if pass_num % 2 == 1 else 'treatment_first'
@@ -598,6 +623,11 @@ def run_pipeline(config_path: str = 'src/eval/judge_config.yaml'):
         task for task in tasks
         if task not in completed  # Full tuple match including pass_number
     ]
+
+    # Apply batch limit
+    if batch_limit and batch_limit < len(remaining_tasks):
+        remaining_tasks = remaining_tasks[:batch_limit]
+        print(f"Batch limit: {batch_limit} tasks")
 
     total_tasks = len(tasks)
     remaining = len(remaining_tasks)
@@ -613,7 +643,7 @@ def run_pipeline(config_path: str = 'src/eval/judge_config.yaml'):
     query_pair_map = {pair.query_id: pair for pair in query_pairs}
 
     # Split tasks by vendor
-    vendor_task_map = {judge_key: [] for judge_key in config['judges'].keys()}
+    vendor_task_map = {judge_key: [] for judge_key in active_judges}
     for task in remaining_tasks:
         query_id, judge_key, ordering, pass_num = task
         vendor_task_map[judge_key].append(task)
@@ -667,8 +697,41 @@ def run_pipeline(config_path: str = 'src/eval/judge_config.yaml'):
 
 
 def main():
-    """Entry point."""
-    run_pipeline()
+    """Entry point with CLI arguments."""
+    import argparse
+
+    parser = argparse.ArgumentParser(description='Judge Scoring Pipeline - Stage 2')
+    parser.add_argument('--config', default='src/eval/judge_config.yaml',
+                        help='Path to judge config YAML')
+    parser.add_argument('--anthropic', action='store_true',
+                        help='Run Anthropic judge (default: all judges)')
+    parser.add_argument('--openai', action='store_true',
+                        help='Run OpenAI judge (default: all judges)')
+    parser.add_argument('--google', action='store_true',
+                        help='Run Google judge (default: all judges)')
+    parser.add_argument('--batch', type=int, default=None,
+                        help='Max tasks to run (default: all remaining)')
+    parser.add_argument('--input', type=str, default=None,
+                        help='Override Stage 1 input file path')
+
+    args = parser.parse_args()
+
+    # Determine which vendors to run
+    vendor_filter = set()
+    if args.anthropic:
+        vendor_filter.add('anthropic')
+    if args.openai:
+        vendor_filter.add('openai')
+    if args.google:
+        vendor_filter.add('google')
+    # Empty means all
+
+    run_pipeline(
+        config_path=args.config,
+        vendor_filter=vendor_filter if vendor_filter else None,
+        batch_limit=args.batch,
+        input_override=args.input,
+    )
 
 
 if __name__ == '__main__':
