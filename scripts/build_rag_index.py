@@ -23,33 +23,22 @@ import numpy as np
 from typing import List
 
 
-# Source documents for RAG ablation — must match pragmatics provenance
+# Source documents — ONLY those cited by pragmatics provenance chain
+# Verified: neo4j-pragmatics Context.provenance.sources[].document
+# All 35 pragmatics are domain=acs. Zero CPS pragmatics exist.
+# Equal treatment: RAG gets exactly what pragmatics cite, nothing more.
 RAG_SOURCES = [
-    "acs_general_handbook",        # ACS-GEN-001 — primary
-    "acs_design_methodology",      # ACS-DM-2024 — primary
+    "acs_general_handbook",      # ACS-GEN-001, 28 pragmatic citations
+    "acs_design_methodology",    # ACS-DM-2024, 6 pragmatic citations
 ]
 
-# Additional sources not in quarry catalog yet
+# Cited by pragmatics but not yet in quarry SOURCE_CATALOG
 ADDITIONAL_SOURCES = [
     {
         "catalog_id": "acs_geography_handbook_2020",
         "title": "ACS Geography Handbook 2020",
         "local_path": "knowledge-base/source-docs/OtherACS/acs_geography_handbook_2020.pdf"
-    },
-    {
-        "catalog_id": "acs_accuracy_2023",
-        "title": "ACS Accuracy of Data 2023",
-        "local_path": "knowledge-base/source-docs/OtherACS/ACS_Accuracy_of_Data_2023.pdf"
-    },
-    {
-        "catalog_id": "multiyear_accuracy_2023",
-        "title": "Multiyear ACS Accuracy 2023",
-        "local_path": "knowledge-base/source-docs/OtherACS/MultiyearACSAccuracyofData2023.pdf"
-    },
-    {
-        "catalog_id": "understanding_acs_data",
-        "title": "Understanding and Using ACS Data",
-        "local_path": "knowledge-base/source-docs/OtherACS/Understanding and Using ACS Data_ What All Data Users Need to Know.pdf"
+        # Census Geography Handbook, 1 pragmatic citation
     },
 ]
 
