@@ -138,7 +138,7 @@ def map_scores_to_conditions(record: Dict[str, Any]) -> Tuple[Dict, Dict]:
 # =============================================================================
 
 def compute_cohens_d(treatment_scores: List[float], control_scores: List[float]) -> float:
-    """Compute Cohen's d effect size."""
+    """Compute Cohen's d effect size (independent samples formula)."""
     mean_t = np.mean(treatment_scores)
     mean_c = np.mean(control_scores)
 
@@ -154,6 +154,18 @@ def compute_cohens_d(treatment_scores: List[float], control_scores: List[float])
         return 0.0
 
     return (mean_t - mean_c) / pooled_sd
+
+
+def compute_paired_cohens_d(treatment_scores: List[float], control_scores: List[float]) -> float:
+    """Compute Cohen's d for paired/repeated-measures design.
+
+    Uses within-pair differences, appropriate for paired data where each
+    query has both treatment and control conditions.
+    """
+    diffs = np.array(treatment_scores) - np.array(control_scores)
+    if np.std(diffs, ddof=1) == 0:
+        return 0.0
+    return np.mean(diffs) / np.std(diffs, ddof=1)
 
 
 def bootstrap_cohens_d_ci(treatment_scores: np.ndarray, control_scores: np.ndarray,
@@ -312,7 +324,8 @@ def analyze_inter_rater_reliability(records: List[Dict[str, Any]],
         qid = record['query_id']
         vendor = record['judge_vendor']
         pass_num = record.get('pass_number', 1)
-        key = (qid, pass_num, record.get('presentation_order', 'unknown'))
+        # Bug 6 fix: presentation_order is deterministic from pass_num, redundant in key
+        key = (qid, pass_num)
 
         _, treatment = map_scores_to_conditions(record)
         grouped[key][vendor] = treatment
@@ -461,30 +474,51 @@ def analyze_verbosity_bias(records: List[Dict[str, Any]],
 
         treatment_lengths = []
         treatment_composites = []
+        control_lengths = []
+        control_composites = []
 
         for record in vendor_records:
             qid = record['query_id']
             if qid not in response_lengths:
                 continue
 
-            _, treatment = map_scores_to_conditions(record)
+            control, treatment = map_scores_to_conditions(record)
 
             # Compute composite (D1-D5)
             composite_dims = ['D1', 'D2', 'D3', 'D4', 'D5']
-            scores = [treatment[d]['score'] for d in composite_dims if d in treatment]
 
-            if len(scores) == 5:
+            # Treatment
+            t_scores = [treatment[d]['score'] for d in composite_dims if d in treatment]
+            if len(t_scores) == 5:
                 treatment_lengths.append(response_lengths[qid]['treatment'])
-                treatment_composites.append(np.mean(scores))
+                treatment_composites.append(np.mean(t_scores))
+
+            # Bug 7 fix: Also analyze control
+            c_scores = [control[d]['score'] for d in composite_dims if d in control]
+            if len(c_scores) == 5:
+                control_lengths.append(response_lengths[qid]['control'])
+                control_composites.append(np.mean(c_scores))
+
+        vendor_result = {}
 
         if len(treatment_lengths) > 5:
-            rho, p_value = stats.spearmanr(treatment_lengths, treatment_composites)
-
-            results[vendor] = {
-                'spearman_rho': rho,
-                'p_value': p_value,
+            rho_t, p_t = stats.spearmanr(treatment_lengths, treatment_composites)
+            vendor_result['treatment'] = {
+                'spearman_rho': rho_t,
+                'p_value': p_t,
                 'n': len(treatment_lengths)
             }
+
+        if len(control_lengths) > 5:
+            rho_c, p_c = stats.spearmanr(control_lengths, control_composites)
+            vendor_result['control'] = {
+                'spearman_rho': rho_c,
+                'p_value': p_c,
+                'n': len(control_lengths)
+            }
+
+        if vendor_result:
+            results[vendor] = vendor_result
 
     return results
 
@@ -510,36 +544,37 @@ def analyze_test_retest(records: List[Dict[str, Any]], dimensions: List[str]) ->
 
         vendor_results = {}
         for dim in dimensions:
-            # Collect pass pairs: (1,2), (3,4), (5,6)
-            pair_1 = []
-            pair_2 = []
+            # Bug 1 fix: Collect all pass-pairs into single list
+            # Each pass-pair is an independent measurement occasion, so combining
+            # them increases statistical power without inflating correlation
+            all_pairs = []
 
             for qid in grouped.keys():
                 passes = grouped[qid]
 
                 # Pair 1: passes 1 & 2
                 if 1 in passes and 2 in passes and dim in passes[1] and dim in passes[2]:
-                    pair_1.append((passes[1][dim]['score'], passes[2][dim]['score']))
+                    all_pairs.append((passes[1][dim]['score'], passes[2][dim]['score']))
 
                 # Pair 2: passes 3 & 4
                 if 3 in passes and 4 in passes and dim in passes[3] and dim in passes[4]:
-                    pair_1.append((passes[3][dim]['score'], passes[4][dim]['score']))
+                    all_pairs.append((passes[3][dim]['score'], passes[4][dim]['score']))
 
                 # Pair 3: passes 5 & 6
                 if 5 in passes and 6 in passes and dim in passes[5] and dim in passes[6]:
-                    pair_1.append((passes[5][dim]['score'], passes[6][dim]['score']))
+                    all_pairs.append((passes[5][dim]['score'], passes[6][dim]['score']))
 
-            if len(pair_1) > 3:
+            if len(all_pairs) > 3:
                 # Compute Pearson correlation between paired measurements
-                scores_a = [p[0] for p in pair_1]
-                scores_b = [p[1] for p in pair_1]
+                scores_a = [p[0] for p in all_pairs]
+                scores_b = [p[1] for p in all_pairs]
 
                 r, p_value = stats.pearsonr(scores_a, scores_b)
 
                 vendor_results[dim] = {
                     'pearson_r': r,
                     'p_value': p_value,
-                    'n_pairs': len(pair_1),
+                    'n_pairs': len(all_pairs),  # Total across all pass-pairs
                     'interpretation': 'Good' if r > 0.7 else 'Moderate' if r > 0.5 else 'Poor'
                 }
 
@@ -575,34 +610,54 @@ def analyze_stratified_effects(records: List[Dict[str, Any]],
         stratum_results = {}
 
         for dim in dimensions:
-            treatment_scores = []
-            control_scores = []
+            # Bug 4 fix: Aggregate to query level first to avoid inflated N
+            # from repeated measures (vendors × passes)
+            query_treatment = defaultdict(list)
+            query_control = defaultdict(list)
 
             for record in stratum_records:
                 control, treatment = map_scores_to_conditions(record)
+                qid = record['query_id']
 
                 if dim in control and dim in treatment:
-                    control_scores.append(control[dim]['score'])
-                    treatment_scores.append(treatment[dim]['score'])
+                    query_control[qid].append(control[dim]['score'])
+                    query_treatment[qid].append(treatment[dim]['score'])
 
-            if len(treatment_scores) > 0:
-                t_arr = np.array(treatment_scores)
-                c_arr = np.array(control_scores)
+            # Compute query-level means
+            paired_queries = sorted(set(query_treatment.keys()) & set(query_control.keys()))
+            query_t_means = [np.mean(query_treatment[qid]) for qid in paired_queries]
+            query_c_means = [np.mean(query_control[qid]) for qid in paired_queries]
 
-                d = compute_cohens_d(treatment_scores, control_scores)
+            # Also collect all record-level scores for backward compatibility
+            all_treatment = [s for scores in query_treatment.values() for s in scores]
+            all_control = [s for scores in query_control.values() for s in scores]
+
+            if len(paired_queries) > 0:
+                # Effect size on query-level means (paired design)
+                d_paired = compute_paired_cohens_d(query_t_means, query_c_means)
+
+                # Also compute independent d on all records
+                t_arr = np.array(all_treatment)
+                c_arr = np.array(all_control)
+                d_independent = compute_cohens_d(all_treatment, all_control)
                 ci_lower, ci_upper = bootstrap_cohens_d_ci(t_arr, c_arr)
 
-                # Wilcoxon signed-rank test
-                stat, p_value = stats.wilcoxon(treatment_scores, control_scores)
+                # Wilcoxon on query-level means (correct N)
+                if len(paired_queries) >= 10:
+                    stat, p_value = stats.wilcoxon(query_t_means, query_c_means)
+                else:
+                    p_value = np.nan  # Too few queries for meaningful test
 
                 stratum_results[dim] = {
-                    'cohens_d': d,
+                    'cohens_d': d_independent,  # Conservative (independent formula)
+                    'cohens_d_paired': d_paired,  # Primary (paired formula on query means)
                     'ci_lower': ci_lower,
                     'ci_upper': ci_upper,
-                    'mean_treatment': np.mean(treatment_scores),
-                    'mean_control': np.mean(control_scores),
+                    'mean_treatment': np.mean(query_t_means),
+                    'mean_control': np.mean(query_c_means),
                     'p_value': p_value,
-                    'n': len(treatment_scores)
+                    'n_queries': len(paired_queries),
+                    'n_records': len(all_treatment)
                 }
 
         results[stratum] = stratum_results
@@ -716,23 +771,42 @@ def analyze_fidelity(fidelity_records: List[Dict[str, Any]]) -> Dict[str, Any]:
         for key in control_aud.keys():
             control_aud[key] += ca_summary.get(key, 0)
 
-    # Compute fidelity score
-    substantive_claims = total_claims - no_source
-    if substantive_claims > 0:
-        fidelity_score = (matched + calc_correct) / substantive_claims * 100
+    # Bug 2 fix: Compute fidelity score using total_claims as denominator
+    # no_source claims count against fidelity (unverifiable assertions)
+    if total_claims > 0:
+        fidelity_score = (matched + calc_correct) / total_claims * 100
     else:
         fidelity_score = 0.0
 
-    # Compute auditability percentages
-    t_total = sum(v for k, v in treatment_aud.items() if k != 'total')
-    c_total = sum(v for k, v in control_aud.items() if k != 'total')
+    # Also compute substantive fidelity (among verifiable claims only) for discussion
+    substantive_claims = total_claims - no_source
+    if substantive_claims > 0:
+        substantive_fidelity = (matched + calc_correct) / substantive_claims * 100
+    else:
+        substantive_fidelity = 0.0
 
-    treatment_aud_pct = {k: v/t_total*100 if t_total > 0 else 0 for k, v in treatment_aud.items()}
-    control_aud_pct = {k: v/c_total*100 if c_total > 0 else 0 for k, v in control_aud.items()}
+    # Bug 3 fix: Compute auditability percentages excluding non_claims
+    # non_claims are methodological statements, not auditability candidates
+    t_auditable_total = (treatment_aud['auditable'] + treatment_aud['partially_auditable'] +
+                        treatment_aud['unauditable'])
+    c_auditable_total = (control_aud['auditable'] + control_aud['partially_auditable'] +
+                        control_aud['unauditable'])
+
+    treatment_aud_pct = {
+        'auditable': treatment_aud['auditable'] / t_auditable_total * 100 if t_auditable_total > 0 else 0,
+        'partially_auditable': treatment_aud['partially_auditable'] / t_auditable_total * 100 if t_auditable_total > 0 else 0,
+        'unauditable': treatment_aud['unauditable'] / t_auditable_total * 100 if t_auditable_total > 0 else 0,
+    }
+
+    control_aud_pct = {
+        'auditable': control_aud['auditable'] / c_auditable_total * 100 if c_auditable_total > 0 else 0,
+        'partially_auditable': control_aud['partially_auditable'] / c_auditable_total * 100 if c_auditable_total > 0 else 0,
+        'unauditable': control_aud['unauditable'] / c_auditable_total * 100 if c_auditable_total > 0 else 0,
+    }
 
     # Chi-square test on auditability distributions
     # Compare auditable vs (partially + unauditable) between conditions
-    if t_total > 0 and c_total > 0:
+    if t_auditable_total > 0 and c_auditable_total > 0:
         contingency = [
             [treatment_aud['auditable'], control_aud['auditable']],
             [treatment_aud['partially_auditable'] + treatment_aud['unauditable'],
@@ -751,18 +825,21 @@ def analyze_fidelity(fidelity_records: List[Dict[str, Any]]) -> Dict[str, Any]:
             'calculation_correct': calc_correct,
             'calculation_incorrect': calc_incorrect,
             'fidelity_score': fidelity_score,
+            'substantive_fidelity': substantive_fidelity,  # Among verifiable claims only
             'pct_matched': matched/total_claims*100 if total_claims > 0 else 0,
             'pct_calc_correct': calc_correct/total_claims*100 if total_claims > 0 else 0
         },
         'treatment_auditability': {
             'counts': treatment_aud,
             'percentages': treatment_aud_pct,
-            'n': t_total
+            'n_substantive': t_auditable_total,  # Excludes non_claims
+            'n_non_claims': treatment_aud['non_claims']
         },
         'control_auditability': {
             'counts': control_aud,
             'percentages': control_aud_pct,
-            'n': c_total
+            'n_substantive': c_auditable_total,  # Excludes non_claims
+            'n_non_claims': control_aud['non_claims']
         },
         'chi_square_test': {
             'chi2': chi2,
@@ -879,16 +956,29 @@ def write_bias_diagnostics_csv(position_bias: Dict, self_enhancement: Dict,
                 'significant': 'Yes' if stats['flagged'] else 'No'
             })
 
-        # Verbosity
-        for vendor, stats in verbosity.items():
-            writer.writerow({
-                'vendor': vendor,
-                'bias_type': 'verbosity',
-                'dimension': 'Composite',
-                'metric': 'spearman_rho',
-                'value': f"{stats['spearman_rho']:.3f}",
-                'significant': 'Yes' if stats['p_value'] < 0.05 else 'No'
-            })
+        # Verbosity (Bug 7 fix: now includes both treatment and control)
+        for vendor, vendor_stats in verbosity.items():
+            if 'treatment' in vendor_stats:
+                stats = vendor_stats['treatment']
+                writer.writerow({
+                    'vendor': vendor,
+                    'bias_type': 'verbosity_treatment',
+                    'dimension': 'Composite',
+                    'metric': 'spearman_rho',
+                    'value': f"{stats['spearman_rho']:.3f}",
+                    'significant': 'Yes' if stats['p_value'] < 0.05 else 'No'
+                })
+
+            if 'control' in vendor_stats:
+                stats = vendor_stats['control']
+                writer.writerow({
+                    'vendor': vendor,
+                    'bias_type': 'verbosity_control',
+                    'dimension': 'Composite',
+                    'metric': 'spearman_rho',
+                    'value': f"{stats['spearman_rho']:.3f}",
+                    'significant': 'Yes' if stats['p_value'] < 0.05 else 'No'
+                })
 
     print(f"  ✅ {csv_path}")
 
@@ -918,19 +1008,23 @@ def write_stratified_csv(stratified: Dict[str, Any], output_dir: Path):
     csv_path = output_dir / 'stratified_effects.csv'
 
     with open(csv_path, 'w', newline='') as f:
-        writer = csv.DictWriter(f, fieldnames=['stratum', 'dimension', 'cohens_d', 'ci_lower', 'ci_upper', 'p_value', 'n'])
+        writer = csv.DictWriter(f, fieldnames=['stratum', 'dimension', 'cohens_d_paired', 'cohens_d_independent',
+                                               'ci_lower', 'ci_upper', 'p_value', 'n_queries', 'n_records'])
         writer.writeheader()
 
         for stratum, stratum_stats in stratified.items():
             for dim, stats in stratum_stats.items():
+                p_val_str = f"{stats['p_value']:.4f}" if not np.isnan(stats['p_value']) else 'N/A'
                 writer.writerow({
                     'stratum': stratum,
                     'dimension': dim,
-                    'cohens_d': f"{stats['cohens_d']:.2f}",
+                    'cohens_d_paired': f"{stats['cohens_d_paired']:.2f}",
+                    'cohens_d_independent': f"{stats['cohens_d']:.2f}",
                     'ci_lower': f"{stats['ci_lower']:.2f}",
                     'ci_upper': f"{stats['ci_upper']:.2f}",
-                    'p_value': f"{stats['p_value']:.4f}",
-                    'n': stats['n']
+                    'p_value': p_val_str,
+                    'n_queries': stats['n_queries'],
+                    'n_records': stats['n_records']
                 })
 
     print(f"  ✅ {csv_path}")
@@ -944,14 +1038,20 @@ def write_fidelity_csv(fidelity: Dict[str, Any], output_dir: Path):
         writer = csv.DictWriter(f, fieldnames=['metric', 'treatment_value', 'control_value'])
         writer.writeheader()
 
-        # Fidelity score
+        # Fidelity scores
         writer.writerow({
-            'metric': 'Fidelity Score',
+            'metric': 'Fidelity Score (overall)',
             'treatment_value': f"{fidelity['treatment_fidelity']['fidelity_score']:.1f}%",
             'control_value': 'N/A'
         })
 
-        # Auditability
+        writer.writerow({
+            'metric': 'Substantive Fidelity (verifiable only)',
+            'treatment_value': f"{fidelity['treatment_fidelity']['substantive_fidelity']:.1f}%",
+            'control_value': 'N/A'
+        })
+
+        # Auditability (excludes non_claims)
         writer.writerow({
             'metric': 'Auditable Claims',
             'treatment_value': f"{fidelity['treatment_auditability']['percentages']['auditable']:.1f}%",
@@ -968,6 +1068,13 @@ def write_fidelity_csv(fidelity: Dict[str, Any], output_dir: Path):
             'metric': 'Unauditable',
             'treatment_value': f"{fidelity['treatment_auditability']['percentages']['unauditable']:.1f}%",
             'control_value': f"{fidelity['control_auditability']['percentages']['unauditable']:.1f}%"
+        })
+
+        # Non-claims (descriptive)
+        writer.writerow({
+            'metric': 'Non-claims (excluded)',
+            'treatment_value': fidelity['treatment_auditability']['n_non_claims'],
+            'control_value': fidelity['control_auditability']['n_non_claims']
         })
 
     print(f"  ✅ {csv_path}")
