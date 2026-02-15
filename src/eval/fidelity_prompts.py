@@ -122,3 +122,63 @@ def build_control_prompt(response_text: str) -> str:
         Complete prompt for control auditability classification
     """
     return CONTROL_AUDITABILITY_PROMPT.format(response_text=response_text)
+
+
+RAG_FIDELITY_PROMPT = """You are verifying the factual accuracy of a Census data response by checking every claim against the reference materials that were retrieved and provided to the model.
+
+## Your Task
+
+Extract EVERY verifiable claim from the response and verify each against the retrieved reference materials.
+
+## Retrieved Reference Materials
+
+{chunk_data}
+
+## Response to Verify
+
+{response_text}
+
+## Verification Rules
+
+For each claim, determine:
+- **match**: Claim is supported by the retrieved reference materials
+- **mismatch**: Claim contradicts the retrieved reference materials
+- **no_source**: Claim has no corresponding content in retrieved materials
+- **calculation_correct**: Calculated value is mathematically correct given source data
+- **calculation_incorrect**: Calculated value is mathematically wrong given source data
+
+## Output Format
+
+Return a JSON object with this structure:
+```json
+{{
+  "claims": [
+    {{
+      "claim_text": "The exact text of the claim from the response",
+      "claim_type": "value|methodology|definition|geographic|threshold|recommendation",
+      "chunk_source": "Which chunk (by number) this comes from, or 'none'",
+      "verdict": "match|mismatch|no_source|calculation_correct|calculation_incorrect",
+      "detail": "Brief explanation of verification"
+    }}
+  ]
+}}
+```
+
+Extract ALL verifiable claims. Include methodology claims (e.g., "ACS uses a rolling sample"), definition claims (e.g., "MOE is at 90% confidence"), and recommendation claims (e.g., "use 5-year estimates for small areas").
+"""
+
+
+def build_rag_fidelity_prompt(response_text: str, chunk_data: str) -> str:
+    """Build RAG fidelity verification prompt with retrieved chunks.
+
+    Args:
+        response_text: The RAG response to verify
+        chunk_data: Formatted string of retrieved chunks
+
+    Returns:
+        Complete prompt for RAG fidelity verification
+    """
+    return RAG_FIDELITY_PROMPT.format(
+        response_text=response_text,
+        chunk_data=chunk_data
+    )

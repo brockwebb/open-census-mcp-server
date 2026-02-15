@@ -101,7 +101,7 @@ class RAGRetriever:
             chunk = self.chunks[idx]
             score = float(scores[0][i])
 
-            # Store metadata about retrieved chunk
+            # Store metadata about retrieved chunk (including text for fidelity verification)
             retrieved.append({
                 'chunk_id': chunk.get('chunk_id', idx),
                 'score': score,
@@ -110,7 +110,8 @@ class RAGRetriever:
                 'page_end': chunk.get('page_end'),
                 'section_path': chunk.get('section_path', []),
                 'content_type': chunk.get('content_type', 'text'),
-                'text_length': len(chunk['text'])
+                'text_length': len(chunk['text']),
+                'text': chunk['text']  # Include full text for fidelity verification
             })
 
             # Format chunk for prompt injection

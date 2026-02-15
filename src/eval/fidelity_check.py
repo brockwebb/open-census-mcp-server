@@ -16,7 +16,7 @@ import yaml
 from dotenv import load_dotenv
 
 from .judge_pipeline import get_api_caller, parse_judge_response
-from .fidelity_prompts import build_treatment_prompt, build_control_prompt
+from .fidelity_prompts import build_treatment_prompt, build_control_prompt, build_rag_fidelity_prompt
 
 # Load environment variables
 load_dotenv()
@@ -56,14 +56,49 @@ def extract_slim_tool_data(tool_calls: list) -> list[dict]:
     return slim_calls
 
 
+def extract_rag_chunk_data(retrieved_chunks: list) -> str:
+    """Format retrieved RAG chunks as verification evidence.
+
+    Args:
+        retrieved_chunks: List of chunk dicts from RAG ResponseRecord
+
+    Returns:
+        Formatted string of chunk text for verification prompt
+    """
+    if not retrieved_chunks:
+        return ""
+
+    parts = []
+    for i, chunk in enumerate(retrieved_chunks, 1):
+        source = chunk.get('source', 'unknown')
+        section = chunk.get('section_path', [])
+        section_str = ' > '.join(section) if section else 'N/A'
+        page_start = chunk.get('page_start', '?')
+        page_end = chunk.get('page_end', '?')
+        if page_start == page_end:
+            pages = f"p. {page_start}"
+        else:
+            pages = f"pp. {page_start}-{page_end}"
+        score = chunk.get('score', 0)
+        text = chunk.get('text', '')
+
+        parts.append(
+            f"[Chunk {i}] Source: {source}, {pages}, "
+            f"Section: {section_str}, Similarity: {score:.3f}\n{text}"
+        )
+
+    return "\n\n---\n\n".join(parts)
+
+
 def verify_treatment(
     query_id: str,
     response_text: str,
     tool_calls: list,
     config: Dict[str, Any],
-    api_caller
+    api_caller,
+    **kwargs
 ) -> Dict[str, Any]:
-    """Verify treatment response fidelity against tool call data.
+    """Verify treatment response fidelity against tool call data or RAG chunks.
 
     Args:
         query_id: Query identifier
@@ -71,6 +106,7 @@ def verify_treatment(
         tool_calls: List of tool calls made during treatment
         config: Fidelity configuration
         api_caller: API caller function from judge_pipeline
+        **kwargs: Additional arguments (retrieved_chunks for RAG responses)
 
     Returns:
         Treatment fidelity result with claims and summary
@@ -78,7 +114,10 @@ def verify_treatment(
     # Extract slim tool data (arguments + data only)
     slim_calls = extract_slim_tool_data(tool_calls)
 
-    if not slim_calls:
+    # RAG responses: no tool calls, but have retrieved chunks
+    retrieved_chunks = kwargs.get('retrieved_chunks', [])
+
+    if not slim_calls and not retrieved_chunks:
         return {
             "has_data": False,
             "claims": [],
@@ -93,7 +132,13 @@ def verify_treatment(
         }
 
     # Build verification prompt
-    prompt = build_treatment_prompt(response_text, slim_calls)
+    if slim_calls:
+        # Existing path: verify against tool call data
+        prompt = build_treatment_prompt(response_text, slim_calls)
+    else:
+        # RAG path: verify against retrieved chunks
+        chunk_text = extract_rag_chunk_data(retrieved_chunks)
+        prompt = build_rag_fidelity_prompt(response_text, chunk_text)
 
     # Call LLM via judge_pipeline infrastructure
     try:
@@ -221,7 +266,8 @@ def process_query(
         treatment['response_text'],
         treatment['tool_calls'],
         config['fidelity'],
-        api_caller
+        api_caller,
+        retrieved_chunks=treatment.get('retrieved_chunks', [])
     )
 
     # Classify treatment auditability (same measure as control, for symmetry)
