@@ -56,6 +56,62 @@ ADDITIONAL_SOURCES = [
 # Merging parameters for RAG-friendly chunks
 MIN_CHUNK_CHARS = 400  # ~100 tokens minimum
 TARGET_CHUNK_CHARS = 2400  # ~600 tokens target (balances size and specificity)
+MAX_MERGE_CHARS = 4800  # ~1200 tokens — hard ceiling, never exceed
+OVERLAP_FRACTION = 0.05  # 5% of chunk text carried to next chunk for boundary context
+
+
+def split_oversized_chunks(chunks: List[Chunk]) -> List[Chunk]:
+    """Split raw Docling chunks that exceed the hard ceiling.
+
+    Docling's HierarchicalChunker sometimes produces chunks larger than
+    max_tokens (e.g., 22k chars when max should be ~8k). Split these into
+    smaller pieces before merging.
+
+    Args:
+        chunks: List of raw Chunk objects from Docling
+
+    Returns:
+        List of Chunk objects with oversized chunks split
+    """
+    split_chunks = []
+
+    for chunk in chunks:
+        if len(chunk.text) <= MAX_MERGE_CHARS:
+            # Chunk is fine, keep as-is
+            split_chunks.append(chunk)
+        else:
+            # Split oversized chunk into pieces
+            text = chunk.text
+            start = 0
+            piece_num = 0
+
+            while start < len(text):
+                # Take up to MAX_MERGE_CHARS
+                end = min(start + MAX_MERGE_CHARS, len(text))
+
+                # Try to break at sentence boundary if not at end
+                if end < len(text):
+                    # Look back up to 200 chars for a sentence break
+                    search_start = max(start, end - 200)
+                    last_period = text.rfind('. ', search_start, end)
+                    if last_period != -1:
+                        end = last_period + 2  # Include the period and space
+
+                piece_text = text[start:end]
+                split_chunks.append(Chunk(
+                    text=piece_text,
+                    section_path=chunk.section_path,
+                    page_start=chunk.page_start,
+                    page_end=chunk.page_end,
+                    content_type=chunk.content_type,
+                    source_catalog_id=chunk.source_catalog_id,
+                    chunk_index=len(split_chunks)
+                ))
+
+                start = end
+                piece_num += 1
+
+    return split_chunks
 
 
 def merge_small_chunks(chunks: List[Chunk]) -> List[Chunk]:
@@ -88,13 +144,18 @@ def merge_small_chunks(chunks: List[Chunk]) -> List[Chunk]:
     for i in range(1, len(chunks)):
         chunk = chunks[i]
         current_len = len(current_merge["text"])
+        next_len = len(chunk.text)
 
-        # Merge if: same source AND (under target size OR tiny current chunk)
+        # Merge if: same source AND would not exceed ceiling AND (under target OR tiny next chunk)
+        # Check AFTER merge: current + "\n\n" + next must be under ceiling
+        would_exceed_ceiling = (current_len + 2 + next_len) >= MAX_MERGE_CHARS
+
         should_merge = (
             chunk.source_catalog_id == current_merge["source_catalog_id"]
+            and not would_exceed_ceiling  # HARD CEILING
             and (
                 current_len < TARGET_CHUNK_CHARS
-                or len(chunk.text) < MIN_CHUNK_CHARS
+                or next_len < MIN_CHUNK_CHARS
             )
         )
 
@@ -109,8 +170,9 @@ def merge_small_chunks(chunks: List[Chunk]) -> List[Chunk]:
                     current_merge["section_path"] = chunk.section_path
         else:
             # Emit current merge
+            chunk_text = current_merge["text"]
             merged.append(Chunk(
-                text=current_merge["text"],
+                text=chunk_text,
                 section_path=current_merge["section_path"],
                 page_start=current_merge["page_start"],
                 page_end=current_merge["page_end"],
@@ -119,9 +181,13 @@ def merge_small_chunks(chunks: List[Chunk]) -> List[Chunk]:
                 chunk_index=len(merged)
             ))
 
-            # Start new merge
+            # Calculate overlap for next chunk (5% of previous chunk for boundary context)
+            overlap_chars = int(len(chunk_text) * OVERLAP_FRACTION)
+            overlap_text = chunk_text[-overlap_chars:] if overlap_chars > 0 else ""
+
+            # Start new merge with overlap from previous
             current_merge = {
-                "text": chunk.text,
+                "text": overlap_text + "\n\n" + chunk.text if overlap_text else chunk.text,
                 "source_catalog_id": chunk.source_catalog_id,
                 "section_path": chunk.section_path,
                 "page_start": chunk.page_start,
@@ -205,6 +271,18 @@ def main():
     print("=" * 70)
     print(f"Raw Docling chunks: {len(all_chunks)}")
     print("=" * 70)
+
+    # Split oversized raw chunks first
+    print("\n✂️  Splitting oversized raw chunks...")
+    print(f"  Hard ceiling: {MAX_MERGE_CHARS} chars (~{MAX_MERGE_CHARS//4} tokens)")
+    oversized_count = sum(1 for c in all_chunks if len(c.text) > MAX_MERGE_CHARS)
+    if oversized_count > 0:
+        print(f"  Found {oversized_count} oversized chunks to split")
+        split_chunks = split_oversized_chunks(all_chunks)
+        print(f"  ✓ Split to {len(split_chunks)} chunks")
+        all_chunks = split_chunks
+    else:
+        print(f"  ✓ No oversized chunks found")
 
     # Merge small chunks for RAG-friendly retrieval units
     print("\n🔗 Merging small chunks for RAG retrieval...")
