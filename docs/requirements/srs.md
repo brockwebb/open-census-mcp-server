@@ -417,6 +417,86 @@ Test dimensions:
 
 **Rationale (VR-016):** The system's stated goal is accessibility — "any 8th grader with an active imagination." Testing with persona-based queries (curious student, small business planner, retiree exploring data, city planner, journalist on deadline) validates that pragmatics produce useful consultations across the full user spectrum, not just for statisticians. Persona development is a future requirement; the testbench must support it when ready.
 
+### 8.3 Stage 1: Response Generation Pipeline
+
+| ID | Requirement | Priority |
+|----|------------|----------|
+| VR-020 | Response generation SHALL produce paired control/treatment responses for each test query, where control receives no MCP tools and treatment receives full tool access | Must |
+| VR-021 | Response generation SHALL use a single caller model for both conditions within an evaluation round, controlled by `judge_config.yaml` | Must |
+| VR-022 | Response generation SHALL record complete provenance: model string, system prompt hash, tool call transcripts, pragmatics context IDs returned, token counts, and latency | Must |
+| VR-023 | Treatment condition SHALL use an agent loop with configurable `max_tool_rounds` (default: 20). If the loop exhausts without the model issuing a final response, the system SHALL perform forced synthesis and flag `tool_rounds_exhausted=True` | Must |
+| VR-024 | Response generation SHALL output QueryPair records in JSONL with category and difficulty metadata for downstream stratification | Must |
+
+**Rationale:** The paired design ensures the only experimental difference is MCP tool access. Complete provenance enables Stage 3 fidelity verification. The forced synthesis mechanism (VR-023) prevents data loss from agent loops that fail to converge, a bug discovered in v1/v2 where 7/39 queries produced truncated responses. See DEC-4B-016.
+
+**Location:** `src/eval/generate_responses.py`, config in `src/eval/judge_config.yaml`.
+
+### 8.4 Stage 2: LLM-as-Judge Scoring Pipeline
+
+| ID | Requirement | Priority |
+|----|------------|----------|
+| VR-030 | Judge scoring SHALL use at minimum three independent LLM vendors to detect self-enhancement bias | Must |
+| VR-031 | Judge scoring SHALL implement counterbalanced presentation: each query SHALL be scored with both control-first and treatment-first orderings across passes | Must |
+| VR-032 | Judge scoring SHALL use a minimum of 6 passes per vendor per query (3 control-first, 3 treatment-first) to enable test-retest reliability measurement | Must |
+| VR-033 | Judge prompt SHALL present responses as anonymized "Response A" and "Response B" with no condition labels visible to the judge | Must |
+| VR-034 | Judge prompt SHALL NOT contain temporal anchors (dates, "current year" references) that could bias scoring based on judge training cutoff. See DEC-4B-015 | Must |
+| VR-035 | Judge scoring SHALL use the CQS rubric with dimensions D1 (Source Selection), D2 (Methodology), D3 (Uncertainty Communication), D4 (Definitions), D5 (Reproducibility). Each dimension scored 0-2 with confidence 1-5 and free-text reasoning | Must |
+| VR-036 | D6 (Groundedness) SHALL be excluded from the CQS composite score and reported separately as a methodological note. Groundedness is measured by Stage 3 automated fidelity instead. See DEC-4B-023 | Must |
+| VR-037 | Judge scoring SHALL record complete JudgeRecord metadata: run_id, pass_number, presentation_order, response label mapping, raw response text, parse_success flag, and token counts | Must |
+| VR-038 | Judge scoring SHALL use checkpoint-based deduplication with full tuple matching (query_id, judge_key, ordering, pass_number) to enable safe pipeline restarts without re-scoring completed tasks | Must |
+| VR-039 | Judge scoring pipeline SHALL filter to configured valid run IDs (`stage2_valid_run_ids` in config) to prevent contamination from prior pipeline versions. All run parameters SHALL be read from `judge_config.yaml` per C-006 | Must |
+
+**Rationale:** The three-vendor panel (VR-030) addresses a known limitation of LLM-as-judge: models may preferentially score their own outputs higher. Counterbalancing (VR-031) enables position bias measurement. The temporal anchor prohibition (VR-034) was added after discovering that judges penalized treatment responses for citing data vintages beyond their training cutoff, creating a systematic confound. Run ID filtering (VR-039) was added after discovering that stale v2 judge scores contaminated aggregate analysis when the glob pattern loaded all JSONL files indiscriminately.
+
+**Location:** `src/eval/judge_pipeline.py`, prompts in `src/eval/judge_prompts.py`, config in `src/eval/judge_config.yaml`.
+
+### 8.5 Stage 3: Pipeline Fidelity Verification
+
+| ID | Requirement | Priority |
+|----|------------|----------|
+| VR-040 | Fidelity verification SHALL compare every quantitative claim in the treatment response against the actual tool call data that produced it | Must |
+| VR-041 | Fidelity verification SHALL classify each claim as: `match`, `mismatched`, `no_source`, `calculation_correct`, or `calculation_incorrect` | Must |
+| VR-042 | Fidelity verification SHALL compute auditability for both treatment and control responses symmetrically, classifying claims as `auditable`, `partially_auditable`, `unauditable`, or `non_claim` | Must |
+| VR-043 | Auditability percentages SHALL exclude `non_claim` items (methodological statements, source citations) from the denominator. See data contamination incident where including non_claims diluted treatment auditability from 72.8% to 46.0% | Must |
+| VR-044 | Fidelity score SHALL be computed as (matched + calculation_correct) / total_claims × 100, including `no_source` claims in the denominator. A secondary `substantive_fidelity` metric MAY exclude `no_source` from the denominator and SHALL be reported separately | Must |
+
+**Rationale:** Stage 3 replaces the flawed D6 rubric dimension (DEC-4B-023) with automated verification. D6 rewarded vagueness and penalized specificity — judges scored unverifiable hedged claims higher than precise tool-grounded claims because vague claims are harder to falsify. Automated fidelity directly measures whether the system faithfully reports what its tools returned, which is the actual property D6 was intended to measure.
+
+**Location:** `src/eval/fidelity_check.py`, output in `results/stage3/`.
+
+### 8.6 Aggregate Analysis
+
+| ID | Requirement | Priority |
+|----|------------|----------|
+| VR-050 | Aggregate analysis SHALL compute Cohen's d effect sizes with 95% bootstrap confidence intervals (n=1000 iterations, seed=42) for each CQS dimension (D1-D5) and the composite (mean of D1-D5) | Must |
+| VR-051 | Aggregate analysis SHALL compute both independent-samples and paired Cohen's d. Paired d (computed on query-level means) SHALL be the primary metric for stratified analysis. Independent d is reported as a secondary conservative estimate | Must |
+| VR-052 | Aggregate analysis SHALL compute Krippendorff's alpha (ordinal scale) across all judge vendors for each dimension as the inter-rater reliability metric | Must |
+| VR-053 | Aggregate analysis SHALL test for position bias by comparing treatment scores when presented as Response A vs Response B, per vendor per dimension. Differences exceeding 0.2 with p < 0.05 SHALL be flagged | Must |
+| VR-054 | Aggregate analysis SHALL test for self-enhancement bias by comparing Anthropic's treatment-control effect size delta against the average of other vendors' deltas. Differences exceeding 0.3 SHALL be flagged | Must |
+| VR-055 | Aggregate analysis SHALL test for verbosity bias by computing Spearman's ρ between response character length and composite CQS score, separately for treatment and control conditions | Must |
+| VR-056 | Aggregate analysis SHALL compute test-retest reliability as Pearson r separately for each pass-pair (1,2), (3,4), (5,6) per vendor per dimension, and report the overall lumped r as a secondary metric | Must |
+| VR-057 | Statistical tests on paired conditions (Wilcoxon signed-rank) SHALL aggregate to the query level before testing to respect the experimental unit. The experimental unit is the query (n=39), not the judge record (n=702). All p-values SHALL be reported as exact two-tailed values | Must |
+| VR-058 | Aggregate analysis SHALL stratify results by query category (normal vs edge cases) and report per-stratum effect sizes with bootstrap CIs | Must |
+| VR-059 | Aggregate analysis SHALL compute judge preference rates (treatment preferred, control preferred, tie) per vendor and pooled, mapping the anonymized A/B preference back to condition labels | Must |
+| VR-060 | Aggregate analysis SHALL output: CSV files for each analysis type, a markdown report with publication-ready tables, and a JSON archive of all computed statistics | Must |
+| VR-061 | Aggregate analysis SHALL load only records matching valid run IDs from config. The script SHALL report total records loaded, per-vendor counts, and parse failure counts. If any vendor has fewer than expected records, it SHALL emit a warning | Must |
+
+**Rationale:** These requirements encode methodological decisions that were made iteratively during Phase 4B development. VR-051 addresses the paired vs independent d decision — the experimental design is paired (every query has both conditions), so paired d is the correct primary metric, but independent d provides a conservative lower bound. VR-057 was added after discovering that running Wilcoxon on 1,002 non-independent records (multiple vendors × passes per query) produced meaningless p-values of 0.0000 for every comparison. VR-061 was added after the v2 data contamination incident where stale judge scores inflated the apparent sample size from 702 to 2,821.
+
+**Location:** `src/eval/analyze_results.py`, output in `results/stage2/analysis/`.
+
+### 8.7 Data Provenance
+
+| ID | Requirement | Priority |
+|----|------------|----------|
+| VR-070 | Each pipeline run SHALL generate a unique run_id (timestamp-based) embedded in every output record | Must |
+| VR-071 | Stale or superseded pipeline outputs SHALL be archived to a versioned subdirectory (e.g., `archive_v2/`) with a README documenting why the data was superseded and what bugs or methodology changes invalidated it | Must |
+| VR-072 | The active results directory SHALL contain only data from the current valid pipeline version. Aggregate analysis SHALL NOT glob indiscriminately across all available files | Must |
+
+**Rationale:** The Phase 4B evaluation went through three pipeline versions (v1: truncation bugs, v2: temporal confound, v3: clean). At one point, aggregate analysis inadvertently loaded all three versions' outputs simultaneously, contaminating every computed statistic. These requirements formalize the hard-won lesson that data provenance in iterative evaluation pipelines requires active management, not passive file accumulation.
+
+**Location:** Config in `judge_config.yaml` (`stage2_valid_run_ids`), archive in `results/stage2/archive_v2/`.
+
 ---
 
 ## 9. Traceability
