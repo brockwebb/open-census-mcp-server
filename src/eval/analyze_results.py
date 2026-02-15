@@ -31,14 +31,28 @@ def load_config(config_path: str) -> Dict[str, Any]:
         return yaml.safe_load(f)
 
 
-def load_stage2_records(stage2_dir: Path) -> List[Dict[str, Any]]:
+def load_stage2_records(stage2_dir: Path, config: Dict[str, Any], stage2_files: List[str] = None) -> List[Dict[str, Any]]:
     """Load and parse all Stage 2 judge score files.
+
+    Args:
+        stage2_dir: Directory containing judge score JSONL files
+        config: Configuration dict (for run ID filtering)
+        stage2_files: Optional list of explicit file paths (overrides glob)
 
     Returns:
         List of JudgeRecord dicts with parse_success=True only
     """
     records = []
-    files = sorted(stage2_dir.glob("judge_scores_*.jsonl"))
+
+    # Layer 2: Explicit file selection (if provided)
+    if stage2_files:
+        files = [Path(f) for f in stage2_files]
+        print(f"\n📊 Loading explicit Stage 2 files: {len(files)}")
+        for f in files:
+            print(f"  - {f.name}")
+    else:
+        files = sorted(stage2_dir.glob("judge_scores_*.jsonl"))
+        print(f"\n📊 Loading Stage 2 files via glob: {len(files)}")
 
     total_lines = 0
     parse_failures = 0
@@ -58,7 +72,15 @@ def load_stage2_records(stage2_dir: Path) -> List[Dict[str, Any]]:
     print(f"\n📊 Stage 2 Data Loaded:")
     print(f"  Total records: {total_lines}")
     print(f"  Parse failures: {parse_failures} ({parse_failures/total_lines*100:.1f}%)")
-    print(f"  Valid records: {len(records)}")
+    print(f"  Valid records (pre-filter): {len(records)}")
+
+    # Layer 1: Run ID filter (from config)
+    valid_run_ids = set(config['paths'].get('stage2_valid_run_ids', []))
+    if valid_run_ids:
+        pre_filter = len(records)
+        records = [r for r in records if r.get('run_id', '') in valid_run_ids]
+        excluded = pre_filter - len(records)
+        print(f"  Run ID filter: {pre_filter} → {len(records)} records ({excluded} excluded)")
 
     # Per-vendor counts
     vendor_counts = defaultdict(int)
@@ -528,7 +550,12 @@ def analyze_verbosity_bias(records: List[Dict[str, Any]],
 # =============================================================================
 
 def analyze_test_retest(records: List[Dict[str, Any]], dimensions: List[str]) -> Dict[str, Any]:
-    """Compute test-retest reliability across 6 passes."""
+    """Compute test-retest reliability across 6 passes.
+
+    Fixed to report per-pair correlations (pair_12, pair_34, pair_56) separately,
+    plus overall lumped correlation. This allows assessing consistency across
+    the three measurement occasions.
+    """
     results = {}
 
     for vendor in ['anthropic', 'openai', 'google']:
@@ -544,39 +571,45 @@ def analyze_test_retest(records: List[Dict[str, Any]], dimensions: List[str]) ->
 
         vendor_results = {}
         for dim in dimensions:
-            # Bug 1 fix: Collect all pass-pairs into single list
-            # Each pass-pair is an independent measurement occasion, so combining
-            # them increases statistical power without inflating correlation
-            all_pairs = []
+            pair_correlations = {}
+            all_a_scores = []
+            all_b_scores = []
 
-            for qid in grouped.keys():
-                passes = grouped[qid]
+            # Compute correlation for each pass-pair separately
+            for pair_label, (p1, p2) in [("pair_12", (1, 2)), ("pair_34", (3, 4)), ("pair_56", (5, 6))]:
+                a_scores = []
+                b_scores = []
 
-                # Pair 1: passes 1 & 2
-                if 1 in passes and 2 in passes and dim in passes[1] and dim in passes[2]:
-                    all_pairs.append((passes[1][dim]['score'], passes[2][dim]['score']))
+                for qid in grouped.keys():
+                    passes = grouped[qid]
+                    if p1 in passes and p2 in passes and dim in passes[p1] and dim in passes[p2]:
+                        a_scores.append(passes[p1][dim]['score'])
+                        b_scores.append(passes[p2][dim]['score'])
 
-                # Pair 2: passes 3 & 4
-                if 3 in passes and 4 in passes and dim in passes[3] and dim in passes[4]:
-                    all_pairs.append((passes[3][dim]['score'], passes[4][dim]['score']))
+                if len(a_scores) > 3:
+                    r, p = stats.pearsonr(a_scores, b_scores)
+                    pair_correlations[pair_label] = {'r': r, 'p': p, 'n': len(a_scores)}
 
-                # Pair 3: passes 5 & 6
-                if 5 in passes and 6 in passes and dim in passes[5] and dim in passes[6]:
-                    all_pairs.append((passes[5][dim]['score'], passes[6][dim]['score']))
+                # Collect for overall correlation
+                all_a_scores.extend(a_scores)
+                all_b_scores.extend(b_scores)
 
-            if len(all_pairs) > 3:
-                # Compute Pearson correlation between paired measurements
-                scores_a = [p[0] for p in all_pairs]
-                scores_b = [p[1] for p in all_pairs]
+            # Overall (lumped) correlation — secondary metric
+            if len(all_a_scores) > 3:
+                r_overall, p_overall = stats.pearsonr(all_a_scores, all_b_scores)
+            else:
+                r_overall, p_overall = np.nan, np.nan
 
-                r, p_value = stats.pearsonr(scores_a, scores_b)
-
-                vendor_results[dim] = {
-                    'pearson_r': r,
-                    'p_value': p_value,
-                    'n_pairs': len(all_pairs),  # Total across all pass-pairs
-                    'interpretation': 'Good' if r > 0.7 else 'Moderate' if r > 0.5 else 'Poor'
-                }
+            vendor_results[dim] = {
+                'pearson_r_overall': r_overall,
+                'p_value_overall': p_overall,
+                'pair_12': pair_correlations.get('pair_12', {}),
+                'pair_34': pair_correlations.get('pair_34', {}),
+                'pair_56': pair_correlations.get('pair_56', {}),
+                'n_queries': len(set(grouped.keys())),
+                'n_pairs_total': len(all_a_scores),
+                'interpretation': 'Good' if r_overall > 0.7 else 'Moderate' if r_overall > 0.5 else 'Poor'
+            }
 
         results[vendor] = vendor_results
 
@@ -1084,20 +1117,27 @@ def write_test_retest_csv(test_retest: Dict[str, Any], output_dir: Path):
     """Write test-retest reliability to CSV."""
     csv_path = output_dir / 'test_retest.csv'
 
+    fieldnames = ['vendor', 'dimension', 'r_overall', 'r_pair12', 'r_pair34', 'r_pair56',
+                  'n_queries', 'n_pairs_total', 'interpretation']
+
     with open(csv_path, 'w', newline='') as f:
-        writer = csv.DictWriter(f, fieldnames=['vendor', 'dimension', 'pearson_r', 'p_value', 'interpretation', 'n_pairs'])
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
 
         for vendor, vendor_stats in test_retest.items():
             for dim, stats in vendor_stats.items():
-                writer.writerow({
+                row = {
                     'vendor': vendor,
                     'dimension': dim,
-                    'pearson_r': f"{stats['pearson_r']:.3f}",
-                    'p_value': f"{stats['p_value']:.4f}",
-                    'interpretation': stats['interpretation'],
-                    'n_pairs': stats['n_pairs']
-                })
+                    'r_overall': f"{stats['pearson_r_overall']:.3f}" if not np.isnan(stats['pearson_r_overall']) else 'N/A',
+                    'r_pair12': f"{stats['pair_12']['r']:.3f}" if stats.get('pair_12') else 'N/A',
+                    'r_pair34': f"{stats['pair_34']['r']:.3f}" if stats.get('pair_34') else 'N/A',
+                    'r_pair56': f"{stats['pair_56']['r']:.3f}" if stats.get('pair_56') else 'N/A',
+                    'n_queries': stats['n_queries'],
+                    'n_pairs_total': stats['n_pairs_total'],
+                    'interpretation': stats['interpretation']
+                }
+                writer.writerow(row)
 
     print(f"  ✅ {csv_path}")
 
@@ -1200,6 +1240,8 @@ def main():
                        help='Path to judge config YAML')
     parser.add_argument('--stage2-dir', default='results/stage2',
                        help='Directory containing judge score JSONL files')
+    parser.add_argument('--stage2-files', nargs='+', default=None,
+                       help='Explicit Stage 2 JSONL files (overrides glob)')
     parser.add_argument('--stage3-file', default='results/stage3/fidelity_20260213_195123.jsonl',
                        help='Stage 3 fidelity results file')
 
@@ -1214,7 +1256,7 @@ def main():
     dimensions = config['scoring']['dimensions']  # ['D1', 'D2', 'D3', 'D4', 'D5', 'D6']
 
     # Load data
-    stage2_records = load_stage2_records(Path(args.stage2_dir))
+    stage2_records = load_stage2_records(Path(args.stage2_dir), config, args.stage2_files)
     fidelity_records = load_stage3_fidelity(Path(args.stage3_file))
 
     # Load Stage 1 for stratification
