@@ -64,5 +64,6 @@ paths:
   analysis_output: 'results/stage2/analysis'
   stage3_output_dir: 'results/stage3'
   stage2_valid_run_ids:
-    - "20260213_125057"   # OpenAI v3 (100 tasks, 17 queries - incomplete)
-    - "20260214_211036"   # Anthropic + Google v3 (468 tasks, 39 queries each)
+    - "20260213_125057"   # OpenAI v3 part 1 (17 queries, 100 records)
+    - "20260213_125945"   # OpenAI v3 part 2 (23 queries, 134 records)
+    - "20260214_211036"   # Anthropic + Google v3 (39 queries each, 468 records)
