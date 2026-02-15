@@ -1,267 +1,321 @@
 #!/usr/bin/env python3
 """Build RAG index from Census methodology source documents.
 
-Creates a FAISS vector index of document chunks for the RAG ablation condition.
-Uses section-level chunking with boring defaults - no optimization.
-
-Outputs to results/rag_ablation/index/:
-- chunks.jsonl: Chunked documents with metadata
-- faiss_index.bin: FAISS vector index
-- metadata.json: Build configuration and statistics
-- sources.txt: List of source documents used
+Uses Docling extraction (same as quarry pipeline) for controlled comparison.
+The RAG and Pragmatics conditions must differ ONLY in knowledge representation
+(raw chunks vs curated judgment), not in extraction methodology.
 """
 
 import json
-import re
+import sys
 from pathlib import Path
 from datetime import datetime
-from typing import List, Dict, Any
-import argparse
 
-# Lazy imports for optional dependencies
-def lazy_imports():
-    """Import heavy dependencies only when needed."""
-    global SentenceTransformer, faiss, PdfReader
-    from sentence_transformers import SentenceTransformer
-    import faiss
-    from pypdf import PdfReader
-    return SentenceTransformer, faiss, PdfReader
+# Add project root to path for quarry imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from scripts.quarry.chunk import chunk_pdf, Chunk
+from scripts.quarry.config import SOURCE_CATALOG, MAX_CHUNK_TOKENS, REPO_ROOT
+
+from sentence_transformers import SentenceTransformer
+import faiss
+import numpy as np
+from typing import List
 
 
-# Source documents (same ones used to build pragmatics)
-SOURCE_DOCUMENTS = [
-    # Primary sources
-    "knowledge-base/source-docs/OtherACS/acs_general_handbook_2020.pdf",
-    "knowledge-base/source-docs/census-methodology/acs_design_methodology_report_2024.pdf",
-    "knowledge-base/source-docs/OtherACS/acs_geography_handbook_2020.pdf",
-    # Secondary sources
-    "knowledge-base/source-docs/OtherACS/Understanding and Using ACS Data_ What All Data Users Need to Know.pdf",
-    "knowledge-base/source-docs/OtherACS/ACS_Accuracy_of_Data_2023.pdf",
-    "knowledge-base/source-docs/OtherACS/MultiyearACSAccuracyofData2023.pdf",
+# Source documents for RAG ablation — must match pragmatics provenance
+RAG_SOURCES = [
+    "acs_general_handbook",        # ACS-GEN-001 — primary
+    "acs_design_methodology",      # ACS-DM-2024 — primary
 ]
 
+# Additional sources not in quarry catalog yet
+ADDITIONAL_SOURCES = [
+    {
+        "catalog_id": "acs_geography_handbook_2020",
+        "title": "ACS Geography Handbook 2020",
+        "local_path": "knowledge-base/source-docs/OtherACS/acs_geography_handbook_2020.pdf"
+    },
+    {
+        "catalog_id": "acs_accuracy_2023",
+        "title": "ACS Accuracy of Data 2023",
+        "local_path": "knowledge-base/source-docs/OtherACS/ACS_Accuracy_of_Data_2023.pdf"
+    },
+    {
+        "catalog_id": "multiyear_accuracy_2023",
+        "title": "Multiyear ACS Accuracy 2023",
+        "local_path": "knowledge-base/source-docs/OtherACS/MultiyearACSAccuracyofData2023.pdf"
+    },
+    {
+        "catalog_id": "understanding_acs_data",
+        "title": "Understanding and Using ACS Data",
+        "local_path": "knowledge-base/source-docs/OtherACS/Understanding and Using ACS Data_ What All Data Users Need to Know.pdf"
+    },
+]
 
-def extract_text_from_pdf(pdf_path: Path) -> List[Dict[str, Any]]:
-    """Extract text from PDF with basic section detection.
+# Merging parameters for RAG-friendly chunks
+MIN_CHUNK_CHARS = 400  # ~100 tokens minimum
+TARGET_CHUNK_CHARS = 2400  # ~600 tokens target (balances size and specificity)
 
-    Returns list of pages with text and metadata.
+
+def merge_small_chunks(chunks: List[Chunk]) -> List[Chunk]:
+    """Merge small Docling chunks into larger RAG-friendly chunks.
+
+    HierarchicalChunker creates many micro-chunks (section headers, page numbers).
+    This post-processing merges consecutive chunks from the same source until
+    they reach a minimum size, preserving Docling's quality while creating
+    useful retrieval units.
+
+    Args:
+        chunks: List of Chunk objects from Docling extraction
+
+    Returns:
+        List of merged Chunk objects
     """
-    _, _, PdfReader = lazy_imports()
+    if not chunks:
+        return []
 
-    reader = PdfReader(str(pdf_path))
-    pages = []
-
-    for i, page in enumerate(reader.pages):
-        text = page.extract_text()
-        if text.strip():
-            pages.append({
-                'source': pdf_path.name,
-                'page': i + 1,
-                'text': text
-            })
-
-    return pages
-
-
-def chunk_pages(pages: List[Dict], chunk_size: int = 600, overlap: int = 100) -> List[Dict]:
-    """Chunk pages into ~chunk_size token chunks with overlap.
-
-    Simple token-based chunking. No optimization.
-    Preserves source and page metadata.
-    """
-    chunks = []
-    chunk_id = 0
-
-    for page in pages:
-        text = page['text']
-        # Rough token estimation: ~4 chars per token
-        char_chunk_size = chunk_size * 4
-        char_overlap = overlap * 4
-
-        # Split into sentences for better boundary handling
-        sentences = re.split(r'(?<=[.!?])\s+', text)
-
-        current_chunk = []
-        current_length = 0
-
-        for sentence in sentences:
-            sentence_length = len(sentence)
-
-            if current_length + sentence_length > char_chunk_size and current_chunk:
-                # Emit chunk
-                chunk_text = ' '.join(current_chunk)
-                chunks.append({
-                    'chunk_id': chunk_id,
-                    'source': page['source'],
-                    'page': page['page'],
-                    'section': None,  # Basic chunking doesn't detect sections
-                    'text': chunk_text,
-                    'char_length': len(chunk_text)
-                })
-                chunk_id += 1
-
-                # Keep overlap
-                overlap_text = chunk_text[-char_overlap:] if len(chunk_text) > char_overlap else chunk_text
-                overlap_sentences = overlap_text.split()
-                current_chunk = overlap_sentences
-                current_length = len(' '.join(current_chunk))
-
-            current_chunk.append(sentence)
-            current_length += sentence_length + 1  # +1 for space
-
-        # Emit remaining chunk
-        if current_chunk:
-            chunk_text = ' '.join(current_chunk)
-            chunks.append({
-                'chunk_id': chunk_id,
-                'source': page['source'],
-                'page': page['page'],
-                'section': None,
-                'text': chunk_text,
-                'char_length': len(chunk_text)
-            })
-            chunk_id += 1
-
-    return chunks
-
-
-def build_index(chunks: List[Dict], output_dir: Path) -> Dict[str, Any]:
-    """Build FAISS index from chunks.
-
-    Returns metadata about the build.
-    """
-    SentenceTransformer, faiss, _ = lazy_imports()
-
-    print(f"\n📊 Building FAISS index...")
-    print(f"  Chunks: {len(chunks)}")
-
-    # Load embedding model
-    print(f"  Loading embedding model: all-MiniLM-L6-v2")
-    model = SentenceTransformer('all-MiniLM-L6-v2')
-
-    # Encode chunks
-    print(f"  Encoding {len(chunks)} chunks...")
-    texts = [c['text'] for c in chunks]
-    embeddings = model.encode(texts, show_progress_bar=True, convert_to_numpy=True)
-
-    # Normalize for cosine similarity via inner product
-    print(f"  Normalizing embeddings...")
-    faiss.normalize_L2(embeddings)
-
-    # Build index
-    print(f"  Building FAISS index...")
-    dimension = embeddings.shape[1]  # Should be 384 for all-MiniLM-L6-v2
-    index = faiss.IndexFlatIP(dimension)  # Inner product (cosine after normalization)
-    index.add(embeddings)
-
-    # Write index
-    index_path = output_dir / 'faiss_index.bin'
-    print(f"  Writing index to {index_path}")
-    faiss.write_index(index, str(index_path))
-
-    # Write chunks
-    chunks_path = output_dir / 'chunks.jsonl'
-    print(f"  Writing chunks to {chunks_path}")
-    with open(chunks_path, 'w') as f:
-        for chunk in chunks:
-            f.write(json.dumps(chunk) + '\n')
-
-    return {
-        'embedding_model': 'all-MiniLM-L6-v2',
-        'embedding_dimension': dimension,
-        'chunk_size_tokens': 600,
-        'overlap_tokens': 100,
-        'n_chunks': len(chunks),
-        'index_type': 'FAISS IndexFlatIP (cosine similarity)',
-        'build_date': datetime.now().isoformat()
+    merged = []
+    current_merge = {
+        "text": chunks[0].text,
+        "source_catalog_id": chunks[0].source_catalog_id,
+        "section_path": chunks[0].section_path,
+        "page_start": chunks[0].page_start,
+        "page_end": chunks[0].page_end,
+        "content_type": chunks[0].content_type,
     }
+
+    for i in range(1, len(chunks)):
+        chunk = chunks[i]
+        current_len = len(current_merge["text"])
+
+        # Merge if: same source AND (under target size OR tiny current chunk)
+        should_merge = (
+            chunk.source_catalog_id == current_merge["source_catalog_id"]
+            and (
+                current_len < TARGET_CHUNK_CHARS
+                or len(chunk.text) < MIN_CHUNK_CHARS
+            )
+        )
+
+        if should_merge:
+            # Merge into current
+            current_merge["text"] += "\n\n" + chunk.text
+            current_merge["page_end"] = chunk.page_end  # Update end page
+            # Combine section paths (keep unique)
+            if chunk.section_path and chunk.section_path != current_merge["section_path"]:
+                # Use the more specific section path (longer)
+                if len(chunk.section_path) > len(current_merge["section_path"] or []):
+                    current_merge["section_path"] = chunk.section_path
+        else:
+            # Emit current merge
+            merged.append(Chunk(
+                text=current_merge["text"],
+                section_path=current_merge["section_path"],
+                page_start=current_merge["page_start"],
+                page_end=current_merge["page_end"],
+                content_type=current_merge["content_type"],
+                source_catalog_id=current_merge["source_catalog_id"],
+                chunk_index=len(merged)
+            ))
+
+            # Start new merge
+            current_merge = {
+                "text": chunk.text,
+                "source_catalog_id": chunk.source_catalog_id,
+                "section_path": chunk.section_path,
+                "page_start": chunk.page_start,
+                "page_end": chunk.page_end,
+                "content_type": chunk.content_type,
+            }
+
+    # Emit final merge
+    merged.append(Chunk(
+        text=current_merge["text"],
+        section_path=current_merge["section_path"],
+        page_start=current_merge["page_start"],
+        page_end=current_merge["page_end"],
+        content_type=current_merge["content_type"],
+        source_catalog_id=current_merge["source_catalog_id"],
+        chunk_index=len(merged)
+    ))
+
+    return merged
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Build RAG index for ablation experiment')
-    parser.add_argument('--output-dir', default='results/rag_ablation/index',
-                       help='Output directory for index files')
-    parser.add_argument('--chunk-size', type=int, default=600,
-                       help='Target chunk size in tokens (default: 600)')
-    parser.add_argument('--overlap', type=int, default=100,
-                       help='Overlap between chunks in tokens (default: 100)')
+    """Build RAG index with Docling extraction."""
+    print("=" * 70)
+    print("RAG INDEX BUILDER (Docling Extraction)")
+    print("=" * 70)
+    print()
 
-    args = parser.parse_args()
-
-    output_dir = Path(args.output_dir)
+    output_dir = Path("results/rag_ablation/index")
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    print("="*70)
-    print("RAG INDEX BUILDER")
-    print("="*70)
+    all_chunks = []
+    sources_used = []
 
-    # Check source documents
-    print(f"\n📚 Checking source documents...")
-    available_sources = []
-    missing_sources = []
+    # Process quarry catalog sources
+    print("📚 Processing quarry catalog sources...")
+    for key in RAG_SOURCES:
+        if key not in SOURCE_CATALOG:
+            print(f"ERROR: {key} not found in SOURCE_CATALOG")
+            return 1
 
-    for src in SOURCE_DOCUMENTS:
-        src_path = Path(src)
-        if src_path.exists():
-            available_sources.append(src_path)
-            print(f"  ✅ {src_path.name}")
-        else:
-            missing_sources.append(src)
-            print(f"  ❌ {src} (not found)")
+        source = SOURCE_CATALOG[key]
+        pdf_path = REPO_ROOT / source["local_path"]
+        if not pdf_path.exists():
+            print(f"ERROR: PDF not found: {pdf_path}")
+            return 1
 
-    if missing_sources:
-        print(f"\n❌ Missing {len(missing_sources)} source documents")
-        print("Cannot proceed without all source documents.")
-        return 1
+        print(f"\n  Processing: {source['title']}")
+        print(f"  Path: {pdf_path}")
+        chunks = chunk_pdf(str(pdf_path), source["catalog_id"], max_tokens=MAX_CHUNK_TOKENS)
+        all_chunks.extend(chunks)
+        sources_used.append({
+            "catalog_id": source["catalog_id"],
+            "title": source["title"],
+            "path": str(pdf_path),
+            "chunks": len(chunks)
+        })
+        print(f"  ✓ {len(chunks)} chunks extracted")
 
-    # Write sources list
-    sources_path = output_dir / 'sources.txt'
-    with open(sources_path, 'w') as f:
-        f.write("# Source Documents for RAG Ablation\n\n")
-        for src in available_sources:
-            f.write(f"{src}\n")
-    print(f"\n✅ Wrote source list to {sources_path}")
+    # Process additional sources
+    print("\n📚 Processing additional sources...")
+    for source in ADDITIONAL_SOURCES:
+        pdf_path = REPO_ROOT / source["local_path"]
+        if not pdf_path.exists():
+            print(f"ERROR: PDF not found: {pdf_path}")
+            return 1
 
-    # Extract text from PDFs
-    print(f"\n📄 Extracting text from {len(available_sources)} PDFs...")
-    all_pages = []
-    for src_path in available_sources:
-        print(f"  Processing {src_path.name}...")
-        pages = extract_text_from_pdf(src_path)
-        all_pages.extend(pages)
-        print(f"    {len(pages)} pages extracted")
+        print(f"\n  Processing: {source['title']}")
+        print(f"  Path: {pdf_path}")
+        chunks = chunk_pdf(str(pdf_path), source["catalog_id"], max_tokens=MAX_CHUNK_TOKENS)
+        all_chunks.extend(chunks)
+        sources_used.append({
+            "catalog_id": source["catalog_id"],
+            "title": source["title"],
+            "path": str(pdf_path),
+            "chunks": len(chunks)
+        })
+        print(f"  ✓ {len(chunks)} chunks extracted")
 
-    print(f"\n  Total pages: {len(all_pages)}")
+    print()
+    print("=" * 70)
+    print(f"Raw Docling chunks: {len(all_chunks)}")
+    print("=" * 70)
 
-    # Chunk pages
-    print(f"\n✂️  Chunking pages (size={args.chunk_size}, overlap={args.overlap})...")
-    chunks = chunk_pages(all_pages, chunk_size=args.chunk_size, overlap=args.overlap)
-    print(f"  Created {len(chunks)} chunks")
+    # Merge small chunks for RAG-friendly retrieval units
+    print("\n🔗 Merging small chunks for RAG retrieval...")
+    print(f"  Target size: ~{TARGET_CHUNK_CHARS} chars (~{TARGET_CHUNK_CHARS//4} tokens)")
+    print(f"  Minimum size: ~{MIN_CHUNK_CHARS} chars (~{MIN_CHUNK_CHARS//4} tokens)")
+    merged_chunks = merge_small_chunks(all_chunks)
+    all_chunks = merged_chunks
+    print(f"  ✓ Merged to {len(all_chunks)} chunks")
 
-    # Build index
-    metadata = build_index(chunks, output_dir)
-    metadata['n_source_docs'] = len(available_sources)
-    metadata['n_pages'] = len(all_pages)
-    metadata['chunk_size_tokens'] = args.chunk_size
-    metadata['overlap_tokens'] = args.overlap
+    print()
+    print("=" * 70)
+    print(f"Final chunks: {len(all_chunks)}")
+    print(f"Total source documents: {len(sources_used)}")
+    print("=" * 70)
+    print()
+
+    # Write chunks.jsonl with quarry-compatible schema
+    print("💾 Writing chunks.jsonl...")
+    chunks_path = output_dir / "chunks.jsonl"
+    with open(chunks_path, "w") as f:
+        for i, chunk in enumerate(all_chunks):
+            record = {
+                "chunk_id": i,
+                "source": chunk.source_catalog_id,
+                "section_path": chunk.section_path,
+                "page_start": chunk.page_start,
+                "page_end": chunk.page_end,
+                "content_type": chunk.content_type,
+                "text": chunk.text,
+                "char_length": len(chunk.text),
+            }
+            f.write(json.dumps(record) + "\n")
+    print(f"  ✓ Wrote {len(all_chunks)} chunks to {chunks_path}")
+
+    # Build FAISS index
+    print("\n🔍 Building FAISS index...")
+    print("  Loading embedding model: all-MiniLM-L6-v2")
+    model = SentenceTransformer("all-MiniLM-L6-v2")
+
+    print(f"  Encoding {len(all_chunks)} chunks...")
+    texts = [c.text for c in all_chunks]
+    embeddings = model.encode(texts, show_progress_bar=True, convert_to_numpy=True)
+
+    print("  Normalizing embeddings...")
+    faiss.normalize_L2(embeddings)
+
+    print("  Building FAISS index...")
+    dimension = embeddings.shape[1]
+    index = faiss.IndexFlatIP(dimension)
+    index.add(embeddings)
+
+    index_path = output_dir / "faiss_index.bin"
+    faiss.write_index(index, str(index_path))
+    print(f"  ✓ Wrote index to {index_path}")
+
+    # Content type breakdown
+    content_types = {}
+    for chunk in all_chunks:
+        content_types[chunk.content_type] = content_types.get(chunk.content_type, 0) + 1
 
     # Write metadata
-    metadata_path = output_dir / 'metadata.json'
-    with open(metadata_path, 'w') as f:
+    metadata = {
+        "extraction_method": "docling_hierarchical_chunker",
+        "max_chunk_tokens": MAX_CHUNK_TOKENS,
+        "embedding_model": "all-MiniLM-L6-v2",
+        "embedding_dimension": dimension,
+        "n_chunks": len(all_chunks),
+        "n_source_docs": len(sources_used),
+        "index_type": "FAISS IndexFlatIP (cosine similarity)",
+        "build_date": datetime.now().isoformat(),
+        "content_type_breakdown": content_types,
+        "note": "Same extraction as quarry pipeline (Docling). See scripts/quarry/chunk.py"
+    }
+    metadata_path = output_dir / "metadata.json"
+    with open(metadata_path, "w") as f:
         json.dump(metadata, f, indent=2)
     print(f"\n✅ Wrote metadata to {metadata_path}")
 
-    print("\n" + "="*70)
+    # Write sources list
+    sources_path = output_dir / "sources.txt"
+    with open(sources_path, "w") as f:
+        f.write("# Source Documents for RAG Ablation\n")
+        f.write(f"# Extraction: Docling HierarchicalChunker (max_tokens={MAX_CHUNK_TOKENS})\n")
+        f.write(f"# Build Date: {datetime.now().isoformat()}\n\n")
+        for s in sources_used:
+            f.write(f"{s['catalog_id']}: {s['path']} ({s['chunks']} chunks)\n")
+    print(f"✅ Wrote source list to {sources_path}")
+
+    # Summary
+    print()
+    print("=" * 70)
     print("INDEX BUILD COMPLETE")
-    print("="*70)
-    print(f"\nOutputs in {output_dir}:")
-    print(f"  - chunks.jsonl ({len(chunks)} chunks)")
-    print(f"  - faiss_index.bin ({metadata['embedding_dimension']}-dim)")
-    print(f"  - metadata.json")
-    print(f"  - sources.txt ({len(available_sources)} docs)")
+    print("=" * 70)
+    print()
+    print("Summary:")
+    print(f"  Chunks: {len(all_chunks)}")
+    print(f"  Documents: {len(sources_used)}")
+    print(f"  Extraction: Docling HierarchicalChunker")
+    print(f"  Max chunk tokens: {MAX_CHUNK_TOKENS}")
+    print(f"  Embedding: all-MiniLM-L6-v2 ({dimension}-dim)")
+    print(f"  Content types: {content_types}")
+    print()
+    print("Outputs:")
+    print(f"  {chunks_path}")
+    print(f"  {index_path}")
+    print(f"  {metadata_path}")
+    print(f"  {sources_path}")
+    print()
 
     return 0
 
 
-if __name__ == '__main__':
-    exit(main())
+if __name__ == "__main__":
+    sys.exit(main())

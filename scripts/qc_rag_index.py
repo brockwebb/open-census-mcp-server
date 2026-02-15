@@ -62,6 +62,19 @@ def check_chunk_statistics(chunks):
     for source, count in sorted(source_counts.items()):
         print(f"  {source}: {count}")
 
+    # Content type breakdown (Docling-specific)
+    content_types = defaultdict(int)
+    for chunk in chunks:
+        content_types[chunk.get('content_type', 'unknown')] += 1
+
+    print(f"\nContent type breakdown:")
+    for ctype, count in sorted(content_types.items()):
+        print(f"  {ctype}: {count}")
+
+    # Section path population
+    sections_populated = sum(1 for c in chunks if c.get('section_path') and any(c.get('section_path', [])))
+    print(f"\nSection paths populated: {sections_populated}/{total_chunks} ({100*sections_populated/total_chunks:.1f}%)")
+
     # Chunk size statistics
     lengths = [len(chunk['text']) for chunk in chunks]
     min_len = min(lengths)
@@ -93,10 +106,10 @@ def check_chunk_statistics(chunks):
         for i in empty_chunks[:5]:  # Show first 5
             print(f"    Chunk {i}: {len(chunks[i]['text'])} chars, source={chunks[i].get('source', 'unknown')}")
 
-    # Oversized chunks
-    oversized_chunks = [i for i, chunk in enumerate(chunks) if len(chunk['text']) > 4000]
+    # Oversized chunks (Docling uses 2000 token max, ~8000 chars)
+    oversized_chunks = [i for i, chunk in enumerate(chunks) if len(chunk['text']) > 10000]
     if oversized_chunks:
-        warnings.append(f"Found {len(oversized_chunks)} oversized chunks (> 4000 chars)")
+        warnings.append(f"Found {len(oversized_chunks)} oversized chunks (> 10000 chars)")
         print(f"\n⚠️  WARN: {len(oversized_chunks)} oversized chunks")
         for i in oversized_chunks[:5]:  # Show first 5
             print(f"    Chunk {i}: {len(chunks[i]['text'])} chars, source={chunks[i].get('source', 'unknown')}")
@@ -107,9 +120,15 @@ def check_chunk_statistics(chunks):
     elif total_chunks > 1000:
         errors.append(f"Too many chunks: {total_chunks} (expected 50-1000)")
 
+    # Check for section path issues
+    if sections_populated < total_chunks * 0.3:
+        warnings.append(f"Low section path population: {sections_populated}/{total_chunks}")
+
     return {
         'total_chunks': total_chunks,
         'source_counts': dict(source_counts),
+        'content_types': dict(content_types),
+        'sections_populated': sections_populated,
         'min_len': min_len,
         'max_len': max_len,
         'mean_len': mean_len,
@@ -145,11 +164,18 @@ def check_retrieval_smoke_test(index_dir: Path, chunks):
         retrieved_chunks = []
         for i, idx in enumerate(indices[0]):
             chunk = chunks[idx]
+            page_start = chunk.get('page_start')
+            page_end = chunk.get('page_end')
+            if page_start and page_end:
+                page_label = f"{page_start}-{page_end}" if page_start != page_end else str(page_start)
+            else:
+                page_label = "?"
+
             retrieved_chunks.append({
                 'chunk_id': idx,
                 'score': float(scores[0][i]),
                 'source': chunk.get('source', 'unknown'),
-                'page': chunk.get('page'),
+                'page_label': page_label,
                 'text': chunk['text']
             })
 
@@ -157,7 +183,7 @@ def check_retrieval_smoke_test(index_dir: Path, chunks):
 
         # Show top 3
         for i, chunk in enumerate(retrieved_chunks[:3]):
-            print(f"\n  Chunk {i+1}: score={chunk['score']:.3f}, source={chunk['source']}, p.{chunk['page']}")
+            print(f"\n  Chunk {i+1}: score={chunk['score']:.3f}, source={chunk['source']}, pp.{chunk['page_label']}")
             print(f"  Text: {chunk['text'][:150]}...")
 
         results.append({
@@ -241,6 +267,10 @@ def generate_qc_report(stats, assessments, output_path):
     report_lines.append("\n  Chunks per document:")
     for source, count in sorted(stats['source_counts'].items()):
         report_lines.append(f"    {source}: {count}")
+    report_lines.append(f"\n  Content types:")
+    for ctype, count in sorted(stats.get('content_types', {}).items()):
+        report_lines.append(f"    {ctype}: {count}")
+    report_lines.append(f"\n  Section paths populated: {stats.get('sections_populated', 0)}/{stats['total_chunks']}")
     report_lines.append(f"\n  Chunk size range: {stats['min_len']}-{stats['max_len']} chars (mean: {stats['mean_len']:.0f})")
 
     if stats['warnings']:

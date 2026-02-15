@@ -50,7 +50,16 @@ def main():
         print(f"\n  Chunk {i+1}:")
         print(f"    Score: {chunk['score']:.3f}")
         print(f"    Source: {chunk['source']}")
-        print(f"    Page: {chunk['page']}")
+        page_start = chunk.get('page_start')
+        page_end = chunk.get('page_end')
+        if page_start and page_end:
+            if page_start == page_end:
+                print(f"    Page: {page_start}")
+            else:
+                print(f"    Pages: {page_start}-{page_end}")
+        section_path = chunk.get('section_path', [])
+        if section_path and any(section_path):
+            print(f"    Section: {' > '.join(section_path)}")
         print(f"    Text length: {chunk['text_length']} chars")
     print()
 

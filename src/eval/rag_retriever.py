@@ -106,15 +106,34 @@ class RAGRetriever:
                 'chunk_id': chunk.get('chunk_id', idx),
                 'score': score,
                 'source': chunk.get('source', 'unknown'),
-                'page': chunk.get('page'),
-                'section': chunk.get('section'),
+                'page_start': chunk.get('page_start'),
+                'page_end': chunk.get('page_end'),
+                'section_path': chunk.get('section_path', []),
+                'content_type': chunk.get('content_type', 'text'),
                 'text_length': len(chunk['text'])
             })
 
             # Format chunk for prompt injection
             source_label = chunk.get('source', 'unknown')
-            page_label = f", p. {chunk['page']}" if chunk.get('page') else ""
-            section_label = f", Section: {chunk['section']}" if chunk.get('section') else ""
+
+            # Format page range
+            page_start = chunk.get('page_start')
+            page_end = chunk.get('page_end')
+            if page_start and page_end:
+                if page_start == page_end:
+                    page_label = f", p. {page_start}"
+                else:
+                    page_label = f", pp. {page_start}-{page_end}"
+            else:
+                page_label = ""
+
+            # Format section path
+            section_path = chunk.get('section_path', [])
+            if section_path and any(section_path):
+                section_label = ' > '.join(section_path)
+                section_label = f", Section: {section_label}"
+            else:
+                section_label = ""
 
             context_parts.append(
                 f"[Source: {source_label}{page_label}{section_label}]\n"
