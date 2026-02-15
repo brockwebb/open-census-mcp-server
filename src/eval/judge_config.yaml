@@ -2,6 +2,14 @@ version: '1.0'
 created: '2026-02-12'
 purpose: 'CQS multi-vendor judge scoring with bias diagnostics'
 
+# Model used to generate responses (Stage 1)
+caller:
+  model: 'claude-sonnet-4-5-20250929'
+  provider: 'anthropic'
+  api_key_env: 'ANTHROPIC_API_KEY'
+  max_tokens: 2048
+  max_tool_rounds: 20
+
 judges:
   anthropic:
     model: 'claude-opus-4-5-20251101'

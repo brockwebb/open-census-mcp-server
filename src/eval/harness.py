@@ -63,6 +63,11 @@ class CQSTestHarness:
             battery = yaml.safe_load(f)
             self.queries = battery["queries"]
 
+        # Load eval config
+        config_path = self.project_root / "src/eval/judge_config.yaml"
+        with open(config_path) as f:
+            self.config = yaml.safe_load(f)
+
         # Initialize clients (will be started in run())
         self.mcp_client = MCPClient(project_root=str(self.project_root))
         self.agent_loop = None
@@ -127,8 +132,14 @@ class CQSTestHarness:
         print("✓ MCP server healthy")
         print()
 
-        # Initialize agent loop
-        self.agent_loop = AgentLoop(self.mcp_client)
+        # Initialize agent loop with caller config
+        caller_config = self.config.get("caller", {})
+        self.agent_loop = AgentLoop(
+            self.mcp_client,
+            model=caller_config.get("model", "claude-sonnet-4-5-20250929"),
+            max_tokens=caller_config.get("max_tokens", 2048),
+            max_tool_rounds=caller_config.get("max_tool_rounds", 20),
+        )
 
         # Filter queries if specific IDs requested
         queries_to_run = self.queries

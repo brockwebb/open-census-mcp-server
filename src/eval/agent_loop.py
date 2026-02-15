@@ -47,7 +47,7 @@ class AgentLoop:
     def __init__(
         self,
         mcp_client: MCPClient,
-        model: str = "claude-sonnet-4-5-20250929",
+        model: str = "claude-sonnet-4-5-20250929",  # Fallback only — should come from judge_config.yaml
         max_tokens: int = 2048,
         max_tool_rounds: int = 20,  # Increased from 5 — Census queries need 6-8 rounds
         api_key: Optional[str] = None,
@@ -56,7 +56,7 @@ class AgentLoop:
 
         Args:
             mcp_client: MCP client instance for tool calls
-            model: Claude model identifier (pinned for reproducibility)
+            model: Claude model identifier (should come from judge_config.yaml caller section)
             max_tokens: Maximum tokens per response
             max_tool_rounds: Safety limit on agent loop iterations
             api_key: Anthropic API key (defaults to ANTHROPIC_API_KEY env var)
