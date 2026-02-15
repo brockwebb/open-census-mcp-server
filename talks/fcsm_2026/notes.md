@@ -726,4 +726,199 @@ flowchart TD
 **Vision:** "If the goal is genuinely AI-ready federal data, we need to ship pragmatics alongside estimates. The alternative is every downstream application independently confabulating fitness-for-use guidance from training data. Plausible-sounding, unauditable, sometimes wrong. The data producer can prevent this by shipping the answer."
 
 ---
+
+## 2026-02-15: RAG Ablation Experiment — QC Procedure
+
+### Motivation
+Anticipated FCSM critique: "What if you just RAG'd the source documents?" Need empirical
+evidence that curated pragmatics outperform vanilla document retrieval. See 
+`docs/research/rag_fallacy_thinking.md` for theoretical argument.
+
+### QC Procedure for CC-Executed Pipeline Steps
+
+Establishing a repeatable procedure for when Claude Code executes pipeline steps
+that produce artifacts we depend on for analysis. This applies to the RAG ablation
+and any future pipeline work.
+
+**Principle: CC executes, CC self-checks, human verifies.**
+
+Each CC task that produces data artifacts follows three layers:
+
+1. **Execution** — CC runs the script/pipeline step
+2. **Automated QC** — CC runs a QC script that checks pass/fail criteria and writes
+   a QC report to a known location. CC stops if QC fails.
+3. **Human inspection** — We review the QC report and spot-check artifacts before
+   authorizing the next phase.
+
+**QC reports live alongside the artifacts they validate:**
+```
+results/rag_ablation/index/qc_report.txt      # Index quality
+results/rag_ablation/stage1/qc_report.txt      # Response quality (future)
+results/rag_ablation/stage2/qc_report.txt      # Judge quality (future)
+```
+
+**Gate checks between phases (from DOE plan):**
+- Gate A: Index chunk count, retrieval smoke test (5 queries)
+- Gate B: Read 5 RAG responses, verify retrieval injection working
+- Gate C: 702 records, 0 parse failures, counterbalancing correct
+- Gate D: RAG auditability near control baseline
+- Gate E: Three-group table tells coherent story
+
+**What gets committed vs what gets inspected:**
+- QC scripts: committed (reproducible)
+- QC reports: committed (provenance)
+- Index artifacts: committed if QC passes
+- Generated responses: committed after human spot-check
+- Judge scores: committed after count verification
+- Analysis CSVs: committed after sanity check
+
+### Lesson Learned
+Phase 4B data contamination (2,821 vs 702 records) happened because CC "fixed" a
+bug without verifying the fix against ground truth. The QC gate procedure prevents
+this: CC must produce a verifiable QC report, and humans must inspect it before
+the next phase proceeds. Trust but verify.
+
+### Embedding Model Justification (MiniLM over RoBERTa-large)
+
+The RAG index uses all-MiniLM-L6-v2 (384-dim) rather than a larger model like 
+RoBERTa-large (1024-dim) or OpenAI text-embedding-3-large (3072-dim). This is 
+not a compromise — it's an empirically justified design choice.
+
+From the semantic smearing analysis: RoBERTa-large collapsed group discrimination 
+by 86.5% when used on enriched Census variable metadata. MiniLM-384 preserved 
+more separation between genuinely different concepts. The larger embedding space 
+created more false positive matches — income variables and housing variables 
+reached 0.96 cosine similarity, making them virtually indistinguishable.
+
+In this domain, higher precision embeddings amplify the smearing problem because 
+Census methodology language is inherently similar across topics (every topic 
+discusses estimates, margins of error, geographic levels, sample sizes). A smaller 
+model with less precision paradoxically produces fewer false positive retrievals 
+because it can't resolve the subtle similarities that larger models over-index on.
+
+This is citable with our own data, not a vibes-based choice.
+
+### Treatment Comparison Table (Equal Treatment Evidence)
+
+This table documents the actual parameters for each experimental condition.
+Updated after each pipeline step with actuals, not planned values.
+
+| Parameter | Control | RAG | Pragmatics |
+|-----------|---------|-----|------------|
+| **Caller model** | [from judge_config] | [same] | [same] |
+| **System prompt** | CONTROL_SYSTEM_PROMPT | CONTROL_SYSTEM_PROMPT + retrieved chunks | TREATMENT_SYSTEM_PROMPT |
+| **Tool access** | None | None | Full MCP (3 tools) |
+| **Agent loop** | No (single-shot) | No (single-shot) | Yes (max 20 rounds) |
+| **Source documents** | N/A (training data only) | 3 ACS PDFs (provenance-traced) | Same 3 ACS PDFs (pragmatics cite these) |
+| **Extraction method** | N/A | Docling HierarchicalChunker | Docling HierarchicalChunker (via quarry) |
+| **Max chunk tokens** | N/A | 2000 (quarry config) | 2000 (quarry config) |
+| **Embedding model** | N/A | all-MiniLM-L6-v2 (384-dim) | all-MiniLM-L6-v2 (384-dim) |
+| **Retrieval** | N/A | Top-5 FAISS cosine similarity | Pack lookup via context triggers |
+| **Total chunks** | N/A | 311 (merged from 3,047 raw Docling chunks) | 35 contexts in neo4j pragmatics DB |
+| **Judge vendors** | Anthropic, OpenAI, Google | [same 3] | Anthropic, OpenAI, Google |
+| **Judge passes** | 6 (3 per order) | [same 6] | 6 (3 per order) |
+| **Judge rubric** | CQS D1-D5 | [same CQS D1-D5] | CQS D1-D5 |
+| **Fidelity check** | Yes (Stage 3) | Yes (Stage 3) | Yes (Stage 3) |
+| **Counterbalancing** | A/B alternating | [same] | A/B alternating |
+| **Total judge records** | 702 | [target: 702] | 702 |
+
+**Final index actuals (commit 05e1709, provenance-traced sources):**
+- Source documents: 3 (exactly matching pragmatics provenance chain)
+  - acs_general_handbook_2020.pdf (ACS-GEN-001, 28 pragmatic citations) → 85 chunks
+  - acs_design_methodology_report_2024.pdf (ACS-DM-2024, 6 citations) → 210 chunks
+  - acs_geography_handbook_2020.pdf (Census Geography Handbook, 1 citation) → 16 chunks
+- Total chunks: 311 (merged from 3,047 raw Docling chunks)
+- Chunk size range: 832-5,053 chars (mean: 3,114)
+- Section paths: 100% populated
+- Merge: 4,800-char ceiling, 5% boundary overlap
+- Extraction: Docling HierarchicalChunker (matching quarry pipeline) ✓
+- Embedding: all-MiniLM-L6-v2, 384-dim, FAISS IndexFlatIP ✓
+
+**Provenance audit findings:**
+- 3 documents removed (never cited by any pragmatic — CC added from directory listing)
+- CPS docs excluded: all 35 pragmatics are domain=acs, zero CPS pragmatics exist
+- Equal treatment: RAG gets exactly the documents pragmatics cite, nothing more
+
+**Docling bug discovered:** HierarchicalChunker violates its own max_tokens
+parameter, producing raw chunks up to 22,756 chars when configured for
+2000 tokens (~8000 chars expected). Our split_oversized_chunks() pre-processing
+fixes this before merge.
+
+**QC smoke test results (final):**
+- NORM-001 (population): RELEVANT ✓
+- GEO-002 (poverty comparison): RELEVANT ✓
+- SML-002 (small area): RELEVANT ✓
+- AMB-001 (income): RELEVANT ✓
+- NORM-008 (unemployment): IRRELEVANT ✘ (structural — ACS handbooks don't cover
+  unemployment; it's a BLS topic. Validates D1 source selection hypothesis.)
+
+4/5 relevant. NORM-008 miss is informative, not a defect.
+
+### Extraction Method Fix
+
+Original build_rag_index.py used pypdf — WRONG. Pragmatics were extracted using 
+Docling (HierarchicalChunker) via scripts/quarry/chunk.py. Using a different 
+extractor introduces an uncontrolled variable. Rebuilt with Docling to match.
+
+Principle reinforced: the only experimental variable should be knowledge 
+representation (raw chunks vs curated judgment). Everything else held constant.
+
+### Honest Assessment
+
+Nervous about results. The RAG ablation could go either way:
+- If RAG ≈ Control: strongest possible validation of pragmatics approach
+- If RAG ≈ Pragmatics: contribution claim is weaker, need to rethink
+- If RAG lands in between: expected result, good for the paper
+
+Either way, we'll have the data. That's the point.
+
+### Files Created Today
+- `docs/verification/doe_rag_ablation_plan.md` — Full DOE plan with gate checks
+- `docs/research/rag_fallacy_thinking.md` — Theoretical argument
+- `docs/parking_lot/appendix_and_presentation_notes.md` — Appendix placeholders
+- `docs/parking_lot/deep_agentic_thoughts_illusion_of_control.md` — Comedy draft
+- `handoffs/2026-02-15_rag_ablation.md` — Living handoff
+- `cc_tasks/2026-02-15_rag_ablation_condition.md` — Main CC task
+- `cc_tasks/2026-02-15_build_rag_index_and_wire.md` — Index build + wire-up CC task
+- `cc_tasks/2026-02-15_srs_section8_update.md` — SRS VR-020 through VR-072
+- SRS additions output file in `/mnt/user-data/outputs/srs_section8_additions.md`
+
+---
+
+## 2026-02-15: WebMCP Parallel for Framing
+
+Source: Caparas, J.P. (2026, Feb 12). "Chrome's WebMCP makes AI agents stop pretending." 
+*Medium/Reading.sh*. https://medium.com/reading-sh/chromes-webmcp-makes-ai-agents-stop-pretending-e8c7da1ba650
+
+### Key framing to steal
+
+WebMCP's core question reframed for us:
+- Theirs: "How do we make websites better at being used by agents?"
+- Ours: "How do we make statistical methodology better at being used by models?"
+
+The RAG ablation maps perfectly:
+- RAG = vision-based scraping (reconstruct structure from lossy representation)
+- Pragmatics = WebMCP tool declarations (producer ships the structure)
+
+### Citable analogies
+
+1. **ARIA parallel:** "Just as ARIA labels help screen readers understand a page, 
+pragmatics help AI agents understand fitness-for-use." ARIA didn't replace HTML, 
+it annotated it. Pragmatics don't replace data, they annotate it.
+
+2. **Open Banking parallel:** Banks were screen-scraped → regulation forced structured 
+APIs → ecosystem flourished. Census data is being "scraped" from training data → 
+we propose structured pragmatics → data producer ships the answer. We're doing 
+voluntarily what Open Banking did under mandate.
+
+3. **The reframe slide:** "Everyone else asks 'how do we make models better at 
+finding methodology documents?' We ask 'how do we make methodology better at 
+being used by models?'"
+
+### Where to use
+- FCSM talk: framing slide, before showing the three-group comparison
+- Paper introduction: motivating the pragmatics approach vs RAG
+- April 30 event: more provocative version of the reframe
+
+---
 *Add entries chronologically. Append corrections as new entries, don't edit old ones.*

@@ -531,6 +531,162 @@ def generate_aggregate_report(
     print(f"  ✅ {md_path}")
 
 
+def write_spot_check_diagnostics(
+    query_means: Dict,
+    primary_records: List[Dict],
+    rag_records: List[Dict],
+    output_dir: Path
+):
+    """Generate VR-089 spot-check diagnostics for verification.
+
+    Outputs:
+    1. Per-query means for NORM-001, GEO-002, SML-002 (all conditions, all dimensions)
+    2. Raw D3 vectors (n=39) going into Friedman test
+    3. For NORM-001: all constituent records that were averaged
+    """
+    csv_path = output_dir / 'spot_check.csv'
+
+    spot_queries = ['NORM-001', 'GEO-002', 'SML-002']
+    dimensions = ['D1', 'D2', 'D3', 'D4', 'D5', 'composite']
+
+    print("\n🔍 VR-089 Spot Check Diagnostics")
+    print("="*60)
+
+    # 1. Per-query means for spot-check queries
+    print("\n1. Per-query means for spot-check queries:")
+    for qid in spot_queries:
+        if qid in query_means:
+            print(f"\n  {qid}:")
+            for dim in dimensions:
+                if dim in query_means[qid]:
+                    ctrl = query_means[qid][dim].get('control', np.nan)
+                    rag = query_means[qid][dim].get('rag', np.nan)
+                    prag = query_means[qid][dim].get('pragmatics', np.nan)
+                    print(f"    {dim}: control={ctrl:.3f}, rag={rag:.3f}, pragmatics={prag:.3f}")
+
+    # 2. Raw D3 vectors for Friedman test
+    print("\n2. Raw D3 vectors (n=39) for Friedman test:")
+    d3_control = []
+    d3_rag = []
+    d3_prag = []
+
+    for qid in sorted(query_means.keys()):
+        if 'D3' in query_means[qid]:
+            ctrl = query_means[qid]['D3'].get('control', np.nan)
+            rag = query_means[qid]['D3'].get('rag', np.nan)
+            prag = query_means[qid]['D3'].get('pragmatics', np.nan)
+
+            if not (np.isnan(ctrl) or np.isnan(rag) or np.isnan(prag)):
+                d3_control.append(ctrl)
+                d3_rag.append(rag)
+                d3_prag.append(prag)
+
+    print(f"  Control D3 (n={len(d3_control)}): {d3_control}")
+    print(f"  RAG D3 (n={len(d3_rag)}): {d3_rag}")
+    print(f"  Pragmatics D3 (n={len(d3_prag)}): {d3_prag}")
+
+    # 3. NORM-001 constituent records
+    print("\n3. NORM-001 constituent records:")
+    print("  Query: NORM-001")
+
+    # Collect all NORM-001 records from primary eval
+    print("\n  Primary eval (control vs pragmatics):")
+    for rec in primary_records:
+        if rec['query_id'] == 'NORM-001':
+            vendor = rec.get('judge_vendor', 'unknown')
+            pass_num = rec.get('pass_number', 'unknown')
+            order = rec.get('presentation_order', 'unknown')
+            label_a = rec.get('response_a_label', 'unknown')
+            label_b = rec.get('response_b_label', 'unknown')
+
+            d1_a = rec.get('scores_response_a', {}).get('D1', {}).get('score', 'N/A')
+            d1_b = rec.get('scores_response_b', {}).get('D1', {}).get('score', 'N/A')
+
+            print(f"    {vendor} pass={pass_num} order={order}: "
+                  f"{label_a}={d1_a}, {label_b}={d1_b}")
+
+    # Collect all NORM-001 records from RAG ablation
+    print("\n  RAG ablation (control vs rag):")
+    for rec in rag_records:
+        if rec['query_id'] == 'NORM-001':
+            vendor = rec.get('judge_vendor', 'unknown')
+            pass_num = rec.get('pass_number', 'unknown')
+            order = rec.get('presentation_order', 'unknown')
+            label_a = rec.get('response_a_label', 'unknown')
+            label_b = rec.get('response_b_label', 'unknown')
+
+            d1_a = rec.get('scores_response_a', {}).get('D1', {}).get('score', 'N/A')
+            d1_b = rec.get('scores_response_b', {}).get('D1', {}).get('score', 'N/A')
+
+            print(f"    {vendor} pass={pass_num} order={order}: "
+                  f"{label_a}={d1_a}, {label_b}={d1_b}")
+
+    # Write CSV output
+    with open(csv_path, 'w', newline='') as f:
+        writer = csv.writer(f)
+
+        # Section 1: Per-query means
+        writer.writerow(['SECTION 1: Per-Query Means for Spot-Check Queries'])
+        writer.writerow(['query_id', 'dimension', 'control', 'rag', 'pragmatics'])
+
+        for qid in spot_queries:
+            if qid in query_means:
+                for dim in dimensions:
+                    if dim in query_means[qid]:
+                        ctrl = query_means[qid][dim].get('control', np.nan)
+                        rag = query_means[qid][dim].get('rag', np.nan)
+                        prag = query_means[qid][dim].get('pragmatics', np.nan)
+                        writer.writerow([qid, dim, f"{ctrl:.3f}", f"{rag:.3f}", f"{prag:.3f}"])
+
+        writer.writerow([])
+
+        # Section 2: Raw D3 vectors
+        writer.writerow(['SECTION 2: Raw D3 Vectors for Friedman Test'])
+        writer.writerow(['query_id', 'd3_control', 'd3_rag', 'd3_pragmatics'])
+
+        for qid in sorted(query_means.keys()):
+            if 'D3' in query_means[qid]:
+                ctrl = query_means[qid]['D3'].get('control', np.nan)
+                rag = query_means[qid]['D3'].get('rag', np.nan)
+                prag = query_means[qid]['D3'].get('pragmatics', np.nan)
+
+                if not (np.isnan(ctrl) or np.isnan(rag) or np.isnan(prag)):
+                    writer.writerow([qid, f"{ctrl:.3f}", f"{rag:.3f}", f"{prag:.3f}"])
+
+        writer.writerow([])
+
+        # Section 3: NORM-001 constituent records
+        writer.writerow(['SECTION 3: NORM-001 Constituent Records'])
+        writer.writerow(['source', 'vendor', 'pass', 'order', 'label_a', 'score_a_d1', 'label_b', 'score_b_d1'])
+
+        for rec in primary_records:
+            if rec['query_id'] == 'NORM-001':
+                vendor = rec.get('judge_vendor', 'unknown')
+                pass_num = rec.get('pass_number', 'unknown')
+                order = rec.get('presentation_order', 'unknown')
+                label_a = rec.get('response_a_label', 'unknown')
+                label_b = rec.get('response_b_label', 'unknown')
+                d1_a = rec.get('scores_response_a', {}).get('D1', {}).get('score', 'N/A')
+                d1_b = rec.get('scores_response_b', {}).get('D1', {}).get('score', 'N/A')
+
+                writer.writerow(['primary_eval', vendor, pass_num, order, label_a, d1_a, label_b, d1_b])
+
+        for rec in rag_records:
+            if rec['query_id'] == 'NORM-001':
+                vendor = rec.get('judge_vendor', 'unknown')
+                pass_num = rec.get('pass_number', 'unknown')
+                order = rec.get('presentation_order', 'unknown')
+                label_a = rec.get('response_a_label', 'unknown')
+                label_b = rec.get('response_b_label', 'unknown')
+                d1_a = rec.get('scores_response_a', {}).get('D1', {}).get('score', 'N/A')
+                d1_b = rec.get('scores_response_b', {}).get('D1', {}).get('score', 'N/A')
+
+                writer.writerow(['rag_ablation', vendor, pass_num, order, label_a, d1_a, label_b, d1_b])
+
+    print(f"\n  ✅ Spot-check diagnostics written to {csv_path}")
+    print("="*60)
+
+
 # =============================================================================
 # MAIN
 # =============================================================================
@@ -552,16 +708,16 @@ def main():
     # Load data
     print("\n📊 Loading data...")
 
-    # Primary eval (control and pragmatics) - use all available judge score files
-    primary_records = []
-    stage2_dir = Path('results/stage2')
-    for jsonl_file in sorted(stage2_dir.glob('judge_scores_*.jsonl')):
-        with open(jsonl_file) as f:
-            for line in f:
-                rec = json.loads(line)
-                if rec.get('parse_success', False):
-                    primary_records.append(rec)
-    print(f"  ✅ Loaded {len(primary_records)} primary eval records (control & pragmatics)")
+    # Primary eval (control and pragmatics) - filter by valid run IDs
+    valid_run_ids = primary_config.get('paths', {}).get('stage2_valid_run_ids', [])
+    if not valid_run_ids:
+        print("  ⚠️  WARNING: No stage2_valid_run_ids in config — loading ALL records")
+
+    primary_records = load_primary_judge_scores(
+        Path('results/stage2'),
+        valid_run_ids
+    )
+    print(f"  ✅ Loaded {len(primary_records)} primary eval records (filtered by {len(valid_run_ids)} valid run IDs)")
 
     # RAG ablation (control and RAG)
     rag_records = load_rag_judge_scores(Path('results/rag_ablation/stage2'))
@@ -601,6 +757,7 @@ def main():
     write_posthoc_pairwise(pairwise_results, output_dir)
     write_fidelity_comparison(primary_fidelity, rag_fidelity, output_dir)
     generate_aggregate_report(friedman_results, pairwise_results, primary_fidelity, rag_fidelity, output_dir)
+    write_spot_check_diagnostics(query_means, primary_records, rag_records, output_dir)
 
     print("\n" + "="*70)
     print("ANALYSIS COMPLETE")
