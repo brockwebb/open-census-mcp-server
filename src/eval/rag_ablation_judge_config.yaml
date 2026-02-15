@@ -1,0 +1,74 @@
+version: '1.0'
+created: '2026-02-12'
+purpose: 'CQS multi-vendor judge scoring with bias diagnostics'
+
+# Model used to generate responses (Stage 1)
+caller:
+  model: 'claude-sonnet-4-5-20250929'
+  provider: 'anthropic'
+  api_key_env: 'ANTHROPIC_API_KEY'
+  max_tokens: 2048
+  max_tool_rounds: 20
+
+judges:
+  anthropic:
+    model: 'claude-opus-4-5-20251101'
+    provider: 'anthropic'
+    api_key_env: 'ANTHROPIC_API_KEY'
+    temperature: 0.0
+    notes: 'Anthropic flagship — potential self-enhancement bias on Claude outputs'
+
+  openai:
+    model: 'gpt-5.2'
+    provider: 'openai'
+    api_key_env: 'OPENAI_API_KEY'
+    temperature: null
+    max_tokens_param: 'max_completion_tokens'
+    notes: 'OpenAI flagship — does NOT accept temperature param'
+
+  google:
+    model: 'gemini-3-pro-preview'
+    provider: 'google'
+    api_key_env: 'GEMINI_API_KEY'
+    temperature: 1.0
+    max_output_tokens: 8192    # Increased from default 4096 - Gemini truncates complex JSON
+    notes: 'Google flagship — temperature must be 1.0 per Google docs'
+
+pipeline:
+  random_seed: 42
+  max_tokens: 4096
+  rate_limit_delay: 1.0
+  checkpoint_interval: 10
+  max_workers_per_vendor: 5   # concurrent calls per API vendor (3 safe, 5 tested OK)
+  num_passes: 6           # 6 passes per judge per query
+  # Pass schedule:
+  # Pass 1: control_first   (base scoring)
+  # Pass 2: treatment_first (position bias)
+  # Pass 3: control_first   (test-retest #1)
+  # Pass 4: treatment_first (test-retest #1 x position)
+  # Pass 5: control_first   (test-retest #2, CIs)
+  # Pass 6: treatment_first (test-retest #2 x position, CIs)
+
+scoring:
+  dimensions: ['D1', 'D2', 'D3', 'D4', 'D5', 'D6']
+  scale_min: 0
+  scale_max: 2
+  request_confidence: true     # Ask judges for per-dimension confidence
+  confidence_scale: [1, 2, 3, 4, 5]
+
+fidelity:
+  model: 'claude-haiku-4-5-20251001'
+  provider: 'anthropic'
+  api_key_env: 'ANTHROPIC_API_KEY'
+  temperature: 0.0
+  max_tokens: 4096
+  max_retries: 3
+  rate_limit_delay: 0.5
+
+paths:
+  stage1_results: 'results/rag_ablation/stage1/rag_vs_control_pairs.jsonl'
+  output_dir: 'results/rag_ablation/stage2'
+  checkpoint_dir: 'results/rag_ablation/stage2/checkpoints'
+  analysis_output: 'results/rag_ablation/analysis'
+  stage3_output_dir: 'results/rag_ablation/stage3'
+  # No stage2_valid_run_ids yet — will be populated after runs complete
