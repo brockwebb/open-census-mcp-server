@@ -13,9 +13,9 @@ class ToolCall(BaseModel):
 
 
 class ResponseRecord(BaseModel):
-    """Complete record of one response (control or treatment)."""
+    """Complete record of one response (control, treatment, or rag)."""
     query_id: str
-    condition: Literal["control", "treatment"]
+    condition: Literal["control", "treatment", "rag"]
     model: str
     system_prompt: str
     response_text: str
@@ -28,6 +28,10 @@ class ResponseRecord(BaseModel):
     tools_offered: bool = False  # True when tools were passed to the API
     tool_rounds_used: int = 0  # Number of agent loop iterations used
     tool_rounds_exhausted: bool = False  # True if forced synthesis was needed
+
+    # RAG-specific metadata (only populated when condition='rag')
+    retrieved_chunks: Optional[list[dict]] = None  # Chunk metadata from retriever
+    retrieval_context_chars: Optional[int] = None  # Total chars injected as context
 
 
 class QueryPair(BaseModel):

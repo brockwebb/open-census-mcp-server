@@ -17,7 +17,8 @@ from dotenv import load_dotenv
 
 from .agent_loop import AgentLoop
 from .mcp_client import MCPClient
-from .models import QueryPair
+from .models import QueryPair, ResponseRecord
+from .rag_retriever import RAGRetriever
 
 
 class CQSTestHarness:
@@ -28,6 +29,8 @@ class CQSTestHarness:
         battery_path: str = "src/eval/battery/queries.yaml",
         output_path: Optional[str] = None,
         project_root: str = "/Users/brock/Documents/GitHub/census-mcp-server",
+        condition: Optional[str] = None,
+        rag_index_dir: Optional[str] = None,
     ):
         """Initialize harness.
 
@@ -35,14 +38,21 @@ class CQSTestHarness:
             battery_path: Path to queries YAML file
             output_path: Path to output JSONL file (auto-generated if None)
             project_root: Project root directory
+            condition: Which condition to run ('control', 'treatment', 'rag', or None for paired)
+            rag_index_dir: Path to RAG index directory (required if condition='rag')
         """
         self.project_root = Path(project_root)
         self.battery_path = self.project_root / battery_path
+        self.condition = condition
 
         # Generate output path if not provided
         if output_path is None:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            output_path = f"results/cqs_responses_{timestamp}.jsonl"
+            if condition == "rag":
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                output_path = f"results/rag_ablation/stage1/rag_responses_{timestamp}.jsonl"
+            else:
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                output_path = f"results/cqs_responses_{timestamp}.jsonl"
         self.output_path = self.project_root / output_path
 
         # Ensure results directory exists
@@ -56,6 +66,13 @@ class CQSTestHarness:
         # Initialize clients (will be started in run())
         self.mcp_client = MCPClient(project_root=str(self.project_root))
         self.agent_loop = None
+
+        # RAG retriever (only for rag condition)
+        self.rag_retriever = None
+        if condition == "rag":
+            if rag_index_dir is None:
+                rag_index_dir = "results/rag_ablation/index"
+            self.rag_retriever = RAGRetriever(str(self.project_root / rag_index_dir))
 
         # Stats
         self.completed_queries = []
@@ -140,41 +157,97 @@ class CQSTestHarness:
             print(f"[{i}/{len(queries_to_run)}] {query_id}: {query_text[:60]}...")
 
             try:
-                # Run control
-                print("  Running CONTROL...")
-                control_start = time.time()
-                control_response = await self.agent_loop.run_control(query_text, query_id)
-                control_time = time.time() - control_start
-                print(f"  ✓ Control complete ({control_time:.1f}s, {len(control_response.response_text)} chars)")
+                if self.condition == "rag":
+                    # RAG condition: single-shot with RAG-augmented prompt
+                    print("  Running RAG...")
+                    rag_start = time.time()
+                    rag_response = await self.agent_loop.run_rag(query_text, query_id, self.rag_retriever)
+                    rag_time = time.time() - rag_start
+                    print(
+                        f"  ✓ RAG complete ({rag_time:.1f}s, {len(rag_response.response_text)} chars, "
+                        f"{len(rag_response.retrieved_chunks)} chunks retrieved, "
+                        f"{rag_response.retrieval_context_chars} context chars)"
+                    )
 
-                # Run treatment
-                print("  Running TREATMENT...")
-                treatment_start = time.time()
-                treatment_response = await self.agent_loop.run_treatment(query_text, query_id)
-                treatment_time = time.time() - treatment_start
-                print(
-                    f"  ✓ Treatment complete ({treatment_time:.1f}s, {len(treatment_response.response_text)} chars, "
-                    f"{len(treatment_response.tool_calls)} tool calls, "
-                    f"{len(treatment_response.pragmatics_returned)} pragmatics)"
-                )
+                    # Write response record directly (not a pair)
+                    with open(self.output_path, "a") as f:
+                        f.write(rag_response.model_dump_json() + "\n")
 
-                # Create query pair
-                pair = QueryPair(
-                    query_id=query_id,
-                    query_text=query_text,
-                    category=query["category"],
-                    difficulty=query["difficulty"],
-                    control=control_response,
-                    treatment=treatment_response,
-                )
+                    self.completed_queries.append(query_id)
+                    print(f"  ✓ Saved to {self.output_path}")
+                    print()
 
-                # Write to JSONL immediately (incremental checkpointing)
-                with open(self.output_path, "a") as f:
-                    f.write(pair.model_dump_json() + "\n")
+                elif self.condition == "control":
+                    # Control-only mode
+                    print("  Running CONTROL...")
+                    control_start = time.time()
+                    control_response = await self.agent_loop.run_control(query_text, query_id)
+                    control_time = time.time() - control_start
+                    print(f"  ✓ Control complete ({control_time:.1f}s, {len(control_response.response_text)} chars)")
 
-                self.completed_queries.append(query_id)
-                print(f"  ✓ Saved to {self.output_path}")
-                print()
+                    with open(self.output_path, "a") as f:
+                        f.write(control_response.model_dump_json() + "\n")
+
+                    self.completed_queries.append(query_id)
+                    print(f"  ✓ Saved to {self.output_path}")
+                    print()
+
+                elif self.condition == "treatment":
+                    # Treatment-only mode
+                    print("  Running TREATMENT...")
+                    treatment_start = time.time()
+                    treatment_response = await self.agent_loop.run_treatment(query_text, query_id)
+                    treatment_time = time.time() - treatment_start
+                    print(
+                        f"  ✓ Treatment complete ({treatment_time:.1f}s, {len(treatment_response.response_text)} chars, "
+                        f"{len(treatment_response.tool_calls)} tool calls, "
+                        f"{len(treatment_response.pragmatics_returned)} pragmatics)"
+                    )
+
+                    with open(self.output_path, "a") as f:
+                        f.write(treatment_response.model_dump_json() + "\n")
+
+                    self.completed_queries.append(query_id)
+                    print(f"  ✓ Saved to {self.output_path}")
+                    print()
+
+                else:
+                    # Default: Paired control + treatment mode
+                    # Run control
+                    print("  Running CONTROL...")
+                    control_start = time.time()
+                    control_response = await self.agent_loop.run_control(query_text, query_id)
+                    control_time = time.time() - control_start
+                    print(f"  ✓ Control complete ({control_time:.1f}s, {len(control_response.response_text)} chars)")
+
+                    # Run treatment
+                    print("  Running TREATMENT...")
+                    treatment_start = time.time()
+                    treatment_response = await self.agent_loop.run_treatment(query_text, query_id)
+                    treatment_time = time.time() - treatment_start
+                    print(
+                        f"  ✓ Treatment complete ({treatment_time:.1f}s, {len(treatment_response.response_text)} chars, "
+                        f"{len(treatment_response.tool_calls)} tool calls, "
+                        f"{len(treatment_response.pragmatics_returned)} pragmatics)"
+                    )
+
+                    # Create query pair
+                    pair = QueryPair(
+                        query_id=query_id,
+                        query_text=query_text,
+                        category=query["category"],
+                        difficulty=query["difficulty"],
+                        control=control_response,
+                        treatment=treatment_response,
+                    )
+
+                    # Write to JSONL immediately (incremental checkpointing)
+                    with open(self.output_path, "a") as f:
+                        f.write(pair.model_dump_json() + "\n")
+
+                    self.completed_queries.append(query_id)
+                    print(f"  ✓ Saved to {self.output_path}")
+                    print()
 
             except Exception as e:
                 print(f"  ✗ ERROR: {e}")
@@ -208,7 +281,7 @@ class CQSTestHarness:
 
 async def main_async():
     """CLI entry point."""
-    parser = argparse.ArgumentParser(description="CQS Test Harness - Generate paired responses")
+    parser = argparse.ArgumentParser(description="CQS Test Harness - Generate responses")
     parser.add_argument(
         "--query-ids",
         nargs="+",
@@ -216,7 +289,16 @@ async def main_async():
     )
     parser.add_argument(
         "--output",
-        help="Output JSONL path (default: results/cqs_responses_TIMESTAMP.jsonl)",
+        help="Output JSONL path (auto-generated if not provided)",
+    )
+    parser.add_argument(
+        "--condition",
+        choices=["control", "treatment", "rag"],
+        help="Run single condition instead of paired control+treatment. Options: control, treatment, rag",
+    )
+    parser.add_argument(
+        "--rag-index-dir",
+        help="Path to RAG index directory (default: results/rag_ablation/index)",
     )
     args = parser.parse_args()
 
@@ -236,6 +318,8 @@ async def main_async():
     harness = CQSTestHarness(
         output_path=args.output,
         project_root=str(project_root),
+        condition=args.condition,
+        rag_index_dir=args.rag_index_dir,
     )
 
     await harness.run(query_ids=args.query_ids)

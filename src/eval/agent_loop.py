@@ -13,6 +13,7 @@ from anthropic import AsyncAnthropic
 
 from .models import ResponseRecord, ToolCall
 from .mcp_client import MCPClient
+from .rag_retriever import RAGRetriever
 
 
 # System prompts
@@ -109,6 +110,59 @@ class AgentLoop:
             tools_offered=False,
             tool_rounds_used=0,
             tool_rounds_exhausted=False,
+        )
+
+    async def run_rag(self, query: str, query_id: str, retriever: RAGRetriever) -> ResponseRecord:
+        """Run query with RAG-augmented system prompt, single-shot (no tools).
+
+        Args:
+            query: User query text
+            query_id: Query identifier for tracking
+            retriever: RAGRetriever instance for context injection
+
+        Returns:
+            ResponseRecord with rag condition and retrieval metadata
+        """
+        start_time = time.time()
+
+        # Retrieve relevant chunks and augment system prompt
+        augmented_prompt, retrieval_metadata = retriever.format_system_prompt(
+            CONTROL_SYSTEM_PROMPT, query
+        )
+
+        # Single-shot LLM call with augmented prompt (no tools)
+        response = await self.client.messages.create(
+            model=self.model,
+            max_tokens=self.max_tokens,
+            system=augmented_prompt,
+            messages=[{"role": "user", "content": query}],
+        )
+
+        latency_ms = (time.time() - start_time) * 1000
+
+        # Extract text from response
+        response_text = ""
+        for block in response.content:
+            if block.type == "text":
+                response_text += block.text
+
+        return ResponseRecord(
+            query_id=query_id,
+            condition="rag",
+            model=self.model,
+            system_prompt=augmented_prompt,
+            response_text=response_text,
+            tool_calls=[],
+            pragmatics_returned=[],
+            total_latency_ms=latency_ms,
+            input_tokens=response.usage.input_tokens,
+            output_tokens=response.usage.output_tokens,
+            timestamp=datetime.utcnow(),
+            tools_offered=False,
+            tool_rounds_used=0,
+            tool_rounds_exhausted=False,
+            retrieved_chunks=retrieval_metadata["retrieved_chunks"],
+            retrieval_context_chars=retrieval_metadata["total_context_chars"],
         )
 
     async def run_treatment(self, query: str, query_id: str) -> ResponseRecord:
