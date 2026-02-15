@@ -497,6 +497,19 @@ Test dimensions:
 
 **Location:** Config in `judge_config.yaml` (`stage2_valid_run_ids`), archive in `results/stage2/archive_v2/`.
 
+### 8.8 RAG Ablation Condition
+
+| ID | Requirement | Priority |
+|----|------------|----------|
+| VR-080 | RAG ablation condition SHALL use the same source documents from which pragmatics were extracted, chunked at section level with no retrieval optimization | Must |
+| VR-081 | RAG ablation SHALL receive identical evaluation treatment: same rubric, same 3 judge vendors, same 6-pass counterbalanced design, same fidelity verification | Must |
+| VR-082 | Three-group analysis SHALL use Friedman test (repeated-measures) with query as the experimental unit, and Wilcoxon signed-rank post-hoc with Bonferroni correction | Must |
+| VR-083 | All RAG ablation outputs SHALL be written to `results/rag_ablation/` and SHALL NOT overwrite any existing evaluation outputs | Must |
+
+**Rationale:** The RAG ablation addresses the anticipated critique that simple document retrieval could match the pragmatics system's performance. This experiments tests whether structured pragmatic context via MCP tools provides value beyond vanilla retrieval-augmented generation. The "no optimization" requirement (VR-080) ensures a fair comparison — the RAG condition uses boring defaults (section-level chunking, top-5 retrieval, all-MiniLM-L6-v2 embeddings) rather than being tuned to beat the pragmatics system. Equal treatment (VR-081) ensures that any performance differences reflect the intervention (pragmatics vs RAG), not confounds in evaluation methodology. The output isolation requirement (VR-083) prevents accidental corruption of the existing two-group (pragmatics vs control) analysis.
+
+**Location:** `scripts/build_rag_index.py`, `src/eval/rag_retriever.py`, `src/eval/analyze_three_group.py`, output in `results/rag_ablation/`.
+
 ---
 
 ## 9. Traceability
