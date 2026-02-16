@@ -921,4 +921,62 @@ being used by models?'"
 - April 30 event: more provocative version of the reframe
 
 ---
+
+## 2026-02-16: ADR-004 Always-Ground Thesis — Grounding Gate Implementation
+
+### Problem
+7 of 39 pragmatics queries skipped `get_methodology_guidance` despite the prompt saying "Call it first." These were ambiguity/clarification cases (GEO-003, GEO-004, SML-004, AMB-001, AMB-002, MIS-001, MIS-003) where the model asked for clarification instead of calling tools.
+
+This violates ADR-004 always-ground thesis. RAG condition structurally guarantees methodology delivery (chunks in system prompt). Pragmatics needs an equivalent guarantee, but the model must make the actual call — no injected fake calls.
+
+### Hypothesis
+Even for clarification requests, consulting methodology guidance first produces better responses by grounding the clarification in statistical context.
+
+### Implementation
+Added dual grounding gate in `agent_loop.py`:
+
+**Gate 1 (line 119):** Catches zero-tool responses in round 1. If pragmatics condition returns without calling any tools (clarification request), redirect to require methodology consultation first.
+
+**Gate 2 (line 184):** Catches non-methodology tool calls in round 1. If model calls other tools first without methodology, redirect.
+
+If model skips methodology on round 1, harness sends redirect requiring consultation. Model makes real call with own topic selection. Redirect doesn't count against max_tool_rounds.
+
+Also strengthened system prompt from "Call it first" to "You MUST call get_methodology_guidance FIRST before any other tool calls. This is required for every query — no exceptions."
+
+### Results
+**Pre-gate:** 32/39 methodology compliance (82%)
+**Post-gate:** 39/39 methodology compliance (100%) ✓
+
+### Evidence: Pre/Post Comparison (7 non-compliant queries)
+
+**Strong evidence for always-ground (2 queries):**
+- **SML-004** (Gallatin County 1-year): PRE asks what variables they want. POST consults methodology and IMMEDIATELY warns about 65K population threshold for 1-year data. Prevents futile request.
+- **MIS-001** (Sioux County 1-year): PRE asks what year/variables. POST consults methodology and warns Sioux County too small (1,100 pop) for 1-year data. Saves user from API failure.
+
+**Moderate evidence (3 queries):**
+- **AMB-001** (Springfield poverty): POST adds statistical context (population thresholds, data availability) to clarification request
+- **AMB-002** (Income gap): POST frames clarification within methodology context (29 pragmatics on subpopulation MOE)
+- **GEO-003** (Washington population): POST makes reasonable default assumption (Washington State), retrieves data, answers decisively vs PRE asking for clarification
+
+**Marginal improvement (2 queries):**
+- **GEO-004** (Portland income): Both ask for clarification, POST has methodology grounding (19 pragmatics)
+- **MIS-003** (Monthly ACS data): Both explain correctly, POST has methodology grounding (4 pragmatics)
+
+### Key Insight
+The always-ground thesis is strongest for **fitness-for-use warnings** (population thresholds, data availability, product limitations). Even when the model gives a clarification response with zero data tool calls, consulting methodology first produces higher-quality clarifications that warn about statistical pitfalls.
+
+SML-004 and MIS-001 are direct evidence: grounding prevented bad data requests by warning about constraints upfront. This is the core value proposition of the pragmatics layer.
+
+### Implication for ADR-004
+The grounding gate is justified. Pragmatics condition should ALWAYS call `get_methodology_guidance` first, even for queries that seem to require immediate clarification. The methodology context improves the quality of the clarification itself.
+
+### Files Created
+- `talks/fcsm_2026/always_ground_comparison.md` — Full pre/post analysis with evidence
+- `talks/fcsm_2026/2026-02-16_methodology_compliance_gap.md` — Initial gap discovery
+- `talks/fcsm_2026/2026-02-16_stage1_rerun_history.md` — Rerun history log
+- `scripts/check_missing_methodology.py` — Utility script for compliance checking
+
+Commit: c47ad9e
+
+---
 *Add entries chronologically. Append corrections as new entries, don't edit old ones.*
