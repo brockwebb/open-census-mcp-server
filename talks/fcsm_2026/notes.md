@@ -979,4 +979,71 @@ The grounding gate is justified. Pragmatics condition should ALWAYS call `get_me
 Commit: c47ad9e
 
 ---
+
+## 2026-02-16: Stage 2 V2 — Throwaway Test Run & QC Validation
+
+**Tags:** stage2, judge_pipeline, v2_redo, QC, validation, rag_vs_pragmatics, pairwise_comparison
+
+### Context
+Stage 2 judge pipeline rewritten for V2 pairwise comparison design (see VR-044, VR-045, VR-046 in SRS). The V1 pipeline loaded paired QueryPair records from a single JSONL file. V2 loads from two separate condition files (e.g., rag_responses.jsonl + pragmatics_responses.jsonl) and joins on query_id with battery metadata.
+
+Before running the full 3-judge × 6-pass × 39-query production workload, executed a throwaway test run to validate pipeline structure and QC process.
+
+### Throwaway Test Run
+**Command:** `python src/eval/judge_pipeline.py --comparison rag_vs_pragmatics --judge openai --batch 60`
+
+**Parameters:**
+- 10 queries (first 10 from battery, query_id alphabetical)
+- OpenAI gpt-5.2 only (skip Anthropic/Google for speed)
+- 60 parallel workers (stress test concurrency)
+- 6 passes per query (counterbalancing)
+
+**Results:** 60/60 successful records, 0 failures, ~4 min runtime
+**Cost:** ~$10 (OpenAI API)
+**Output:** `results/v2_redo/stage2/rag_vs_pragmatics_20260216_143022.jsonl`
+
+### QC Validation
+Established three-layer QC procedure for V2 judge outputs (pattern to follow for full run).
+
+**QC Step 1: Structural validation**
+- Counterbalancing check: 30 condition_a_first, 30 condition_b_first ✓ (perfect 50/50)
+- Label pair validation: All response_a_label/response_b_label pairs match comparison config ✓
+- Presentation order distribution: Even split across passes ✓
+- No same-condition pairs (e.g., rag vs rag) ✓
+
+**QC Step 2: Identical score vector inspection**
+- Found 4/60 records (6.7%) with identical D1-D6 scores for both responses
+- Manual review of all 4: legitimate ties on genuinely hard queries (AMB-002, MIS-001, GEO-003)
+- 0 contradictory preferences (A preferred with B scoring higher) ✓
+- Preference distribution: 26 A, 30 B, 4 tie (reasonable spread)
+
+**QC Step 3: Preliminary signal check**
+- Dimension means (pragmatics vs RAG, n=60):
+  - D1 (Source Selection): 1.48 vs 1.32 (+0.16, pragmatics advantage)
+  - D2 (Data Retrieval): 1.60 vs 1.53 (+0.07)
+  - D3 (Uncertainty): 1.63 vs 1.47 (+0.16, pragmatics advantage)
+  - D4 (Audience): 1.62 vs 1.58 (+0.04)
+  - D5 (Reasoning): 1.60 vs 1.52 (+0.08)
+- Pragmatics numerically ahead on all dimensions (not statistically tested, n=10 too small)
+- Early signal is positive but inconclusive — need full 39-query dataset
+
+### Files Modified in This Session
+- `src/eval/models.py` — Added ComparisonPair model, updated JudgeRecord
+- `src/eval/judge_config.yaml` — V2 config with comparisons section
+- `src/eval/judge_pipeline.py` — V2 pipeline with load_comparison_pairs()
+- `docs/requirements/srs.md` — Added VR-044, VR-045, VR-046
+- `CLAUDE.md` — Updated Current State to V2 redo progress
+
+### Observations
+1. **Pairwise design working as intended.** No cross-comparison contamination, clean counterbalancing, comparison-scoped checkpoints prevent collisions.
+2. **High batch concurrency safe for OpenAI.** 60 workers executed without rate limit errors (gpt-5.2 has high throughput limits).
+3. **Tie rate reasonable.** 6.7% ties (4/60) is not suspiciously high or low. Manual review confirms ties on genuinely ambiguous queries where both responses were equally deficient or equally strong.
+4. **QC layer essential.** Without structural validation, we wouldn't have caught if counterbalancing was broken or if same-condition pairs leaked through.
+5. **Early signal positive but fragile.** Pragmatics ahead on all 5 dimensions with n=10 queries, but effect sizes are small and could reverse with more data. Need full dataset before drawing conclusions.
+
+**Next:** Full production run (3 judges × 6 passes × 39 queries = 702 records per comparison). Will use lower batch size (30-40) to stay under conservative rate limits across all three vendors.
+
+Commit: 7a85246 (V2 pipeline replacement), 5197e37 (SRS + CLAUDE.md updates)
+
+---
 *Add entries chronologically. Append corrections as new entries, don't edit old ones.*
