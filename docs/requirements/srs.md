@@ -1,7 +1,7 @@
 # Software Requirements Specification (SRS)
 ## Census MCP Server
 
-*Version 1.0 — February 2026*
+*Version 2.0 — February 2026*
 
 ---
 
@@ -378,7 +378,7 @@ The system requires a geographic lookup capability for resolving place names to 
 
 ## 8. Verification
 
-The system is evaluated using the Conversational Quality Score (CQS) protocol, which compares system responses against expert judgment on curated test queries. The protocol is specified in `docs/verification/`.
+The system is evaluated using the Conversational Quality Score (CQS) protocol, a knowledge representation study comparing three conditions with equal data tool access. The study measures whether the form of methodology support — none, retrieved document chunks, or curated expert judgment — affects consultation quality when the underlying data access is held constant.
 
 Test dimensions:
 1. **Source appropriateness** — Did it use the right data product?
@@ -407,7 +407,7 @@ Test dimensions:
 
 | ID | Requirement | Priority |
 |----|------------|----------|
-| VR-010 | Test battery split SHALL be driven by statistical power analysis: sufficient normal queries for equivalence testing (no-harm claim) and sufficient edge cases for superiority testing (treatment effect). Current design: 41% normal / 59% edge cases (n=39 total). See DEC-4B-009. | Must |
+| VR-010 | Test battery split SHALL be driven by statistical power analysis: sufficient normal queries for equivalence testing (no-harm claim) and sufficient edge cases for superiority testing (effect detection). Current design: 41% normal / 59% edge cases (n=39 total). See DEC-4B-009 | Must |
 | VR-011 | Test battery SHALL include geographic edge cases: independent cities (St. Louis MO, 38 Virginia independent cities), consolidated city-counties, NYC boroughs, DC as state-equivalent | Must |
 | VR-012 | Test battery SHALL include small-area reliability cases: places under 65K, under 20K, tract-level requests | Must |
 | VR-013 | Test battery SHALL include temporal edge cases: cross-vintage comparison, overlapping ACS periods, break-in-series years, inflation-unadjusted dollar comparisons | Must |
@@ -421,32 +421,41 @@ Test dimensions:
 
 | ID | Requirement | Priority |
 |----|------------|----------|
-| VR-020 | Response generation SHALL produce paired control/treatment responses for each test query, where control receives no MCP tools and treatment receives full tool access | Must |
-| VR-021 | Response generation SHALL use a single caller model for both conditions within an evaluation round, controlled by `judge_config.yaml` | Must |
-| VR-022 | Response generation SHALL record complete provenance: model string, system prompt hash, tool call transcripts, pragmatics context IDs returned, token counts, and latency | Must |
-| VR-023 | Treatment condition SHALL use an agent loop with configurable `max_tool_rounds` (default: 20). If the loop exhausts without the model issuing a final response, the system SHALL perform forced synthesis and flag `tool_rounds_exhausted=True` | Must |
-| VR-024 | Response generation SHALL output QueryPair records in JSONL with category and difficulty metadata for downstream stratification | Must |
+| VR-020 | Response generation SHALL produce responses for three conditions per test query: control (data tools, no methodology), RAG (data tools, methodology via retrieved chunks), and pragmatics (data tools, methodology via curated MCP tool). All three conditions SHALL have equal access to `get_census_data` and `explore_variables`. The only experimental variable is the form of methodology support | Must |
+| VR-021 | Response generation SHALL use a single caller model for all conditions within an evaluation round, controlled by `judge_config.yaml` | Must |
+| VR-022 | Response generation SHALL record complete provenance: model string, system prompt (full text), tool call transcripts (including full unsanitized tool returns), pragmatics context IDs returned (pragmatics condition), retrieved chunk metadata (RAG condition), token counts, and latency | Must |
+| VR-023 | All three conditions SHALL use the same agent loop with configurable `max_tool_rounds` (default: 20). If the loop exhausts without the model issuing a final response, the system SHALL perform forced synthesis and flag `tool_rounds_exhausted=True` | Must |
+| VR-024 | Response generation SHALL output individual ResponseRecord objects in JSONL, one file per condition: `{condition}_responses_{timestamp}.jsonl`. Files SHALL be written to `results/v2_redo/stage1/` | Must |
+| VR-025 | Tool filtering SHALL exclude `get_methodology_guidance` from the tool list passed to the Anthropic API for control and RAG conditions. The pragmatics condition SHALL receive the full tool list including `get_methodology_guidance` | Must |
+| VR-026 | System prompts SHALL be minimal and equivalent across conditions. Control and RAG SHALL use an identical base prompt. RAG augments the base prompt with retrieved chunks only. The pragmatics prompt adds only the instruction to call `get_methodology_guidance` first. No condition's prompt SHALL contain quality coaching (e.g., "always provide margins of error") | Must |
+| VR-027 | Response generation SHALL perform runtime contamination verification: an assertion SHALL confirm that `get_methodology_guidance` is absent from the tool set before every control and RAG query, and present before every pragmatics query. Assertion failure SHALL halt the run | Must |
+| VR-028 | Response generation SHALL perform post-run contamination verification: scan all output files and report the count of `get_methodology_guidance` calls per condition. Any such call in control or RAG output SHALL be flagged as contaminated | Must |
+| VR-029 | All three conditions SHALL be generated in a single harness run with a shared timestamp to eliminate temporal confounds (API behavior changes, model version drift). The `--condition all` flag SHALL execute control, RAG, and pragmatics sequentially within one MCP server session | Must |
+| VR-030 | The agent loop SHALL sanitize `get_census_data` tool results before passing them to the model for control and RAG conditions: the `pragmatics` field SHALL be stripped from the result dict. The full unsanitized result SHALL be preserved in the `ToolCall` log record for fidelity verification. The pragmatics condition SHALL receive unsanitized tool results | Must |
 
-**Rationale:** The paired design ensures the only experimental difference is MCP tool access. Complete provenance enables Stage 3 fidelity verification. The forced synthesis mechanism (VR-023) prevents data loss from agent loops that fail to converge, a bug discovered in v1/v2 where 7/39 queries produced truncated responses. See DEC-4B-016.
+**Rationale:** V1 confounded tool access with knowledge representation — control and RAG had no data tools while pragmatics had full tool access. 33 of 39 RAG responses directed users to data.census.gov because the model had no way to retrieve data. V2 equalizes tool access so the only variable is methodology support form: none (control), retrieved document chunks (RAG), or curated expert judgment via MCP tool (pragmatics). The contamination checks (VR-027, VR-028) are defense-in-depth against the class of confound that invalidated V1. VR-030 addresses a second contamination vector discovered during spot-checking: `get_census_data` bundles curated pragmatics content (context IDs, guidance text, thread edges) in every response via `retriever.get_guidance_by_parameters()`. Without sanitization, all three conditions receive curated expert judgment through the data tool response payload, defeating the experimental design. See ADR-011, `talks/fcsm_2026/2026-02-16_pragmatics_leakage.md`.
 
-**Location:** `src/eval/generate_responses.py`, config in `src/eval/judge_config.yaml`.
+**Location:** `src/eval/agent_loop.py`, `src/eval/harness.py`, config in `src/eval/judge_config.yaml`.
 
 ### 8.4 Stage 2: LLM-as-Judge Scoring Pipeline
 
 | ID | Requirement | Priority |
 |----|------------|----------|
-| VR-030 | Judge scoring SHALL use at minimum three independent LLM vendors to detect self-enhancement bias | Must |
-| VR-031 | Judge scoring SHALL implement counterbalanced presentation: each query SHALL be scored with both control-first and treatment-first orderings across passes | Must |
-| VR-032 | Judge scoring SHALL use a minimum of 6 passes per vendor per query (3 control-first, 3 treatment-first) to enable test-retest reliability measurement | Must |
-| VR-033 | Judge prompt SHALL present responses as anonymized "Response A" and "Response B" with no condition labels visible to the judge | Must |
-| VR-034 | Judge prompt SHALL NOT contain temporal anchors (dates, "current year" references) that could bias scoring based on judge training cutoff. See DEC-4B-015 | Must |
-| VR-035 | Judge scoring SHALL use the CQS rubric with dimensions D1 (Source Selection), D2 (Methodology), D3 (Uncertainty Communication), D4 (Definitions), D5 (Reproducibility). Each dimension scored 0-2 with confidence 1-5 and free-text reasoning | Must |
-| VR-036 | D6 (Groundedness) SHALL be excluded from the CQS composite score and reported separately as a methodological note. Groundedness is measured by Stage 3 automated fidelity instead. See DEC-4B-023 | Must |
-| VR-037 | Judge scoring SHALL record complete JudgeRecord metadata: run_id, pass_number, presentation_order, response label mapping, raw response text, parse_success flag, and token counts | Must |
-| VR-038 | Judge scoring SHALL use checkpoint-based deduplication with full tuple matching (query_id, judge_key, ordering, pass_number) to enable safe pipeline restarts without re-scoring completed tasks | Must |
-| VR-039 | Judge scoring pipeline SHALL filter to configured valid run IDs (`stage2_valid_run_ids` in config) to prevent contamination from prior pipeline versions. All run parameters SHALL be read from `judge_config.yaml` per C-006 | Must |
+| VR-031 | Judge scoring SHALL use at minimum three independent LLM vendors to detect self-enhancement bias | Must |
+| VR-032 | Judge scoring SHALL implement counterbalanced presentation: each query SHALL be scored with both A-first and B-first orderings across passes | Must |
+| VR-033 | Judge scoring SHALL use a minimum of 6 passes per vendor per query per comparison (3 A-first, 3 B-first) to enable test-retest reliability measurement | Must |
+| VR-034 | Judge prompt SHALL present responses as anonymized "Response A" and "Response B" with no condition labels visible to the judge | Must |
+| VR-035 | Judge prompt SHALL NOT contain temporal anchors (dates, "current year" references) that could bias scoring based on judge training cutoff. See DEC-4B-015 | Must |
+| VR-036 | Judge scoring SHALL use the CQS rubric with dimensions D1 (Source Selection), D2 (Methodology), D3 (Uncertainty Communication), D4 (Definitions), D5 (Reproducibility). Each dimension scored 0-2 with confidence 1-5 and free-text reasoning | Must |
+| VR-037 | D6 (Groundedness) SHALL be excluded from the CQS composite score and reported separately as a methodological note. Groundedness is measured by Stage 3 automated fidelity instead. See DEC-4B-023 | Must |
+| VR-038 | Judge scoring SHALL record complete JudgeRecord metadata: run_id, pass_number, presentation_order, response label mapping, raw response text, parse_success flag, and token counts | Must |
+| VR-039 | Judge scoring SHALL use checkpoint-based deduplication with full tuple matching (query_id, judge_key, ordering, pass_number) to enable safe pipeline restarts without re-scoring completed tasks | Must |
+| VR-040 | Judge scoring pipeline SHALL filter to configured valid run IDs (`stage2_valid_run_ids` in config) to prevent contamination from prior pipeline versions. All run parameters SHALL be read from `judge_config.yaml` per C-006 | Must |
+| VR-041 | Judge scoring SHALL evaluate three pairwise comparisons: (1) control vs RAG, (2) control vs pragmatics, (3) RAG vs pragmatics. Each comparison is a separate judge run using the same rubric, counterbalancing, and vendor panel | Must |
+| VR-042 | JudgeRecord SHALL include a `comparison` field identifying which pairwise comparison produced the record (e.g., "control_vs_rag", "control_vs_pragmatics", "rag_vs_pragmatics") | Must |
+| VR-043 | Pairwise judge outputs SHALL be written to separate files per comparison to prevent cross-contamination during analysis | Must |
 
-**Rationale:** The three-vendor panel (VR-030) addresses a known limitation of LLM-as-judge: models may preferentially score their own outputs higher. Counterbalancing (VR-031) enables position bias measurement. The temporal anchor prohibition (VR-034) was added after discovering that judges penalized treatment responses for citing data vintages beyond their training cutoff, creating a systematic confound. Run ID filtering (VR-039) was added after discovering that stale v2 judge scores contaminated aggregate analysis when the glob pattern loaded all JSONL files indiscriminately.
+**Rationale:** The three-vendor panel (VR-031) addresses a known limitation of LLM-as-judge: models may preferentially score their own outputs higher. Counterbalancing (VR-032) enables position bias measurement. The temporal anchor prohibition (VR-035) was added after discovering that judges penalized pragmatics responses for citing data vintages beyond their training cutoff, creating a systematic confound. Run ID filtering (VR-040) was added after discovering that stale v2 judge scores contaminated aggregate analysis when the glob pattern loaded all JSONL files indiscriminately. The pairwise comparison approach (VR-041) preserves the validated A-vs-B judge methodology while enabling three-group analysis through paired comparisons.
 
 **Location:** `src/eval/judge_pipeline.py`, prompts in `src/eval/judge_prompts.py`, config in `src/eval/judge_config.yaml`.
 
@@ -454,71 +463,68 @@ Test dimensions:
 
 | ID | Requirement | Priority |
 |----|------------|----------|
-| VR-040 | Fidelity verification SHALL compare every quantitative claim in the treatment response against the actual tool call data that produced it | Must |
-| VR-041 | Fidelity verification SHALL classify each claim as: `match`, `mismatched`, `no_source`, `calculation_correct`, or `calculation_incorrect` | Must |
-| VR-042 | Fidelity verification SHALL compute auditability for both treatment and control responses symmetrically, classifying claims as `auditable`, `partially_auditable`, `unauditable`, or `non_claim` | Must |
-| VR-043 | Auditability percentages SHALL exclude `non_claim` items (methodological statements, source citations) from the denominator. See data contamination incident where including non_claims diluted treatment auditability from 72.8% to 46.0% | Must |
-| VR-044 | Fidelity score SHALL be computed as (matched + calculation_correct) / total_claims × 100, including `no_source` claims in the denominator. A secondary `substantive_fidelity` metric MAY exclude `no_source` from the denominator and SHALL be reported separately | Must |
+| VR-050 | Fidelity verification SHALL compare every quantitative claim in each response against the evidence available to that condition: tool call returns (all conditions), and additionally retrieved chunks (RAG condition) | Must |
+| VR-051 | Fidelity verification SHALL classify each claim as: `match`, `mismatched`, `no_source`, `calculation_correct`, or `calculation_incorrect` | Must |
+| VR-052 | Fidelity verification SHALL compute auditability for all three conditions symmetrically, classifying claims as `auditable`, `partially_auditable`, `unauditable`, or `non_claim` | Must |
+| VR-053 | Auditability percentages SHALL exclude `non_claim` items (methodological statements, source citations) from the denominator. See data contamination incident where including non_claims diluted pragmatics auditability from 72.8% to 46.0% | Must |
+| VR-054 | Fidelity score SHALL be computed as (matched + calculation_correct) / total_claims × 100, including `no_source` claims in the denominator. A secondary `substantive_fidelity` metric MAY exclude `no_source` from the denominator and SHALL be reported separately | Must |
+| VR-055 | RAG fidelity SHALL use the `retrieved_chunks` field from the RAG ResponseRecord as additional evidence. Each chunk's source, section path, page range, and full text SHALL be included in the verification prompt | Must |
+| VR-056 | RAG fidelity claim types SHALL include methodology, definition, geographic, threshold, and recommendation claims in addition to the quantitative claim types used for all conditions (value, percentage, variable_code, fips_code, table_name, moe, calculation) | Must |
 
-**Rationale:** Stage 3 replaces the flawed D6 rubric dimension (DEC-4B-023) with automated verification. D6 rewarded vagueness and penalized specificity — judges scored unverifiable hedged claims higher than precise tool-grounded claims because vague claims are harder to falsify. Automated fidelity directly measures whether the system faithfully reports what its tools returned, which is the actual property D6 was intended to measure.
+**Rationale:** Stage 3 replaces the flawed D6 rubric dimension (DEC-4B-023) with automated verification. D6 rewarded vagueness and penalized specificity — judges scored unverifiable hedged claims higher than precise tool-grounded claims because vague claims are harder to falsify. Automated fidelity directly measures whether the system faithfully reports what its tools returned, which is the actual property D6 was intended to measure. In V2, all three conditions have tool calls, so fidelity verification uses the same base method for all three. RAG additionally has chunk verification.
 
-**Location:** `src/eval/fidelity_check.py`, output in `results/stage3/`.
+**Location:** `src/eval/fidelity_check.py`, `src/eval/fidelity_prompts.py`, output in `results/v2_redo/stage3/`.
 
 ### 8.6 Aggregate Analysis
 
 | ID | Requirement | Priority |
 |----|------------|----------|
-| VR-050 | Aggregate analysis SHALL compute Cohen's d effect sizes with 95% bootstrap confidence intervals (n=1000 iterations, seed=42) for each CQS dimension (D1-D5) and the composite (mean of D1-D5) | Must |
-| VR-051 | Aggregate analysis SHALL compute both independent-samples and paired Cohen's d. Paired d (computed on query-level means) SHALL be the primary metric for stratified analysis. Independent d is reported as a secondary conservative estimate | Must |
-| VR-052 | Aggregate analysis SHALL compute Krippendorff's alpha (ordinal scale) across all judge vendors for each dimension as the inter-rater reliability metric | Must |
-| VR-053 | Aggregate analysis SHALL test for position bias by comparing treatment scores when presented as Response A vs Response B, per vendor per dimension. Differences exceeding 0.2 with p < 0.05 SHALL be flagged | Must |
-| VR-054 | Aggregate analysis SHALL test for self-enhancement bias by comparing Anthropic's treatment-control effect size delta against the average of other vendors' deltas. Differences exceeding 0.3 SHALL be flagged | Must |
-| VR-055 | Aggregate analysis SHALL test for verbosity bias by computing Spearman's ρ between response character length and composite CQS score, separately for treatment and control conditions | Must |
-| VR-056 | Aggregate analysis SHALL compute test-retest reliability as Pearson r separately for each pass-pair (1,2), (3,4), (5,6) per vendor per dimension, and report the overall lumped r as a secondary metric | Must |
-| VR-057 | Statistical tests on paired conditions (Wilcoxon signed-rank) SHALL aggregate to the query level before testing to respect the experimental unit. The experimental unit is the query (n=39), not the judge record (n=702). All p-values SHALL be reported as exact two-tailed values | Must |
-| VR-058 | Aggregate analysis SHALL stratify results by query category (normal vs edge cases) and report per-stratum effect sizes with bootstrap CIs | Must |
-| VR-059 | Aggregate analysis SHALL compute judge preference rates (treatment preferred, control preferred, tie) per vendor and pooled, mapping the anonymized A/B preference back to condition labels | Must |
-| VR-060 | Aggregate analysis SHALL output: CSV files for each analysis type, a markdown report with publication-ready tables, and a JSON archive of all computed statistics | Must |
-| VR-061 | Aggregate analysis SHALL load only records matching valid run IDs from config. The script SHALL report total records loaded, per-vendor counts, and parse failure counts. If any vendor has fewer than expected records, it SHALL emit a warning | Must |
+| VR-060 | Aggregate analysis SHALL compute Cohen's d effect sizes with 95% bootstrap confidence intervals (n=1000 iterations, seed=42) for each CQS dimension (D1-D5) and the composite (mean of D1-D5), for each pairwise comparison | Must |
+| VR-061 | Aggregate analysis SHALL compute both independent-samples and paired Cohen's d. Paired d (computed on query-level means) SHALL be the primary metric for stratified analysis. Independent d is reported as a secondary conservative estimate | Must |
+| VR-062 | Aggregate analysis SHALL compute Krippendorff's alpha (ordinal scale) across all judge vendors for each dimension as the inter-rater reliability metric | Must |
+| VR-063 | Aggregate analysis SHALL test for position bias by comparing scores when presented as Response A vs Response B, per vendor per dimension. Differences exceeding 0.2 with p < 0.05 SHALL be flagged | Must |
+| VR-064 | Aggregate analysis SHALL test for self-enhancement bias by comparing Anthropic's effect size delta against the average of other vendors' deltas. Differences exceeding 0.3 SHALL be flagged | Must |
+| VR-065 | Aggregate analysis SHALL test for verbosity bias by computing Spearman's ρ between response character length and composite CQS score, separately for each condition | Must |
+| VR-066 | Aggregate analysis SHALL compute test-retest reliability as Pearson r separately for each pass-pair (1,2), (3,4), (5,6) per vendor per dimension, and report the overall lumped r as a secondary metric | Must |
+| VR-067 | Statistical tests on paired conditions (Wilcoxon signed-rank) SHALL aggregate to the query level before testing to respect the experimental unit. The experimental unit is the query (n=39), not the judge record. All p-values SHALL be reported as exact two-tailed values | Must |
+| VR-068 | Three-group omnibus analysis SHALL use Friedman test (repeated-measures) with query as the experimental unit, followed by Wilcoxon signed-rank post-hoc with Bonferroni correction (3 comparisons, α = 0.0167) | Must |
+| VR-069 | Aggregate analysis SHALL stratify results by query category (normal vs edge cases) and report per-stratum effect sizes with bootstrap CIs | Must |
+| VR-070 | Aggregate analysis SHALL compute judge preference rates (per pairwise comparison) per vendor and pooled, mapping the anonymized A/B preference back to condition labels | Must |
+| VR-071 | Aggregate analysis SHALL output: CSV files for each analysis type, a markdown report with publication-ready tables, and a JSON archive of all computed statistics | Must |
+| VR-072 | Aggregate analysis SHALL load only records matching valid run IDs from config. The script SHALL report total records loaded, per-vendor counts, and parse failure counts. If any vendor has fewer than expected records, it SHALL emit a warning | Must |
+| VR-073 | Three-group analysis SHALL map A/B judge scores back to condition labels using `response_a_label` and `response_b_label` per record. The mapping SHALL NOT assume fixed position — counterbalancing alternates which condition appears as A vs B | Must |
+| VR-074 | Query-level means SHALL be computed by averaging across all vendors and passes for each query before statistical testing. The experimental unit is the query (n=39), not the judge record. This aggregation step SHALL be verified by reporting the per-query mean for at least one query alongside its constituent records | Must |
+| VR-075 | Three-group analysis output SHALL be spot-checked by computing query-level means for at least 3 queries (one normal, one geographic edge, one small-area edge) by hand from raw JSONL and comparing against the script's intermediate values. The raw D3 vectors (n=39) entering the Friedman test SHALL be dumped to CSV for manual inspection | Must |
 
-**Rationale:** These requirements encode methodological decisions that were made iteratively during Phase 4B development. VR-051 addresses the paired vs independent d decision — the experimental design is paired (every query has both conditions), so paired d is the correct primary metric, but independent d provides a conservative lower bound. VR-057 was added after discovering that running Wilcoxon on 1,002 non-independent records (multiple vendors × passes per query) produced meaningless p-values of 0.0000 for every comparison. VR-061 was added after the v2 data contamination incident where stale judge scores inflated the apparent sample size from 702 to 2,821.
+**Rationale:** These requirements encode methodological decisions that were made iteratively during Phase 4B development. VR-061 addresses the paired vs independent d decision — the experimental design is paired (every query has all conditions), so paired d is the correct primary metric, but independent d provides a conservative lower bound. VR-067 was added after discovering that running Wilcoxon on non-independent records (multiple vendors × passes per query) produced meaningless p-values. VR-068 specifies the omnibus test for the three-group design with appropriate multiple comparison correction. VR-072 was added after the data contamination incident where stale judge scores inflated the apparent sample size.
 
-**Location:** `src/eval/analyze_results.py`, output in `results/stage2/analysis/`.
+**Location:** `src/eval/analyze_results.py`, `src/eval/analyze_three_group.py`, output in `results/v2_redo/analysis/`.
 
 ### 8.7 Data Provenance
 
 | ID | Requirement | Priority |
 |----|------------|----------|
-| VR-070 | Each pipeline run SHALL generate a unique run_id (timestamp-based) embedded in every output record | Must |
-| VR-071 | Stale or superseded pipeline outputs SHALL be archived to a versioned subdirectory (e.g., `archive_v2/`) with a README documenting why the data was superseded and what bugs or methodology changes invalidated it | Must |
-| VR-072 | The active results directory SHALL contain only data from the current valid pipeline version. Aggregate analysis SHALL NOT glob indiscriminately across all available files | Must |
+| VR-076 | Each pipeline run SHALL generate a unique run_id (timestamp-based) embedded in every output record | Must |
+| VR-077 | Stale or superseded pipeline outputs SHALL be archived to a versioned subdirectory (e.g., `results/archive_v1_confounded/`) with a README documenting why the data was superseded and what design flaw or bug invalidated it | Must |
+| VR-078 | The active results directory SHALL contain only data from the current valid pipeline version. Aggregate analysis SHALL NOT glob indiscriminately across all available files | Must |
 
-**Rationale:** The Phase 4B evaluation went through three pipeline versions (v1: truncation bugs, v2: temporal confound, v3: clean). At one point, aggregate analysis inadvertently loaded all three versions' outputs simultaneously, contaminating every computed statistic. These requirements formalize the hard-won lesson that data provenance in iterative evaluation pipelines requires active management, not passive file accumulation.
+**Rationale:** The Phase 4B evaluation went through multiple pipeline versions (V1: confounded tool access, intermediate: truncation bugs, temporal confounds). At one point, aggregate analysis inadvertently loaded multiple versions' outputs simultaneously, contaminating every computed statistic. These requirements formalize the hard-won lesson that data provenance in iterative evaluation pipelines requires active management, not passive file accumulation.
 
-**Location:** Config in `judge_config.yaml` (`stage2_valid_run_ids`), archive in `results/stage2/archive_v2/`.
+**Location:** Config in `judge_config.yaml` (`stage2_valid_run_ids`), archive in `results/archive_v1_confounded/`.
 
-### 8.8 RAG Ablation Condition
+### 8.8 RAG Condition Specification
 
 | ID | Requirement | Priority |
 |----|------------|----------|
-| VR-080 | RAG ablation condition SHALL use the same source documents from which pragmatics were extracted, chunked at section level with no retrieval optimization | Must |
-| VR-081 | RAG ablation SHALL receive identical evaluation treatment: same rubric, same 3 judge vendors, same 6-pass counterbalanced design, same fidelity verification | Must |
-| VR-082 | Three-group analysis SHALL use Friedman test (repeated-measures) with query as the experimental unit, and Wilcoxon signed-rank post-hoc with Bonferroni correction | Must |
-| VR-083 | All RAG ablation outputs SHALL be written to `results/rag_ablation/` and SHALL NOT overwrite any existing evaluation outputs | Must |
-| VR-084 | RAG source documents SHALL be provenance-traced to pragmatics citations. Only documents cited in `Context.provenance.sources[].document` in neo4j-pragmatics SHALL be included. Documents not cited by any pragmatic SHALL be excluded regardless of availability in the knowledge base | Must |
-| VR-085 | RAG extraction SHALL use the same method as the quarry pipeline (Docling HierarchicalChunker). RAG and pragmatics conditions SHALL differ only in knowledge representation (raw chunks vs curated judgment), not in extraction methodology | Must |
-| VR-086 | Stage 3 fidelity verification SHALL branch based on condition: pragmatics responses verified against tool call returns, RAG responses verified against retrieved chunks. The verification question is identical for both conditions: "did the response accurately reflect what the system provided?" | Must |
-| VR-087 | RAG fidelity SHALL use the `retrieved_chunks` field from the RAG ResponseRecord as evidence. Each chunk's source, section path, page range, and full text SHALL be included in the verification prompt | Must |
-| VR-088 | RAG fidelity claim types SHALL include methodology, definition, geographic, threshold, and recommendation claims in addition to the quantitative claim types used for pragmatics fidelity (value, percentage, variable_code, fips_code, table_name, moe, calculation) | Must |
-| VR-089 | Three-group analysis output SHALL be spot-checked by computing query-level means for at least 3 queries (one normal, one geographic edge, one small-area edge) by hand from raw JSONL and comparing against the script's intermediate values. The raw D3 vectors (n=39) entering the Friedman test SHALL be dumped to CSV for manual inspection | Must |
-| VR-090 | Three-group analysis SHALL map A/B judge scores back to condition labels using `response_a_label` and `response_b_label` per record. The mapping SHALL NOT assume fixed position — counterbalancing alternates which condition appears as A vs B | Must |
-| VR-091 | Query-level means SHALL be computed by averaging across all vendors and passes for each query before statistical testing. The experimental unit is the query (n=39), not the judge record (n=702). This aggregation step SHALL be verified by reporting the per-query mean for at least one query alongside its constituent records | Must |
+| VR-080 | The RAG condition SHALL use the same source documents from which pragmatics were extracted, chunked at section level with no retrieval optimization | Must |
+| VR-081 | RAG source documents SHALL be provenance-traced to pragmatics citations. Only documents cited in `Context.provenance.sources[].document` in neo4j-pragmatics SHALL be included. Documents not cited by any pragmatic SHALL be excluded regardless of availability in the knowledge base | Must |
+| VR-082 | RAG extraction SHALL use the same method as the quarry pipeline (Docling HierarchicalChunker). RAG and pragmatics conditions SHALL differ only in knowledge representation (raw chunks vs curated expert judgment), not in extraction methodology | Must |
+| VR-083 | RAG condition SHALL receive identical evaluation treatment: same rubric, same 3 judge vendors, same 6-pass counterbalanced design, same fidelity verification methodology | Must |
+| VR-084 | All RAG index artifacts SHALL be stored in `results/rag_ablation/index/` and version-controlled separately from runtime evaluation outputs | Must |
 
-**Rationale:** The RAG ablation addresses the anticipated critique that simple document retrieval could match the pragmatics system's performance. This experiment tests whether structured pragmatic context via MCP tools provides value beyond vanilla retrieval-augmented generation. The "no optimization" requirement (VR-080) ensures a fair comparison — the RAG condition uses boring defaults (section-level chunking, top-5 retrieval, all-MiniLM-L6-v2 embeddings) rather than being tuned to beat the pragmatics system. Equal treatment (VR-081) ensures that any performance differences reflect the intervention (pragmatics vs RAG), not confounds in evaluation methodology. The output isolation requirement (VR-083) prevents accidental corruption of the existing two-group (pragmatics vs control) analysis.
+**Rationale:** The RAG condition addresses the anticipated critique that simple document retrieval could match curated expert judgment. This is a knowledge representation study comparing three forms: no methodology support (control), methodology via retrieved document chunks (RAG), and methodology via curated expert judgment delivered through a structured MCP tool (pragmatics). The "no optimization" requirement (VR-080) ensures a fair comparison — the RAG condition uses standard defaults (section-level chunking, top-5 retrieval, all-MiniLM-L6-v2 embeddings) rather than being tuned to compete with the pragmatics system. VR-081 was added after a provenance audit revealed that 3 of 6 documents in the initial RAG index were never cited by any pragmatic. VR-082 was added after discovering the initial RAG build used pypdf extraction while pragmatics used Docling, introducing an uncontrolled extraction quality variable.
 
-VR-084 was added after a provenance audit revealed that 3 of 6 documents in the initial RAG index were never cited by any pragmatic — CC selected them from a directory listing rather than tracing from the neo4j provenance chain. This introduced an uncontrolled variable: RAG had access to content the pragmatics system never drew from. VR-085 was added after discovering the initial RAG build used pypdf extraction while pragmatics used Docling, introducing a second uncontrolled variable (extraction quality). VR-086 through VR-088 ensure fidelity verification applies equally to RAG responses — without these, RAG would receive `has_data: False` (zero verified claims) because the existing fidelity code only checks tool call data. Retrieved chunks are the RAG equivalent of tool returns: both are "what the system provided to the model at query time."
-
-**Location:** `scripts/build_rag_index.py`, `src/eval/rag_retriever.py`, `src/eval/fidelity_check.py`, `src/eval/fidelity_prompts.py`, `src/eval/analyze_three_group.py`, output in `results/rag_ablation/`.
+**Location:** `scripts/build_rag_index.py`, `src/eval/rag_retriever.py`, index in `results/rag_ablation/index/`.
 
 ---
 
