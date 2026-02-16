@@ -13,9 +13,9 @@ class ToolCall(BaseModel):
 
 
 class ResponseRecord(BaseModel):
-    """Complete record of one response (control, treatment, or rag)."""
+    """Complete record of one response (control, pragmatics, or rag)."""
     query_id: str
-    condition: Literal["control", "treatment", "rag"]
+    condition: Literal["control", "pragmatics", "rag"]
     model: str
     system_prompt: str
     response_text: str

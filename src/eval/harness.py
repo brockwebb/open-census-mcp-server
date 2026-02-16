@@ -1,6 +1,18 @@
-"""CQS Test Harness - Main test runner for Phase 4B evaluation.
+"""CQS Test Harness — V2 Equal-Tool Design.
 
-Generates paired control/treatment responses for CQS judge scoring.
+Generates responses for all three conditions with equal tool access.
+Single variable under test: methodology support form.
+
+Usage:
+    # Run all three conditions sequentially (recommended)
+    python -m src.eval.harness --condition all --rag-index-dir results/rag_ablation/index
+
+    # Run single condition
+    python -m src.eval.harness --condition control
+    python -m src.eval.harness --condition rag --rag-index-dir results/rag_ablation/index
+    python -m src.eval.harness --condition pragmatics
+
+Output: results/v2_redo/stage1/{condition}_responses_{timestamp}.jsonl
 """
 import argparse
 import asyncio
@@ -15,48 +27,33 @@ from typing import Optional
 import yaml
 from dotenv import load_dotenv
 
-from .agent_loop import AgentLoop
+from .agent_loop import AgentLoop, PRAGMATICS_ONLY_TOOL
 from .mcp_client import MCPClient
-from .models import QueryPair, ResponseRecord
+from .models import ResponseRecord
 from .rag_retriever import RAGRetriever
 
 
 class CQSTestHarness:
-    """Main test runner for CQS evaluation."""
+    """Main test runner for CQS V2 evaluation."""
 
     def __init__(
         self,
         battery_path: str = "src/eval/battery/queries.yaml",
-        output_path: Optional[str] = None,
+        output_dir: Optional[str] = None,
         project_root: str = "/Users/brock/Documents/GitHub/census-mcp-server",
-        condition: Optional[str] = None,
+        condition: str = "all",
         rag_index_dir: Optional[str] = None,
     ):
-        """Initialize harness.
-
-        Args:
-            battery_path: Path to queries YAML file
-            output_path: Path to output JSONL file (auto-generated if None)
-            project_root: Project root directory
-            condition: Which condition to run ('control', 'treatment', 'rag', or None for paired)
-            rag_index_dir: Path to RAG index directory (required if condition='rag')
-        """
         self.project_root = Path(project_root)
         self.battery_path = self.project_root / battery_path
         self.condition = condition
 
-        # Generate output path if not provided
-        if output_path is None:
-            if condition == "rag":
-                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                output_path = f"results/rag_ablation/stage1/rag_responses_{timestamp}.jsonl"
-            else:
-                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                output_path = f"results/cqs_responses_{timestamp}.jsonl"
-        self.output_path = self.project_root / output_path
-
-        # Ensure results directory exists
-        self.output_path.parent.mkdir(parents=True, exist_ok=True)
+        # V2 output directory
+        self.timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        if output_dir is None:
+            output_dir = "results/v2_redo/stage1"
+        self.output_dir = self.project_root / output_dir
+        self.output_dir.mkdir(parents=True, exist_ok=True)
 
         # Load battery
         with open(self.battery_path) as f:
@@ -68,51 +65,123 @@ class CQSTestHarness:
         with open(config_path) as f:
             self.config = yaml.safe_load(f)
 
-        # Initialize clients (will be started in run())
+        # MCP client
         self.mcp_client = MCPClient(project_root=str(self.project_root))
         self.agent_loop = None
 
-        # RAG retriever (only for rag condition)
+        # RAG retriever (lazy init)
+        self.rag_index_dir = rag_index_dir or "results/rag_ablation/index"
         self.rag_retriever = None
-        if condition == "rag":
-            if rag_index_dir is None:
-                rag_index_dir = "results/rag_ablation/index"
-            self.rag_retriever = RAGRetriever(str(self.project_root / rag_index_dir))
 
         # Stats
-        self.completed_queries = []
-        self.failed_queries = []
+        self.completed = {"control": [], "rag": [], "pragmatics": []}
+        self.failed = {"control": [], "rag": [], "pragmatics": []}
 
-    def _get_completed_query_ids(self) -> set[str]:
-        """Read output file to get already-completed query IDs for resume.
+    def _output_path(self, cond: str) -> Path:
+        """Generate output path for a condition."""
+        return self.output_dir / f"{cond}_responses_{self.timestamp}.jsonl"
 
-        Returns:
-            Set of query IDs that have been completed
-        """
-        if not self.output_path.exists():
+    def _get_completed_ids(self, path: Path) -> set[str]:
+        """Read output file to get already-completed query IDs for resume."""
+        if not path.exists():
             return set()
-
         completed = set()
-        with open(self.output_path) as f:
+        with open(path) as f:
             for line in f:
                 if line.strip():
                     try:
-                        pair = json.loads(line)
-                        completed.add(pair["query_id"])
+                        record = json.loads(line)
+                        completed.add(record["query_id"])
                     except json.JSONDecodeError:
                         continue
-
         return completed
 
-    async def run(self, query_ids: Optional[list[str]] = None) -> None:
-        """Run full battery or subset. Writes JSONL incrementally.
+    async def _run_condition(
+        self,
+        cond: str,
+        queries_to_run: list[dict],
+        output_path: Path,
+    ) -> None:
+        """Run a single condition across all queries."""
+        # Check for resume
+        completed_ids = self._get_completed_ids(output_path)
+        remaining = [q for q in queries_to_run if q["id"] not in completed_ids]
 
-        Args:
-            query_ids: If provided, only run these query IDs. Otherwise run all.
-        """
+        if completed_ids:
+            print(f"  Resume: skipping {len(completed_ids)} completed, {len(remaining)} remaining")
+
+        if not remaining:
+            print(f"  All queries already complete for {cond}")
+            return
+
+        for i, query in enumerate(remaining, 1):
+            query_id = query["id"]
+            query_text = query["text"]
+            print(f"  [{i}/{len(remaining)}] {query_id}: {query_text[:55]}...")
+
+            try:
+                start = time.time()
+
+                if cond == "control":
+                    record = await self.agent_loop.run_control(query_text, query_id)
+                elif cond == "rag":
+                    if self.rag_retriever is None:
+                        self.rag_retriever = RAGRetriever(
+                            str(self.project_root / self.rag_index_dir)
+                        )
+                    record = await self.agent_loop.run_rag(query_text, query_id, self.rag_retriever)
+                elif cond == "pragmatics":
+                    record = await self.agent_loop.run_pragmatics(query_text, query_id)
+                else:
+                    raise ValueError(f"Unknown condition: {cond}")
+
+                elapsed = time.time() - start
+
+                # Contamination check: verify no pragmatics tool calls in control/rag
+                if cond in ("control", "rag"):
+                    pragma_calls = [tc for tc in record.tool_calls
+                                    if tc.tool_name == PRAGMATICS_ONLY_TOOL]
+                    if pragma_calls:
+                        raise RuntimeError(
+                            f"CONTAMINATION DETECTED: {cond} condition made "
+                            f"{len(pragma_calls)} calls to {PRAGMATICS_ONLY_TOOL}!"
+                        )
+
+                # Write incrementally
+                with open(output_path, "a") as f:
+                    f.write(record.model_dump_json() + "\n")
+
+                # Log summary
+                n_tools = len(record.tool_calls)
+                chars = len(record.response_text)
+                extra = ""
+                if cond == "rag" and record.retrieved_chunks:
+                    extra = f", {len(record.retrieved_chunks)} chunks"
+                if cond == "pragmatics":
+                    extra = f", {len(record.pragmatics_returned)} pragmatics"
+                print(f"    ✓ {elapsed:.1f}s, {chars} chars, {n_tools} tool calls{extra}")
+
+                self.completed[cond].append(query_id)
+
+            except Exception as e:
+                print(f"    ✗ ERROR: {e}")
+                self.failed[cond].append((query_id, str(e)))
+
+    async def run(self, query_ids: Optional[list[str]] = None) -> None:
+        """Run evaluation for specified conditions."""
         print("=" * 60)
-        print("CQS Test Harness - Phase 4B Evaluation")
+        print("CQS Test Harness — V2 Equal-Tool Design")
+        print(f"Timestamp: {self.timestamp}")
         print("=" * 60)
+
+        # Determine which conditions to run
+        if self.condition == "all":
+            conditions = ["control", "rag", "pragmatics"]
+        else:
+            conditions = [self.condition]
+
+        print(f"Conditions: {conditions}")
+        print(f"Output dir: {self.output_dir}")
         print()
 
         # Start MCP server
@@ -126,13 +195,17 @@ class CQSTestHarness:
         # Health check
         print("Running health check...")
         if not await self.mcp_client.health_check():
-            print("ERROR: MCP health check failed. Expected tools not available.")
+            print("ERROR: MCP health check failed.")
             await self.mcp_client.stop()
             return
-        print("✓ MCP server healthy")
+
+        # List available tools for verification
+        all_tools = await self.mcp_client.list_tools()
+        tool_names = [t["name"] for t in all_tools]
+        print(f"✓ MCP server healthy — tools: {tool_names}")
         print()
 
-        # Initialize agent loop with caller config
+        # Initialize agent loop
         caller_config = self.config.get("caller", {})
         self.agent_loop = AgentLoop(
             self.mcp_client,
@@ -141,132 +214,24 @@ class CQSTestHarness:
             max_tool_rounds=caller_config.get("max_tool_rounds", 20),
         )
 
-        # Filter queries if specific IDs requested
-        queries_to_run = self.queries
+        # Filter queries
+        queries = self.queries
         if query_ids:
-            queries_to_run = [q for q in self.queries if q["id"] in query_ids]
-            print(f"Running {len(queries_to_run)} selected queries: {query_ids}")
+            queries = [q for q in self.queries if q["id"] in query_ids]
+            print(f"Running {len(queries)} selected queries")
         else:
-            print(f"Running all {len(queries_to_run)} queries")
-
-        # Check for resume
-        completed_ids = self._get_completed_query_ids()
-        if completed_ids:
-            print(f"Resume mode: Skipping {len(completed_ids)} already-completed queries")
-            queries_to_run = [q for q in queries_to_run if q["id"] not in completed_ids]
-
-        print(f"Queries remaining: {len(queries_to_run)}")
+            print(f"Running all {len(queries)} queries")
         print()
 
-        # Run queries
+        # Run each condition
         start_time = time.time()
+        for cond in conditions:
+            output_path = self._output_path(cond)
+            print(f"--- {cond.upper()} ({len(queries)} queries) → {output_path.name} ---")
+            await self._run_condition(cond, queries, output_path)
+            print()
 
-        for i, query in enumerate(queries_to_run, 1):
-            query_id = query["id"]
-            query_text = query["text"]
-
-            print(f"[{i}/{len(queries_to_run)}] {query_id}: {query_text[:60]}...")
-
-            try:
-                if self.condition == "rag":
-                    # RAG condition: single-shot with RAG-augmented prompt
-                    print("  Running RAG...")
-                    rag_start = time.time()
-                    rag_response = await self.agent_loop.run_rag(query_text, query_id, self.rag_retriever)
-                    rag_time = time.time() - rag_start
-                    print(
-                        f"  ✓ RAG complete ({rag_time:.1f}s, {len(rag_response.response_text)} chars, "
-                        f"{len(rag_response.retrieved_chunks)} chunks retrieved, "
-                        f"{rag_response.retrieval_context_chars} context chars)"
-                    )
-
-                    # Write response record directly (not a pair)
-                    with open(self.output_path, "a") as f:
-                        f.write(rag_response.model_dump_json() + "\n")
-
-                    self.completed_queries.append(query_id)
-                    print(f"  ✓ Saved to {self.output_path}")
-                    print()
-
-                elif self.condition == "control":
-                    # Control-only mode
-                    print("  Running CONTROL...")
-                    control_start = time.time()
-                    control_response = await self.agent_loop.run_control(query_text, query_id)
-                    control_time = time.time() - control_start
-                    print(f"  ✓ Control complete ({control_time:.1f}s, {len(control_response.response_text)} chars)")
-
-                    with open(self.output_path, "a") as f:
-                        f.write(control_response.model_dump_json() + "\n")
-
-                    self.completed_queries.append(query_id)
-                    print(f"  ✓ Saved to {self.output_path}")
-                    print()
-
-                elif self.condition == "treatment":
-                    # Treatment-only mode
-                    print("  Running TREATMENT...")
-                    treatment_start = time.time()
-                    treatment_response = await self.agent_loop.run_treatment(query_text, query_id)
-                    treatment_time = time.time() - treatment_start
-                    print(
-                        f"  ✓ Treatment complete ({treatment_time:.1f}s, {len(treatment_response.response_text)} chars, "
-                        f"{len(treatment_response.tool_calls)} tool calls, "
-                        f"{len(treatment_response.pragmatics_returned)} pragmatics)"
-                    )
-
-                    with open(self.output_path, "a") as f:
-                        f.write(treatment_response.model_dump_json() + "\n")
-
-                    self.completed_queries.append(query_id)
-                    print(f"  ✓ Saved to {self.output_path}")
-                    print()
-
-                else:
-                    # Default: Paired control + treatment mode
-                    # Run control
-                    print("  Running CONTROL...")
-                    control_start = time.time()
-                    control_response = await self.agent_loop.run_control(query_text, query_id)
-                    control_time = time.time() - control_start
-                    print(f"  ✓ Control complete ({control_time:.1f}s, {len(control_response.response_text)} chars)")
-
-                    # Run treatment
-                    print("  Running TREATMENT...")
-                    treatment_start = time.time()
-                    treatment_response = await self.agent_loop.run_treatment(query_text, query_id)
-                    treatment_time = time.time() - treatment_start
-                    print(
-                        f"  ✓ Treatment complete ({treatment_time:.1f}s, {len(treatment_response.response_text)} chars, "
-                        f"{len(treatment_response.tool_calls)} tool calls, "
-                        f"{len(treatment_response.pragmatics_returned)} pragmatics)"
-                    )
-
-                    # Create query pair
-                    pair = QueryPair(
-                        query_id=query_id,
-                        query_text=query_text,
-                        category=query["category"],
-                        difficulty=query["difficulty"],
-                        control=control_response,
-                        treatment=treatment_response,
-                    )
-
-                    # Write to JSONL immediately (incremental checkpointing)
-                    with open(self.output_path, "a") as f:
-                        f.write(pair.model_dump_json() + "\n")
-
-                    self.completed_queries.append(query_id)
-                    print(f"  ✓ Saved to {self.output_path}")
-                    print()
-
-            except Exception as e:
-                print(f"  ✗ ERROR: {e}")
-                self.failed_queries.append((query_id, str(e)))
-                print()
-                # Continue to next query, don't abort
-
-        # Stop MCP server
+        # Stop MCP
         print("Stopping MCP server...")
         await self.mcp_client.stop()
 
@@ -274,42 +239,71 @@ class CQSTestHarness:
         total_time = time.time() - start_time
         print()
         print("=" * 60)
-        print("Run Summary")
+        print("V2 Stage 1 Summary")
         print("=" * 60)
-        print(f"Completed: {len(self.completed_queries)}")
-        print(f"Failed: {len(self.failed_queries)}")
-        print(f"Total time: {total_time:.1f}s")
-        print(f"Output: {self.output_path}")
+        for cond in conditions:
+            n_ok = len(self.completed[cond])
+            n_fail = len(self.failed[cond])
+            path = self._output_path(cond)
+            print(f"  {cond:12s}: {n_ok} completed, {n_fail} failed → {path.name}")
+        print(f"  Total time: {total_time:.1f}s")
 
-        if self.failed_queries:
+        if any(self.failed[c] for c in conditions):
             print()
             print("Failed queries:")
-            for qid, error in self.failed_queries:
-                print(f"  {qid}: {error}")
+            for cond in conditions:
+                for qid, error in self.failed[cond]:
+                    print(f"  [{cond}] {qid}: {error}")
+
+        # Contamination summary
+        print()
+        print("Contamination check:")
+        for cond in conditions:
+            path = self._output_path(cond)
+            if path.exists():
+                pragma_count = 0
+                total_records = 0
+                with open(path) as f:
+                    for line in f:
+                        if line.strip():
+                            rec = json.loads(line)
+                            total_records += 1
+                            for tc in rec.get("tool_calls", []):
+                                if tc["tool_name"] == PRAGMATICS_ONLY_TOOL:
+                                    pragma_count += 1
+                if cond == "pragmatics":
+                    status = f"✓ {pragma_count} calls (expected)"
+                elif pragma_count == 0:
+                    status = "✓ CLEAN"
+                else:
+                    status = "✗ CONTAMINATED"
+                print(f"  {cond:12s}: {pragma_count} {PRAGMATICS_ONLY_TOOL} calls across {total_records} records — {status}")
 
         print("=" * 60)
 
 
 async def main_async():
     """CLI entry point."""
-    parser = argparse.ArgumentParser(description="CQS Test Harness - Generate responses")
+    parser = argparse.ArgumentParser(description="CQS V2 Test Harness — Equal-Tool Design")
     parser.add_argument(
         "--query-ids",
         nargs="+",
-        help="Specific query IDs to run (e.g., NORM-001 GEO-006). If not provided, runs all.",
-    )
-    parser.add_argument(
-        "--output",
-        help="Output JSONL path (auto-generated if not provided)",
+        help="Specific query IDs to run (e.g., NORM-001 GEO-006)",
     )
     parser.add_argument(
         "--condition",
-        choices=["control", "treatment", "rag"],
-        help="Run single condition instead of paired control+treatment. Options: control, treatment, rag",
+        choices=["control", "pragmatics", "rag", "all"],
+        default="all",
+        help="Which condition(s) to run (default: all)",
     )
     parser.add_argument(
         "--rag-index-dir",
+        default="results/rag_ablation/index",
         help="Path to RAG index directory (default: results/rag_ablation/index)",
+    )
+    parser.add_argument(
+        "--output-dir",
+        help="Output directory (default: results/v2_redo/stage1)",
     )
     args = parser.parse_args()
 
@@ -325,9 +319,8 @@ async def main_async():
         print("ERROR: CENSUS_API_KEY not found in environment")
         sys.exit(1)
 
-    # Run harness
     harness = CQSTestHarness(
-        output_path=args.output,
+        output_dir=args.output_dir,
         project_root=str(project_root),
         condition=args.condition,
         rag_index_dir=args.rag_index_dir,

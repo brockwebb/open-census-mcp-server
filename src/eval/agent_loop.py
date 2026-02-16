@@ -1,8 +1,13 @@
-"""Claude API agent loop with MCP tool dispatch.
+"""Claude API agent loop with MCP tool dispatch — V2 Equal-Tool Design.
 
-Handles both control (no tools) and treatment (with tools) paths.
+All three conditions (control, rag, pragmatics) use the same agent loop.
+Single variable: methodology support form.
+
+Tool access:
+  - Control:    get_census_data, explore_variables
+  - RAG:        get_census_data, explore_variables (+ RAG chunks in prompt)
+  - Pragmatics: get_census_data, explore_variables, get_methodology_guidance
 """
-import asyncio
 import os
 import re
 import time
@@ -16,29 +21,27 @@ from .mcp_client import MCPClient
 from .rag_retriever import RAGRetriever
 
 
-# System prompts
-TREATMENT_SYSTEM_PROMPT = """You are a statistical consultant helping users access and understand U.S. Census data.
+# ---------------------------------------------------------------------------
+# System prompts — minimal, equal, no quality coaching
+# ---------------------------------------------------------------------------
 
-You have access to Census data tools. For every query:
-1. FIRST call get_methodology_guidance with relevant topics to ground your response
-2. Use get_census_data to retrieve actual data with margins of error
-3. Use explore_variables if you need to find the right variable codes
+BASE_SYSTEM_PROMPT = (
+    "You are a statistical consultant helping users access and understand "
+    "U.S. Census data. Use your available tools to answer the question."
+)
 
-Always provide:
-- Specific table/variable codes and geography identifiers
-- Margins of error and reliability context
-- Appropriate caveats about fitness-for-use
+# Control and RAG share the same base prompt.
+# RAG gets chunks appended by the retriever — no prompt change here.
+CONTROL_SYSTEM_PROMPT = BASE_SYSTEM_PROMPT
 
-If the data is unavailable or unreliable for the stated purpose, say so and explain why.
-Recommend alternatives when possible.
+PRAGMATICS_SYSTEM_PROMPT = (
+    BASE_SYSTEM_PROMPT
+    + "\n\nYou also have access to get_methodology_guidance. "
+    "Call it first to ground your response before retrieving data."
+)
 
-IMPORTANT: ALWAYS call get_methodology_guidance first, even when you plan to ask for
-clarification. Use the guidance to provide informed clarification that helps the user
-understand what data is available and what limitations apply to their request.
-Grounding first produces better questions."""
-
-CONTROL_SYSTEM_PROMPT = """You are a helpful assistant answering questions about U.S. Census data.
-Provide accurate, well-sourced information."""
+# Tool that ONLY the pragmatics condition gets
+PRAGMATICS_ONLY_TOOL = "get_methodology_guidance"
 
 
 class AgentLoop:
@@ -47,146 +50,44 @@ class AgentLoop:
     def __init__(
         self,
         mcp_client: MCPClient,
-        model: str = "claude-sonnet-4-5-20250929",  # Fallback only — should come from judge_config.yaml
+        model: str = "claude-sonnet-4-5-20250929",  # Fallback — should come from judge_config.yaml
         max_tokens: int = 2048,
-        max_tool_rounds: int = 20,  # Increased from 5 — Census queries need 6-8 rounds
+        max_tool_rounds: int = 20,
         api_key: Optional[str] = None,
     ):
-        """Initialize agent loop.
-
-        Args:
-            mcp_client: MCP client instance for tool calls
-            model: Claude model identifier (should come from judge_config.yaml caller section)
-            max_tokens: Maximum tokens per response
-            max_tool_rounds: Safety limit on agent loop iterations
-            api_key: Anthropic API key (defaults to ANTHROPIC_API_KEY env var)
-        """
         self.mcp_client = mcp_client
         self.model = model
         self.max_tokens = max_tokens
         self.max_tool_rounds = max_tool_rounds
-
         self.client = AsyncAnthropic(api_key=api_key or os.environ.get("ANTHROPIC_API_KEY"))
 
-    async def run_control(self, query: str, query_id: str) -> ResponseRecord:
-        """Run query with no tools, no system prompt augmentation.
+    # ------------------------------------------------------------------
+    # Shared agent loop — all three conditions use this
+    # ------------------------------------------------------------------
+
+    async def _run_agent_loop(
+        self,
+        query: str,
+        query_id: str,
+        condition: str,
+        system_prompt: str,
+        anthropic_tools: list[dict],
+        tool_names_offered: set[str],
+    ) -> ResponseRecord:
+        """Core agent loop shared by all conditions.
 
         Args:
             query: User query text
             query_id: Query identifier for tracking
+            condition: "control", "rag", or "pragmatics"
+            system_prompt: System prompt (may include RAG chunks)
+            anthropic_tools: Tool definitions to pass to the Anthropic API
+            tool_names_offered: Set of tool names offered (for logging/verification)
 
         Returns:
-            ResponseRecord with control path metadata
+            ResponseRecord with full metadata
         """
         start_time = time.time()
-
-        response = await self.client.messages.create(
-            model=self.model,
-            max_tokens=self.max_tokens,
-            system=CONTROL_SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": query}],
-        )
-
-        latency_ms = (time.time() - start_time) * 1000
-
-        # Extract text from response
-        response_text = ""
-        for block in response.content:
-            if block.type == "text":
-                response_text += block.text
-
-        return ResponseRecord(
-            query_id=query_id,
-            condition="control",
-            model=self.model,
-            system_prompt=CONTROL_SYSTEM_PROMPT,
-            response_text=response_text,
-            tool_calls=[],
-            pragmatics_returned=[],
-            total_latency_ms=latency_ms,
-            input_tokens=response.usage.input_tokens,
-            output_tokens=response.usage.output_tokens,
-            timestamp=datetime.utcnow(),
-            tools_offered=False,
-            tool_rounds_used=0,
-            tool_rounds_exhausted=False,
-        )
-
-    async def run_rag(self, query: str, query_id: str, retriever: RAGRetriever) -> ResponseRecord:
-        """Run query with RAG-augmented system prompt, single-shot (no tools).
-
-        Args:
-            query: User query text
-            query_id: Query identifier for tracking
-            retriever: RAGRetriever instance for context injection
-
-        Returns:
-            ResponseRecord with rag condition and retrieval metadata
-        """
-        start_time = time.time()
-
-        # Retrieve relevant chunks and augment system prompt
-        augmented_prompt, retrieval_metadata = retriever.format_system_prompt(
-            CONTROL_SYSTEM_PROMPT, query
-        )
-
-        # Single-shot LLM call with augmented prompt (no tools)
-        response = await self.client.messages.create(
-            model=self.model,
-            max_tokens=self.max_tokens,
-            system=augmented_prompt,
-            messages=[{"role": "user", "content": query}],
-        )
-
-        latency_ms = (time.time() - start_time) * 1000
-
-        # Extract text from response
-        response_text = ""
-        for block in response.content:
-            if block.type == "text":
-                response_text += block.text
-
-        return ResponseRecord(
-            query_id=query_id,
-            condition="rag",
-            model=self.model,
-            system_prompt=augmented_prompt,
-            response_text=response_text,
-            tool_calls=[],
-            pragmatics_returned=[],
-            total_latency_ms=latency_ms,
-            input_tokens=response.usage.input_tokens,
-            output_tokens=response.usage.output_tokens,
-            timestamp=datetime.utcnow(),
-            tools_offered=False,
-            tool_rounds_used=0,
-            tool_rounds_exhausted=False,
-            retrieved_chunks=retrieval_metadata["retrieved_chunks"],
-            retrieval_context_chars=retrieval_metadata["total_context_chars"],
-        )
-
-    async def run_treatment(self, query: str, query_id: str) -> ResponseRecord:
-        """Run query with tools available. Loops until no more tool_use.
-
-        Args:
-            query: User query text
-            query_id: Query identifier for tracking
-
-        Returns:
-            ResponseRecord with treatment path metadata including all tool calls
-        """
-        start_time = time.time()
-
-        # Get tool definitions from MCP
-        mcp_tools = await self.mcp_client.list_tools()
-        anthropic_tools = [
-            {
-                "name": t["name"],
-                "description": t["description"],
-                "input_schema": t["inputSchema"],
-            }
-            for t in mcp_tools
-        ]
 
         messages = [{"role": "user", "content": query}]
         tool_calls_made = []
@@ -194,6 +95,7 @@ class AgentLoop:
         total_input_tokens = 0
         total_output_tokens = 0
         rounds = 0
+        response = None
 
         while rounds < self.max_tool_rounds:
             rounds += 1
@@ -201,7 +103,7 @@ class AgentLoop:
             response = await self.client.messages.create(
                 model=self.model,
                 max_tokens=self.max_tokens,
-                system=TREATMENT_SYSTEM_PROMPT,
+                system=system_prompt,
                 tools=anthropic_tools,
                 messages=messages,
             )
@@ -212,7 +114,6 @@ class AgentLoop:
             # Check if response has tool_use blocks
             tool_use_blocks = [b for b in response.content if b.type == "tool_use"]
             if not tool_use_blocks:
-                # No more tools to call, extract final text
                 break
 
             # Process tool calls
@@ -238,7 +139,6 @@ class AgentLoop:
                         tool_result = await self.mcp_client.call_tool(block.name, block.input)
                         tool_latency = (time.time() - tool_start) * 1000
 
-                        # Record tool call
                         tool_calls_made.append(
                             ToolCall(
                                 tool_name=block.name,
@@ -248,11 +148,11 @@ class AgentLoop:
                             )
                         )
 
-                        # Extract pragmatics context_ids from tool result
-                        context_ids = self._extract_context_ids(tool_result)
-                        pragmatics_context_ids.update(context_ids)
+                        # Extract pragmatics context_ids (only relevant for pragmatics condition)
+                        if condition == "pragmatics":
+                            context_ids = self._extract_context_ids(tool_result)
+                            pragmatics_context_ids.update(context_ids)
 
-                        # Build tool_result for Claude
                         tool_results.append(
                             {
                                 "type": "tool_result",
@@ -262,7 +162,6 @@ class AgentLoop:
                         )
 
                     except Exception as e:
-                        # Tool call failed, report error back to Claude
                         tool_results.append(
                             {
                                 "type": "tool_result",
@@ -272,44 +171,43 @@ class AgentLoop:
                             }
                         )
 
-            # Append assistant response and tool results to messages
             messages.append({"role": "assistant", "content": assistant_content})
             messages.append({"role": "user", "content": tool_results})
 
         # Check if loop exhausted without final answer
         tool_rounds_exhausted = False
-        if rounds >= self.max_tool_rounds and response.stop_reason == "tool_use":
-            # Model wanted more tool calls but hit the limit. Force synthesis.
+        if rounds >= self.max_tool_rounds and response and response.stop_reason == "tool_use":
             tool_rounds_exhausted = True
             synthesis_response = await self.client.messages.create(
                 model=self.model,
                 max_tokens=self.max_tokens,
-                system=TREATMENT_SYSTEM_PROMPT,
+                system=system_prompt,
                 messages=messages + [
                     {"role": "user", "content": [{"type": "text", "text":
                         "You have reached the maximum number of tool calls. "
                         "Please provide your best answer based on the data "
                         "you have already retrieved."}]}
                 ],
-                # NO tools parameter — forces text-only response
+                # NO tools — forces text-only response
             )
             total_input_tokens += synthesis_response.usage.input_tokens
             total_output_tokens += synthesis_response.usage.output_tokens
-            response = synthesis_response  # Use this for final text extraction
+            response = synthesis_response
 
-        # Extract final text from last response
+        # Extract final text
         response_text = ""
-        for block in response.content:
-            if block.type == "text":
-                response_text += block.text
+        if response:
+            for block in response.content:
+                if block.type == "text":
+                    response_text += block.text
 
         total_latency_ms = (time.time() - start_time) * 1000
 
         return ResponseRecord(
             query_id=query_id,
-            condition="treatment",
+            condition=condition,
             model=self.model,
-            system_prompt=TREATMENT_SYSTEM_PROMPT,
+            system_prompt=system_prompt,
             response_text=response_text,
             tool_calls=tool_calls_made,
             pragmatics_returned=sorted(list(pragmatics_context_ids)),
@@ -322,28 +220,113 @@ class AgentLoop:
             tool_rounds_exhausted=tool_rounds_exhausted,
         )
 
-    def _extract_context_ids(self, tool_result: dict) -> set[str]:
-        """Extract pragmatics context_ids from tool result.
+    # ------------------------------------------------------------------
+    # Tool filtering
+    # ------------------------------------------------------------------
 
-        Looks for context_id patterns (e.g., ACS-MOE-001) in the tool result.
+    async def _get_filtered_tools(self, include_pragmatics: bool = False) -> tuple[list[dict], set[str]]:
+        """Get tool definitions from MCP, optionally filtering out pragmatics tool.
 
         Args:
-            tool_result: Parsed JSON tool result
+            include_pragmatics: If True, include get_methodology_guidance.
+                                If False, exclude it (control + RAG conditions).
 
         Returns:
-            Set of context_ids found
+            (anthropic_tools, tool_names) — formatted for API and name set for logging
         """
+        mcp_tools = await self.mcp_client.list_tools()
+
+        if not include_pragmatics:
+            mcp_tools = [t for t in mcp_tools if t["name"] != PRAGMATICS_ONLY_TOOL]
+
+        anthropic_tools = [
+            {
+                "name": t["name"],
+                "description": t["description"],
+                "input_schema": t["inputSchema"],
+            }
+            for t in mcp_tools
+        ]
+
+        tool_names = {t["name"] for t in anthropic_tools}
+        return anthropic_tools, tool_names
+
+    # ------------------------------------------------------------------
+    # Public condition methods
+    # ------------------------------------------------------------------
+
+    async def run_control(self, query: str, query_id: str) -> ResponseRecord:
+        """Control: data tools only, base system prompt."""
+        anthropic_tools, tool_names = await self._get_filtered_tools(include_pragmatics=False)
+
+        assert PRAGMATICS_ONLY_TOOL not in tool_names, \
+            f"CONTAMINATION: {PRAGMATICS_ONLY_TOOL} found in control tool set!"
+
+        return await self._run_agent_loop(
+            query=query,
+            query_id=query_id,
+            condition="control",
+            system_prompt=CONTROL_SYSTEM_PROMPT,
+            anthropic_tools=anthropic_tools,
+            tool_names_offered=tool_names,
+        )
+
+    async def run_rag(self, query: str, query_id: str, retriever: RAGRetriever) -> ResponseRecord:
+        """RAG: data tools + RAG chunks in system prompt, base prompt."""
+        anthropic_tools, tool_names = await self._get_filtered_tools(include_pragmatics=False)
+
+        assert PRAGMATICS_ONLY_TOOL not in tool_names, \
+            f"CONTAMINATION: {PRAGMATICS_ONLY_TOOL} found in RAG tool set!"
+
+        # Retrieve chunks and augment system prompt
+        augmented_prompt, retrieval_metadata = retriever.format_system_prompt(
+            CONTROL_SYSTEM_PROMPT, query
+        )
+
+        record = await self._run_agent_loop(
+            query=query,
+            query_id=query_id,
+            condition="rag",
+            system_prompt=augmented_prompt,
+            anthropic_tools=anthropic_tools,
+            tool_names_offered=tool_names,
+        )
+
+        # Attach RAG-specific metadata
+        record.retrieved_chunks = retrieval_metadata["retrieved_chunks"]
+        record.retrieval_context_chars = retrieval_metadata["total_context_chars"]
+
+        return record
+
+    async def run_pragmatics(self, query: str, query_id: str) -> ResponseRecord:
+        """Pragmatics: all tools including get_methodology_guidance."""
+        anthropic_tools, tool_names = await self._get_filtered_tools(include_pragmatics=True)
+
+        assert PRAGMATICS_ONLY_TOOL in tool_names, \
+            f"MISSING: {PRAGMATICS_ONLY_TOOL} not found in pragmatics tool set!"
+
+        return await self._run_agent_loop(
+            query=query,
+            query_id=query_id,
+            condition="pragmatics",
+            system_prompt=PRAGMATICS_SYSTEM_PROMPT,
+            anthropic_tools=anthropic_tools,
+            tool_names_offered=tool_names,
+        )
+
+    # ------------------------------------------------------------------
+    # Utilities
+    # ------------------------------------------------------------------
+
+    def _extract_context_ids(self, tool_result: dict) -> set[str]:
+        """Extract pragmatics context_ids from tool result."""
         context_ids = set()
 
-        # Pattern for context IDs like ACS-MOE-001, CPS-SAM-001, etc.
         pattern = r"\b[A-Z]{3}-[A-Z]{3}-\d{3}\b"
-
-        # Search in stringified result
         result_str = str(tool_result)
         matches = re.findall(pattern, result_str)
         context_ids.update(matches)
 
-        # Also check if result has a 'guidance' key with context items
         if isinstance(tool_result, dict):
             guidance = tool_result.get("guidance", [])
             if isinstance(guidance, list):
