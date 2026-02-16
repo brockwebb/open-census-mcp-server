@@ -36,8 +36,9 @@ CONTROL_SYSTEM_PROMPT = BASE_SYSTEM_PROMPT
 
 PRAGMATICS_SYSTEM_PROMPT = (
     BASE_SYSTEM_PROMPT
-    + "\n\nYou also have access to get_methodology_guidance. "
-    "Call it first to ground your response before retrieving data."
+    + "\n\nYou MUST call get_methodology_guidance FIRST before any other tool calls. "
+    "This is required for every query — no exceptions. Select topics relevant to the "
+    "query. After reviewing the methodology guidance, proceed with data retrieval."
 )
 
 # Tool that ONLY the pragmatics condition gets
@@ -113,6 +114,32 @@ class AgentLoop:
 
             # Check if response has tool_use blocks
             tool_use_blocks = [b for b in response.content if b.type == "tool_use"]
+
+            # Methodology grounding gate (pragmatics condition only) — Part 1: zero-tool response
+            # If pragmatics round 1 returns without calling any tools (clarification request),
+            # redirect to require methodology consultation first
+            if (condition == "pragmatics"
+                and rounds == 1
+                and not tool_use_blocks
+                and not any(tc.tool_name == "get_methodology_guidance" for tc in tool_calls_made)):
+
+                # Model gave clarification without consulting methodology
+                # Build assistant message from text blocks
+                assistant_content = []
+                for block in response.content:
+                    if block.type == "text":
+                        assistant_content.append({"type": "text", "text": block.text})
+
+                messages.append({"role": "assistant", "content": assistant_content})
+                messages.append({
+                    "role": "user",
+                    "content": "Before providing clarification or answering, you MUST call get_methodology_guidance "
+                               "to ground your response in statistical methodology. This is required for every query. "
+                               "Please call it now with appropriate topics for this query."
+                })
+                rounds -= 1  # Don't count redirect against max_tool_rounds
+                continue
+
             if not tool_use_blocks:
                 break
 
@@ -179,6 +206,27 @@ class AgentLoop:
                                 "is_error": True,
                             }
                         )
+
+            # Methodology grounding gate (pragmatics condition only)
+            # Enforce ADR-004 always-ground thesis: pragmatics MUST call get_methodology_guidance first
+            if (condition == "pragmatics"
+                and rounds == 1
+                and not any(tc.tool_name == "get_methodology_guidance" for tc in tool_calls_made)):
+
+                # Model skipped methodology grounding. Send redirect to enforce compliance.
+                messages.append({"role": "assistant", "content": assistant_content})
+                if tool_results:  # Pass back any tool results from this round (API requires it)
+                    messages.append({"role": "user", "content": tool_results})
+                # Add redirect message
+                messages.append({
+                    "role": "user",
+                    "content": "You MUST call get_methodology_guidance before proceeding. "
+                               "This is required for every query to ground your response in statistical "
+                               "methodology. Please call it now with appropriate topics for this query."
+                })
+                # Don't increment rounds - redirect doesn't count against max_tool_rounds
+                rounds -= 1
+                continue  # Back to top of loop, model will respond to redirect
 
             messages.append({"role": "assistant", "content": assistant_content})
             messages.append({"role": "user", "content": tool_results})
