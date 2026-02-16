@@ -35,13 +35,29 @@ class ResponseRecord(BaseModel):
 
 
 class QueryPair(BaseModel):
-    """Paired control + treatment for one query."""
+    """Paired control + treatment for one query. (V1 — retained for backward compat)"""
     query_id: str
     query_text: str
     category: str
     difficulty: str
     control: ResponseRecord
     treatment: ResponseRecord
+
+
+class ComparisonPair(BaseModel):
+    """Paired responses for V2 pairwise comparison.
+
+    condition_a and condition_b are named by the comparison
+    (e.g., for rag_vs_pragmatics: condition_a=rag, condition_b=pragmatics).
+    """
+    query_id: str
+    query_text: str
+    category: str
+    difficulty: str
+    condition_a: ResponseRecord
+    condition_b: ResponseRecord
+    condition_a_name: str  # "control", "rag", or "pragmatics"
+    condition_b_name: str  # "control", "rag", or "pragmatics"
 
 
 class DimensionScore(BaseModel):
@@ -56,13 +72,14 @@ class JudgeRecord(BaseModel):
     query_id: str
     judge_model: str
     judge_vendor: str
-    presentation_order: str  # "control_first" or "treatment_first"
+    presentation_order: str  # "condition_a_first" or "condition_b_first"
     scores_response_a: dict[str, DimensionScore]  # D1-D6 -> DimensionScore
     scores_response_b: dict[str, DimensionScore]  # D1-D6 -> DimensionScore
     preference: str  # "A" / "B" / "tie"
     preference_reasoning: str
-    response_a_label: str  # "control" or "treatment"
-    response_b_label: str  # "control" or "treatment"
+    response_a_label: str  # actual condition name: "control", "rag", or "pragmatics"
+    response_b_label: str  # actual condition name: "control", "rag", or "pragmatics"
+    comparison: str  # e.g., "rag_vs_pragmatics", "control_vs_pragmatics", "control_vs_rag"
     latency_ms: float
     input_tokens: int
     output_tokens: int

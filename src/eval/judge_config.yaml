@@ -1,6 +1,6 @@
-version: '1.0'
-created: '2026-02-12'
-purpose: 'CQS multi-vendor judge scoring with bias diagnostics'
+version: '2.0'
+created: '2026-02-16'
+purpose: 'CQS multi-vendor judge scoring — V2 pairwise comparisons'
 
 # Model used to generate responses (Stage 1)
 caller:
@@ -34,6 +34,30 @@ judges:
     max_output_tokens: 8192    # Increased from default 4096 - Gemini truncates complex JSON
     notes: 'Google flagship — temperature must be 1.0 per Google docs'
 
+# V2 pairwise comparisons — maps comparison name to response file pairs
+# condition_a is presented first in odd passes, condition_b first in even passes
+comparisons:
+  rag_vs_pragmatics:
+    condition_a: 'rag'
+    condition_b: 'pragmatics'
+    file_a: 'results/v2_redo/stage1/rag_responses_20260216_055354.jsonl'
+    file_b: 'results/v2_redo/stage1/pragmatics_responses_20260216_074817.jsonl'
+    notes: 'Core research question — run first'
+
+  control_vs_pragmatics:
+    condition_a: 'control'
+    condition_b: 'pragmatics'
+    file_a: 'results/v2_redo/stage1/control_responses_20260216_055354.jsonl'
+    file_b: 'results/v2_redo/stage1/pragmatics_responses_20260216_074817.jsonl'
+    notes: 'Pragmatics vs baseline'
+
+  control_vs_rag:
+    condition_a: 'control'
+    condition_b: 'rag'
+    file_a: 'results/v2_redo/stage1/control_responses_20260216_055354.jsonl'
+    file_b: 'results/v2_redo/stage1/rag_responses_20260216_055354.jsonl'
+    notes: 'Does RAG even help?'
+
 pipeline:
   random_seed: 42
   max_tokens: 4096
@@ -42,12 +66,12 @@ pipeline:
   max_workers_per_vendor: 5   # concurrent calls per API vendor (3 safe, 5 tested OK)
   num_passes: 6           # 6 passes per judge per query
   # Pass schedule:
-  # Pass 1: control_first   (base scoring)
-  # Pass 2: treatment_first (position bias)
-  # Pass 3: control_first   (test-retest #1)
-  # Pass 4: treatment_first (test-retest #1 x position)
-  # Pass 5: control_first   (test-retest #2, CIs)
-  # Pass 6: treatment_first (test-retest #2 x position, CIs)
+  # Pass 1: condition_a_first  (base scoring)
+  # Pass 2: condition_b_first  (position bias)
+  # Pass 3: condition_a_first  (test-retest #1)
+  # Pass 4: condition_b_first  (test-retest #1 x position)
+  # Pass 5: condition_a_first  (test-retest #2, CIs)
+  # Pass 6: condition_b_first  (test-retest #2 x position, CIs)
 
 scoring:
   dimensions: ['D1', 'D2', 'D3', 'D4', 'D5', 'D6']
@@ -66,11 +90,16 @@ fidelity:
   rate_limit_delay: 0.5
 
 paths:
+  # V1 (archived, do not use)
   stage1_results: 'results/cqs_responses_20260213_091530.jsonl'
-  output_dir: 'results/stage2'
-  checkpoint_dir: 'results/stage2/checkpoints'
-  analysis_output: 'results/stage2/analysis'
-  stage3_output_dir: 'results/stage3'
+
+  # V2 paths
+  battery: 'src/eval/battery/queries.yaml'
+  output_dir: 'results/v2_redo/stage2'
+  checkpoint_dir: 'results/v2_redo/stage2/checkpoints'
+  analysis_output: 'results/v2_redo/stage2/analysis'
+
+  # V1 archived references (do not mix with V2)
   stage2_valid_run_ids:
     - "20260213_125057"   # OpenAI v3 part 1 (17 queries, 100 records)
     - "20260213_125945"   # OpenAI v3 part 2 (23 queries, 134 records)

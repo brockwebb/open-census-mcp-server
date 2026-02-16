@@ -1,6 +1,11 @@
 """Judge Scoring Pipeline - Stage 2 of CQS Evaluation.
 
-Multi-vendor LLM judge panel scores control vs treatment responses
+V2: Pairwise comparison design. Three comparisons scored independently:
+  - rag_vs_pragmatics (core research question)
+  - control_vs_pragmatics
+  - control_vs_rag
+
+Multi-vendor LLM judge panel scores condition_a vs condition_b responses
 on 6-dimension Consultation Quality Score (CQS) rubric.
 
 Implements position bias mitigation, test-retest reliability, and
@@ -21,7 +26,7 @@ import yaml
 from dotenv import load_dotenv
 from tqdm import tqdm
 
-from .models import QueryPair, JudgeRecord, DimensionScore
+from .models import ComparisonPair, ResponseRecord, JudgeRecord, DimensionScore
 from .judge_prompts import build_judge_prompt
 
 # Load environment variables
@@ -30,6 +35,10 @@ load_dotenv()
 # Thread locks for concurrent writes
 write_lock = threading.Lock()
 checkpoint_lock = threading.Lock()
+
+# Valid comparison names
+VALID_COMPARISONS = {'rag_vs_pragmatics', 'control_vs_pragmatics', 'control_vs_rag'}
+
 
 # =============================================================================
 # API CALLERS
@@ -315,11 +324,11 @@ def validate_judge_response(data: Dict) -> bool:
 # CHECKPOINTING
 # =============================================================================
 
-def get_checkpoint_path(config: Dict) -> Path:
-    """Get checkpoint file path."""
+def get_checkpoint_path(config: Dict, comparison: str) -> Path:
+    """Get checkpoint file path, scoped by comparison name."""
     checkpoint_dir = Path(config['paths']['checkpoint_dir'])
     checkpoint_dir.mkdir(parents=True, exist_ok=True)
-    return checkpoint_dir / 'judge_checkpoint.json'
+    return checkpoint_dir / f'judge_checkpoint_{comparison}.json'
 
 
 def load_checkpoint(checkpoint_path: Path) -> set:
@@ -345,21 +354,84 @@ def save_checkpoint(checkpoint_path: Path, completed: set):
 
 
 # =============================================================================
-# MAIN PIPELINE
+# V2 DATA LOADING
 # =============================================================================
 
-def load_query_pairs(config: Dict) -> List[QueryPair]:
-    """Load Stage 1 query pairs from JSONL."""
-    results_path = Path(config['paths']['stage1_results'])
+def load_comparison_pairs(config: Dict, comparison: str) -> List[ComparisonPair]:
+    """Load V2 comparison pairs from two condition files + battery.
 
-    pairs = []
-    with open(results_path) as f:
+    Reads:
+    - Two JSONL response files (one per condition)
+    - queries.yaml for query text and metadata
+
+    Joins on query_id. Validates all 39 queries present in both files.
+
+    Returns:
+        List of ComparisonPair objects
+    """
+    comp_config = config['comparisons'][comparison]
+    file_a = Path(comp_config['file_a'])
+    file_b = Path(comp_config['file_b'])
+    condition_a_name = comp_config['condition_a']
+    condition_b_name = comp_config['condition_b']
+
+    # Load battery for query metadata
+    battery_path = Path(config['paths']['battery'])
+    with open(battery_path) as f:
+        battery = yaml.safe_load(f)
+
+    query_meta = {}
+    for q in battery['queries']:
+        query_meta[q['id']] = {
+            'text': q['text'],
+            'category': q['category'],
+            'difficulty': q['difficulty'],
+        }
+
+    # Load condition A responses
+    responses_a = {}
+    with open(file_a) as f:
         for line in f:
-            data = json.loads(line)
-            # Parse nested ResponseRecords
-            pairs.append(QueryPair(**data))
+            record = ResponseRecord(**json.loads(line))
+            responses_a[record.query_id] = record
 
-    print(f"Loaded {len(pairs)} query pairs from {results_path}")
+    # Load condition B responses
+    responses_b = {}
+    with open(file_b) as f:
+        for line in f:
+            record = ResponseRecord(**json.loads(line))
+            responses_b[record.query_id] = record
+
+    # Validate completeness
+    all_query_ids = set(query_meta.keys())
+    missing_a = all_query_ids - set(responses_a.keys())
+    missing_b = all_query_ids - set(responses_b.keys())
+
+    if missing_a:
+        print(f"WARNING: {len(missing_a)} queries missing from {condition_a_name}: {sorted(missing_a)}")
+    if missing_b:
+        print(f"WARNING: {len(missing_b)} queries missing from {condition_b_name}: {sorted(missing_b)}")
+
+    # Build pairs (only for queries present in both files)
+    common_ids = set(responses_a.keys()) & set(responses_b.keys()) & all_query_ids
+    pairs = []
+    for qid in sorted(common_ids):
+        meta = query_meta[qid]
+        pairs.append(ComparisonPair(
+            query_id=qid,
+            query_text=meta['text'],
+            category=meta['category'],
+            difficulty=meta['difficulty'],
+            condition_a=responses_a[qid],
+            condition_b=responses_b[qid],
+            condition_a_name=condition_a_name,
+            condition_b_name=condition_b_name,
+        ))
+
+    print(f"Loaded {len(pairs)} comparison pairs for {comparison}")
+    print(f"  {condition_a_name}: {file_a}")
+    print(f"  {condition_b_name}: {file_b}")
+
     return pairs
 
 
@@ -370,16 +442,18 @@ def load_query_pairs(config: Dict) -> List[QueryPair]:
 def score_single_task(
     task: Tuple[str, str, str, int],
     config: Dict,
-    query_pair_map: Dict[str, QueryPair],
+    pair_map: Dict[str, ComparisonPair],
+    comparison: str,
     run_id: str,
     rate_limit_delay: float
 ) -> Tuple[JudgeRecord, Tuple]:
-    """Score a single query pair with one judge.
+    """Score a single comparison pair with one judge.
 
     Args:
         task: (query_id, judge_key, ordering, pass_num)
         config: Full configuration dict
-        query_pair_map: Map of query_id to QueryPair
+        pair_map: Map of query_id to ComparisonPair
+        comparison: Comparison name (e.g., 'rag_vs_pragmatics')
         run_id: Run identifier
         rate_limit_delay: Delay between API calls (seconds)
 
@@ -394,20 +468,20 @@ def score_single_task(
     judge_config['max_tokens'] = judge_config.get('max_output_tokens',
         config['pipeline'].get('max_tokens', 4096))
 
-    # Get query pair
-    pair = query_pair_map[query_id]
+    # Get comparison pair
+    pair = pair_map[query_id]
 
-    # Determine A/B assignment
-    if ordering == 'control_first':
-        response_a = pair.control.response_text
-        response_b = pair.treatment.response_text
-        label_a = 'control'
-        label_b = 'treatment'
-    else:
-        response_a = pair.treatment.response_text
-        response_b = pair.control.response_text
-        label_a = 'treatment'
-        label_b = 'control'
+    # Determine A/B assignment based on ordering
+    if ordering == 'condition_a_first':
+        response_a = pair.condition_a.response_text
+        response_b = pair.condition_b.response_text
+        label_a = pair.condition_a_name
+        label_b = pair.condition_b_name
+    else:  # condition_b_first
+        response_a = pair.condition_b.response_text
+        response_b = pair.condition_a.response_text
+        label_a = pair.condition_b_name
+        label_b = pair.condition_a_name
 
     # Build prompt
     prompt = build_judge_prompt(pair.query_text, response_a, response_b)
@@ -449,6 +523,7 @@ def score_single_task(
         preference_reasoning=preference_reasoning,
         response_a_label=label_a,
         response_b_label=label_b,
+        comparison=comparison,
         latency_ms=latency_ms,
         input_tokens=input_tokens,
         output_tokens=output_tokens,
@@ -469,7 +544,8 @@ def process_vendor(
     vendor_key: str,
     vendor_tasks: List[Tuple],
     config: Dict,
-    query_pair_map: Dict[str, QueryPair],
+    pair_map: Dict[str, ComparisonPair],
+    comparison: str,
     run_id: str,
     output_file: Path,
     completed: set,
@@ -481,7 +557,8 @@ def process_vendor(
         vendor_key: Judge vendor name (anthropic, openai, google)
         vendor_tasks: List of tasks for this vendor
         config: Full configuration dict
-        query_pair_map: Map of query_id to QueryPair
+        pair_map: Map of query_id to ComparisonPair
+        comparison: Comparison name
         run_id: Run identifier
         output_file: Path to output JSONL
         completed: Set of completed task tuples
@@ -500,7 +577,7 @@ def process_vendor(
     def process_task_wrapper(task):
         """Wrapper for score_single_task."""
         try:
-            return score_single_task(task, config, query_pair_map, run_id, rate_limit_delay)
+            return score_single_task(task, config, pair_map, comparison, run_id, rate_limit_delay)
         except Exception as e:
             query_id, judge_key, ordering, pass_num = task
             print(f"\n{vendor_key} failed: {query_id}, {ordering}, pass {pass_num}: {str(e)[:80]}")
@@ -552,47 +629,63 @@ def process_vendor(
 
 def run_pipeline(
     config_path: str = 'src/eval/judge_config.yaml',
+    comparison: str = 'rag_vs_pragmatics',
     vendor_filter: Optional[set] = None,
     batch_limit: Optional[int] = None,
-    input_override: Optional[str] = None,
 ):
     """Main judge scoring pipeline.
 
     Args:
         config_path: Path to YAML config file
+        comparison: Which pairwise comparison to run
         vendor_filter: If set, only run these vendors (e.g., {'anthropic', 'openai'})
         batch_limit: Max number of tasks to run (None = all)
-        input_override: Override stage1_results path from config
     """
 
+    if comparison not in VALID_COMPARISONS:
+        print(f"ERROR: Invalid comparison '{comparison}'. Valid: {sorted(VALID_COMPARISONS)}")
+        return
+
     print("="*60)
-    print("JUDGE SCORING PIPELINE - Stage 2")
+    print(f"JUDGE SCORING PIPELINE - Stage 2 (V2)")
+    print(f"Comparison: {comparison}")
     print("="*60)
 
     # Load config
     with open(config_path) as f:
         config = yaml.safe_load(f)
 
+    # Validate comparison exists in config
+    if comparison not in config.get('comparisons', {}):
+        print(f"ERROR: Comparison '{comparison}' not found in config. "
+              f"Available: {list(config.get('comparisons', {}).keys())}")
+        return
+
+    comp_config = config['comparisons'][comparison]
+    print(f"\n  {comp_config['condition_a']} vs {comp_config['condition_b']}")
+    if comp_config.get('notes'):
+        print(f"  Note: {comp_config['notes']}")
+
     # Setup output directory
     output_dir = Path(config['paths']['output_dir'])
     output_dir.mkdir(parents=True, exist_ok=True)
 
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    output_file = output_dir / f'judge_scores_{timestamp}.jsonl'
-    run_id = timestamp
-
-    # Apply input override if specified
-    if input_override:
-        config['paths']['stage1_results'] = input_override
+    output_file = output_dir / f'{comparison}_{timestamp}.jsonl'
+    run_id = f"{comparison}_{timestamp}"
 
     print(f"\nRun ID: {run_id}")
     print(f"Output: {output_file}")
 
-    # Load query pairs
-    query_pairs = load_query_pairs(config)
+    # Load comparison pairs
+    pairs = load_comparison_pairs(config, comparison)
 
-    # Load checkpoint
-    checkpoint_path = get_checkpoint_path(config)
+    if not pairs:
+        print("ERROR: No comparison pairs loaded. Check file paths.")
+        return
+
+    # Load checkpoint (scoped by comparison)
+    checkpoint_path = get_checkpoint_path(config, comparison)
     completed = load_checkpoint(checkpoint_path)
     print(f"\nCheckpoint: {len(completed)} tasks already completed")
 
@@ -611,11 +704,11 @@ def run_pipeline(
     # Build task list with 6-pass design
     num_passes = config['pipeline'].get('num_passes', 6)
     tasks = []
-    for pair in query_pairs:
+    for pair in pairs:
         for judge_key in active_judges:
             for pass_num in range(1, num_passes + 1):
-                # Alternate ordering: odd passes = control_first, even passes = treatment_first
-                ordering = 'control_first' if pass_num % 2 == 1 else 'treatment_first'
+                # Alternate ordering: odd = condition_a_first, even = condition_b_first
+                ordering = 'condition_a_first' if pass_num % 2 == 1 else 'condition_b_first'
                 tasks.append((pair.query_id, judge_key, ordering, pass_num))
 
     # Filter to uncompleted tasks
@@ -640,7 +733,7 @@ def run_pipeline(
         return
 
     # Process tasks with vendor-level parallelism
-    query_pair_map = {pair.query_id: pair for pair in query_pairs}
+    pair_map = {pair.query_id: pair for pair in pairs}
 
     # Split tasks by vendor
     vendor_task_map = {judge_key: [] for judge_key in active_judges}
@@ -665,7 +758,8 @@ def run_pipeline(
                     vendor_key,
                     vendor_tasks,
                     config,
-                    query_pair_map,
+                    pair_map,
+                    comparison,
                     run_id,
                     output_file,
                     completed,
@@ -690,29 +784,32 @@ def run_pipeline(
     print(f"\n{'='*60}")
     print("PIPELINE COMPLETE")
     print(f"{'='*60}")
+    print(f"Comparison: {comparison}")
     print(f"Successful: {successful}")
     print(f"Failed: {failed}")
     print(f"Output: {output_file}")
-    print(f"Parse success rate: {(successful-failed)/successful*100:.1f}%" if successful > 0 else "N/A")
+    if successful > 0:
+        print(f"Parse success rate: {(successful-failed)/successful*100:.1f}%")
 
 
 def main():
     """Entry point with CLI arguments."""
     import argparse
 
-    parser = argparse.ArgumentParser(description='Judge Scoring Pipeline - Stage 2')
+    parser = argparse.ArgumentParser(description='Judge Scoring Pipeline - Stage 2 (V2)')
     parser.add_argument('--config', default='src/eval/judge_config.yaml',
                         help='Path to judge config YAML')
+    parser.add_argument('--comparison', required=True,
+                        choices=sorted(VALID_COMPARISONS),
+                        help='Which pairwise comparison to run')
     parser.add_argument('--anthropic', action='store_true',
-                        help='Run Anthropic judge (default: all judges)')
+                        help='Run Anthropic judge only')
     parser.add_argument('--openai', action='store_true',
-                        help='Run OpenAI judge (default: all judges)')
+                        help='Run OpenAI judge only')
     parser.add_argument('--google', action='store_true',
-                        help='Run Google judge (default: all judges)')
+                        help='Run Google judge only')
     parser.add_argument('--batch', type=int, default=None,
                         help='Max tasks to run (default: all remaining)')
-    parser.add_argument('--input', type=str, default=None,
-                        help='Override Stage 1 input file path')
 
     args = parser.parse_args()
 
@@ -728,9 +825,9 @@ def main():
 
     run_pipeline(
         config_path=args.config,
+        comparison=args.comparison,
         vendor_filter=vendor_filter if vendor_filter else None,
         batch_limit=args.batch,
-        input_override=args.input,
     )
 
 
