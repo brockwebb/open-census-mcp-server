@@ -8,10 +8,11 @@ Pure Python. No R dependency. Pragmatics-first architecture.
 WHICH data to use and HOW to interpret it matters more than finding it.
 
 ## Current State
-**Current Phase:** 4B — Systematic Evaluation
-- Stage 1 (response generation): ✅ Complete (39 queries, v3)
-- Stage 2 (judge scoring): ⏳ OpenAI done, Anthropic + Google pending
-- Stage 3 (pipeline fidelity): ✅ Complete (39 queries)
+**Current Phase:** 4B — Systematic Evaluation (V2 Redo)
+- V1 results archived (confounded tool access — see ADR-011)
+- Stage 1 V2 (response generation): ✅ Complete (39 queries × 3 conditions, equal tool access)
+- Stage 2 V2 (judge scoring): ⏳ Pipeline updated for pairwise comparisons, test run pending
+- Stage 3 (pipeline fidelity): Pending V2 judge completion
 
 v1/v2 archived to `/Users/brock/Documents/GitHub/archive-opencensusmcp/v2`.
 
