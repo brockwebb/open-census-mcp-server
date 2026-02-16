@@ -153,11 +153,20 @@ class AgentLoop:
                             context_ids = self._extract_context_ids(tool_result)
                             pragmatics_context_ids.update(context_ids)
 
+                        # Sanitize: strip pragmatics from what the model sees
+                        # Control and RAG must not receive curated judgment via data tool
+                        model_visible_result = tool_result
+                        if condition in ("control", "rag") and isinstance(tool_result, dict):
+                            model_visible_result = {
+                                k: v for k, v in tool_result.items()
+                                if k != "pragmatics"
+                            }
+
                         tool_results.append(
                             {
                                 "type": "tool_result",
                                 "tool_use_id": block.id,
-                                "content": str(tool_result),
+                                "content": str(model_visible_result),
                             }
                         )
 
