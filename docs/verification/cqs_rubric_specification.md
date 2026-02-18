@@ -1,9 +1,9 @@
 # Consultation Quality Score (CQS) Rubric Specification
 
-**Version:** 0.1 DRAFT
-**Date:** 2026-02-12
+**Version:** 1.0
+**Date:** 2026-02-18
 **Author:** Brock Webb
-**Status:** Step 1 of Phase 4B (Systematic Evaluation)
+**Status:** Post-V2 Production
 **Traces To:** VR-006 (SRS), H.1–H.3 (Implementation Schedule)
 
 ---
@@ -29,6 +29,8 @@ Neither framework alone covers AI-mediated statistical consultation. FCSM assume
 | **D4: Definitional Accuracy** | Coherence | Explainable & Interpretable | Objectivity |
 | **D5: Reproducibility & Traceability** | Accessibility; Scientific Integrity; Credibility | Accountable & Transparent | Integrity |
 | **D6: Groundedness & Faithfulness** | N/A — FCSM not designed for AI-mediated use | Valid & Reliable; Fair (epistemic bias) | *(CQS extension)* |
+
+**Note on D6:** Empirically found to reward vagueness and penalize specificity in V2 production evaluation (see ADR-011, DEC-4B-023, and Stage 2 lab notes). D6 is retained in the scoring instrument for data collection but **excluded from CQS composite score** — CQS uses D1-D5 only. Stage 3 fidelity verification provides automated groundedness measurement.
 
 ### 2.2 Key Framework Notes
 
@@ -58,7 +60,91 @@ For completeness, the FCSM dimensions not directly scored in CQS and why:
 | Computer & Physical Security | Not applicable — out of scope for response evaluation |
 | Confidentiality | Subcase within D1 (disclosure avoidance for small-area queries) |
 
-## 3. General Scoring Principles
+## 3. Evaluation Methodology
+
+CQS validation uses a four-stage pipeline with three-condition pairwise comparisons and multi-vendor LLM judges.
+
+### 3.1 Evaluation Design (V2)
+
+**Three conditions:**
+- **Control:** Claude Sonnet 4.5 API, no tools, no pragmatics augmentation (baseline LLM performance)
+- **RAG:** Claude Sonnet 4.5 API with variable metadata retrieval (semantic search over Census variable descriptions)
+- **Pragmatics:** Claude Sonnet 4.5 API with MCP tools (live Census data retrieval + pragmatic consultation layer)
+
+**Pairwise comparisons:**
+1. `control_vs_rag` — Does RAG over metadata help?
+2. `control_vs_pragmatics` — Does pragmatics help?
+3. `rag_vs_pragmatics` — Which context strategy is better?
+
+Three pairwise comparisons enable full three-group analysis while preserving the validated A-vs-B judge methodology.
+
+### 3.2 Multi-Vendor Judge Panel
+
+**Judges:**
+- Anthropic `claude-opus-4-5`
+- OpenAI `gpt-5.2`
+- Google `gemini-3-pro-preview`
+
+**Rationale:** Three-vendor panel detects self-enhancement bias (models preferentially scoring their own outputs) and vendor-specific scoring tendencies. All three vendors use the same rubric and receive identical prompts.
+
+### 3.3 Counterbalanced Scoring
+
+Each judge scores each query 6 times per comparison:
+- **Passes 1, 3, 5:** `condition_a_first` (Response A = condition A, Response B = condition B)
+- **Passes 2, 4, 6:** `condition_b_first` (Response A = condition B, Response B = condition A)
+
+**Total judgments per comparison:** 39 queries × 3 vendors × 6 passes = 702 judgment records
+
+Counterbalancing mitigates position bias (judges preferring the first or second response regardless of content).
+
+### 3.4 Four-Stage Pipeline
+
+**Stage 1: Response Generation**
+- Generate responses for all three conditions using the CQS test battery (39 queries)
+- Output: `control_responses.jsonl`, `rag_responses.jsonl`, `pragmatics_responses.jsonl`
+
+**Stage 2: LLM-as-Judge Scoring**
+- Pairwise judge scoring on D1-D6 rubric with counterbalanced presentation
+- Output: `rag_vs_pragmatics.jsonl`, `control_vs_rag.jsonl`, `control_vs_pragmatics.jsonl`
+- Specification: VR-031 through VR-046 (SRS Section 8.4)
+
+**Stage 3: Fidelity Verification**
+- Automated verification of quantitative claims against tool call returns and retrieved chunks
+- Replaces flawed D6 rubric dimension with objective groundedness measurement
+- Specification: VR-050 through VR-056 (SRS Section 8.5)
+
+**Stage 4: Expert Validation**
+- Human expert scoring on blinded subset for calibration
+- Interview-based tacit knowledge elicitation for pragmatics layer improvements
+
+### 3.5 Implementation
+
+**Key files:**
+- `src/eval/judge_pipeline.py` — Stage 2 pairwise comparison pipeline
+- `src/eval/judge_prompts.py` — CQS rubric prompts (condition-agnostic)
+- `src/eval/judge_config.yaml` — Judge panel config, comparison definitions
+- `src/eval/battery/queries.yaml` — CQS test battery (39 queries across 6 categories)
+- `src/eval/qc_stage2.py` — Stage 2 QC validation script
+
+## 4. Generalizability
+
+The CQS development pattern is reusable across domains requiring AI-mediated expert consultation:
+
+**Pattern:**
+1. Identify domain quality framework (FCSM 20-04 for federal statistics)
+2. Cross-reference with NIST AI RMF trustworthiness characteristics
+3. Identify N/A cells where domain framework doesn't cover AI-specific risks
+4. Operationalize novel dimensions for those gaps (D6: Groundedness)
+5. Validate via pairwise LLM judges + expert calibration
+
+**Domain-specific vs generalizable:**
+- The six CQS dimensions (D1-D6) are specific to Census data consultation
+- The crosswalk methodology and evaluation pipeline are domain-agnostic
+- Other domains (clinical guidelines, legal research, engineering standards) can apply the same pattern with domain-appropriate quality frameworks
+
+The contribution is not the rubric itself — it's the systematic method for deriving trustworthy AI evaluation rubrics from established domain standards.
+
+## 5. General Scoring Principles
 
 **Principle 1: Informed refusal outscores confident delivery of unfit data.** A response that correctly determines data are unavailable, unreliable, or unfit for the stated purpose — and explains why — always outscores a response that confidently delivers questionable data without caveats. A senior federal statistician who says "we can't answer that reliably with available data" is doing better statistical work than one who hands over a number with a CV of 60%.
 
@@ -66,7 +152,7 @@ For completeness, the FCSM dimensions not directly scored in CQS and why:
 
 **Principle 3: Redirection is valuable.** Pointing the user toward a better product, geography level, or approach — even when the original question can't be answered as posed — demonstrates the kind of expert consultation the system is designed to provide.
 
-## 4. CQS Dimensions — Detailed Specification
+## 6. CQS Dimensions — Detailed Specification
 
 ### D1: Source Selection & Fitness
 
@@ -172,9 +258,9 @@ For completeness, the FCSM dimensions not directly scored in CQS and why:
 
 **Gate condition (per NIST AI RMF):** If D6 = 0, the response has fabricated data. The remaining dimension scores cannot be trusted regardless of their values, because the grounding assumption — that the response is working with real data — has failed.
 
-## 5. Scoring Protocol
+## 7. Scoring Protocol
 
-### 4.1 Scale
+### 7.1 Scale
 
 Each dimension scored 0–2 (Absent / Partial / Complete).
 
@@ -186,7 +272,7 @@ Interpretation bands (preliminary — to be calibrated against human expert scor
 - **4–6:** Significant methodological issues — requires substantial correction
 - **0–3:** Unreliable — should not be used without full rework
 
-### 4.2 Evaluation Mode
+### 7.2 Evaluation Mode
 
 **Pairwise comparison** (per MT-Bench/Chatbot Arena methodology and the author's prior harmonization ensemble work):
 
@@ -198,7 +284,7 @@ Both responses presented to each judge (order randomized to mitigate position bi
 
 Judge prompt asks: "Which response better adheres to Census statistical quality standards?" and scores each response on all 6 dimensions independently.
 
-### 4.3 Judge Panel
+### 7.3 Judge Panel
 
 Three-model ensemble (per author's validated methodology from survey harmonization classification):
 
@@ -212,7 +298,7 @@ Three-model ensemble (per author's validated methodology from survey harmonizati
 
 **Vendor bias monitoring:** Same-vendor selection rates tracked and reported, consistent with harmonization study methodology.
 
-### 4.4 Human Calibration
+### 7.4 Human Calibration
 
 Expert-scored subset of 10–15 queries to anchor automated scoring:
 - Human experts score both control and treatment responses on all 6 dimensions
@@ -220,9 +306,9 @@ Expert-scored subset of 10–15 queries to anchor automated scoring:
 - Disagreements analyzed for rubric refinement
 - Cohen's κ between each LLM judge and human expert panel reported
 
-## 6. Relationship to Prior Work
+## 8. Relationship to Prior Work
 
-### 5.1 Survey Harmonization Ensemble (Webb, 2026)
+### 8.1 Survey Harmonization Ensemble (Webb, 2026)
 
 The judge panel methodology directly reuses the author's validated multi-model ensemble approach for survey harmonization classification:
 
@@ -235,14 +321,14 @@ The judge panel methodology directly reuses the author's validated multi-model e
 | Pairwise F1/F2/F3 classification | → Pairwise CQS dimension scoring |
 | Construct validity through convergence | → Same argument for FCSM presentation |
 
-### 5.2 LLM-as-Judge Literature
+### 8.2 LLM-as-Judge Literature
 
 - **MT-Bench (Zheng et al., 2023):** Pairwise comparison protocol, position bias mitigation through randomization.
 - **FActScore (Min et al., 2023):** Atomic claim decomposition for factual support — informs D6 (Groundedness).
 - **RAGAS (Es et al., 2023):** Faithfulness, answer relevance, context recall for RAG evaluation — informs D6 and D5.
 - **Documented biases:** Position bias, verbosity bias, self-enhancement bias (Zheng et al., 2023) — mitigated by 3-model panel and order randomization.
 
-### 5.3 Semantic Smearing Research (Webb, 2026)
+### 8.3 Semantic Smearing Research (Webb, 2026)
 
 The CQS evaluation framework is motivated by empirical findings on semantic smearing in federal statistical metadata:
 - 82% increase in mean cosine similarity when Census variable metadata is enriched
@@ -251,14 +337,14 @@ The CQS evaluation framework is motivated by empirical findings on semantic smea
 
 D6 (Groundedness) specifically targets semantic smearing failure modes where LLMs conflate estimates across vintages, products, or geographic levels.
 
-## 7. Open Questions
+## 9. Open Questions
 
 - [ ] Should D6 gate failure (score = 0) automatically cap total CQS at a maximum value (e.g., 4)?
 - [ ] Should dimension weights be equal, or should some dimensions carry more weight for specific query types?
 - [ ] What is the minimum number of test queries needed for statistical power in treatment vs control comparison?
 - [ ] Should the scoring prompt present responses in isolation (absolute scoring) or always pairwise (relative scoring)?
 
-## 8. References
+## 10. References
 
 - FCSM. (2020). A Framework for Data Quality (FCSM 20-04). Federal Committee on Statistical Methodology.
 - NIST. (2023). Artificial Intelligence Risk Management Framework (AI RMF 1.0). NIST AI 100-1.
