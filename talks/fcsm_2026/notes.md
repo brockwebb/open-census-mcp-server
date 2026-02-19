@@ -1046,4 +1046,24 @@ Established three-layer QC procedure for V2 judge outputs (pattern to follow for
 Commit: 7a85246 (V2 pipeline replacement), 5197e37 (SRS + CLAUDE.md updates)
 
 ---
+
+## 2026-02-18 — Positioning Note: Ars Contexta Comparison
+
+Evaluated [agenticnotetaking/arscontexta](https://github.com/agenticnotetaking/arscontexta) — a Claude Code plugin that generates personalized "second brain" knowledge systems from conversation, backed by 249 research claims.
+
+### Key Differentiator (usable in paper/talk)
+
+> **Pragmatics address authoritative domain expertise delivery at the point of statistical reasoning.**
+
+Ars Contexta solves *personal knowledge accumulation* for a single user-agent dyad. Pragmatics solve *expert judgment delivery* at a population level for authoritative data interpretation. Different problem, different failure modes.
+
+### Three Critical Differences
+1. **Authority source:** Ars Contexta derives knowledge from conversation (user describes how they think). Pragmatics trace to official methodology documents with page-level citations. No concept of source-grounded authoring in their system.
+2. **Semantic smearing:** Not addressed by Ars Contexta at all. Their system assumes LLM training knowledge is fine — they solve session continuity, not imprecise training impressions about statistical nuance.
+3. **Determinism:** Their system expects evolution and drift (appropriate for PKM). Statistical guidance requires consistency (our 39/39 determinism).
+
+### Implication for Framing
+This comparison clarifies what pragmatics are NOT: they are not personal knowledge management, not RAG, not a "second brain." They are curated expert judgment that corrects semantic smearing at the point of decision — closer to clinical decision support than note-taking.
+
+---
 *Add entries chronologically. Append corrections as new entries, don't edit old ones.*

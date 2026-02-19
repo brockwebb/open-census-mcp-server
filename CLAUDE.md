@@ -10,9 +10,13 @@ WHICH data to use and HOW to interpret it matters more than finding it.
 ## Current State
 **Current Phase:** 4B — Systematic Evaluation (V2 Redo)
 - V1 results archived (confounded tool access — see ADR-011)
-- Stage 1 V2 (response generation): ✅ Complete (39 queries × 3 conditions, equal tool access)
-- Stage 2 V2 (judge scoring): ⏳ Pipeline updated for pairwise comparisons, test run pending
-- Stage 3 (pipeline fidelity): Pending V2 judge completion
+- Stage 1 V2 (response generation): ✅ Complete
+- Stage 2 V2 (judge scoring): ✅ Complete — all 3 pairwise comparisons
+- Aggregate analysis: ⏳ In progress
+- Stage 3 (fidelity verification): ⏳ SRS updated, implementation pending
+- Stage 4 (expert validation): ⏳ Pending
+- Lab notebook: talks/fcsm_2026/ (dated entries with run details, QC, decisions)
+- Production run details: see handoffs/ and talks/fcsm_2026/
 
 v1/v2 archived to `/Users/brock/Documents/GitHub/archive-opencensusmcp/v2`.
 
@@ -184,7 +188,7 @@ All terms defined in `docs/design/pragmatics_vocabulary.md` (normative). Key ter
 ## Technical Context
 - **Census API:** Direct Python HTTP calls to `api.census.gov`
 - **Pragmatic context:** Authored in Neo4j (`USE pragmatics`), exported to JSON in `staging/`, compiled to SQLite packs in `packs/`
-- **Evaluation:** Three-stage CQS pipeline: (1) response generation, (2) multi-model judge scoring on D1-D5, (3) automated pipeline fidelity verification
+- **Evaluation:** Four-stage CQS pipeline: (1) response generation, (2) multi-vendor pairwise judge scoring on D1-D5 with 6-pass counterbalancing, (3) automated fidelity verification, (4) expert validation. Config: src/eval/judge_config.yaml
 - **Eval config:** `src/eval/judge_config.yaml` (all parameters, SRS C-006)
 - **No vector DB, no RAG over metadata** — structured context with latitude, not embeddings
 - **No ontology layer** — the LLM's weights are the semantic layer; we supply pragmatics only

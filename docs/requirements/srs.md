@@ -458,6 +458,7 @@ Test dimensions:
 | VR-045 | Checkpoint files SHALL be scoped per comparison (one checkpoint file per pairwise comparison) to prevent cross-comparison deduplication collisions | Must |
 | VR-046 | Judge pipeline SHALL accept a `--comparison` CLI parameter selecting which pairwise comparison to execute. Valid values: `rag_vs_pragmatics`, `control_vs_pragmatics`, `control_vs_rag` | Must |
 | VR-047 | Stage 2 QC script SHALL consolidate structural validation (record count, same-condition pairs, comparison field presence), preference analysis, identical vector detection with per-query counts, and per-vendor CQS breakdown. Script SHALL accept `--file` argument and exit with code 1 if structural checks fail | Must |
+| VR-048 | V2 aggregate statistical analysis SHALL implement: (1) Friedman omnibus test across 3 conditions (control, RAG, pragmatics) on per-query CQS and per-dimension D1-D5; (2) pairwise Wilcoxon signed-rank post-hoc tests using Pratt zero-difference method (zero_method='pratt'); (3) Holm-Bonferroni correction on the 3 pairwise p-values; (4) paired Cohen's d effect sizes; (5) bootstrap 95% CIs on CQS deltas (10,000 iterations). CQS SHALL use D1-D5 only (D6 excluded). Unit of analysis SHALL be per-query median score (N=39). All analysis parameters SHALL be configured in judge_config.yaml under analysis: section. Script SHALL output formatted summary to stdout, detailed JSON to results/v2_redo/stage2/analysis/aggregate_statistics.json, and markdown summary to results/v2_redo/stage2/analysis/aggregate_statistics.md | Must |
 
 **Rationale:** The three-vendor panel (VR-031) addresses a known limitation of LLM-as-judge: models may preferentially score their own outputs higher. Counterbalancing (VR-032) enables position bias measurement. The temporal anchor prohibition (VR-035) was added after discovering that judges penalized pragmatics responses for citing data vintages beyond their training cutoff, creating a systematic confound. Run ID filtering (VR-040) was added after discovering that stale v2 judge scores contaminated aggregate analysis when the glob pattern loaded all JSONL files indiscriminately. The pairwise comparison approach (VR-041) preserves the validated A-vs-B judge methodology while enabling three-group analysis through paired comparisons.
 
@@ -465,19 +466,122 @@ Test dimensions:
 
 ### 8.5 Stage 3: Pipeline Fidelity Verification
 
+Stage 3 replaces the flawed D6 rubric dimension (DEC-4B-023) with automated claim-level verification. D6 rewarded vagueness and penalized specificity — judges scored unverifiable hedged claims higher than precise tool-grounded claims because vague claims are harder to falsify. Stage 3 directly measures whether each condition faithfully reports what its evidence sources contain.
+
+#### 8.5.1 Inputs
+
+| Input | Source | Format |
+|-------|--------|--------|
+| Control responses | `results/v2_redo/stage1/control_responses_{timestamp}.jsonl` | One ResponseRecord per line, keyed by `query_id` |
+| RAG responses | `results/v2_redo/stage1/rag_responses_{timestamp}.jsonl` | One ResponseRecord per line, keyed by `query_id` |
+| Pragmatics responses | `results/v2_redo/stage1/pragmatics_responses_{timestamp}.jsonl` | One ResponseRecord per line, keyed by `query_id` |
+| Pipeline config | `src/eval/judge_config.yaml` | YAML; `fidelity:` section specifies model, provider, rate limits |
+| Test battery | `src/eval/battery/queries.yaml` | Query metadata (category, expected behavior) |
+
+**ResponseRecord fields consumed by Stage 3:**
+
+| Field | Used By | Purpose |
+|-------|---------|---------|
+| `query_id` | All conditions | Join key across condition files |
+| `response_text` | All conditions | Text to extract and verify claims from |
+| `tool_calls[]` | All conditions | Evidence for claim verification (see 8.5.3 for sanitization) |
+| `tool_calls[].result.data` | Pragmatics, Control | Census API return values (the verification ground truth) |
+| `retrieved_chunks[]` | RAG only | Document chunks used as additional verification evidence |
+| `retrieved_chunks[].source` | RAG only | Source document identifier |
+| `retrieved_chunks[].section_path` | RAG only | Section hierarchy within source |
+| `retrieved_chunks[].page_start/end` | RAG only | Page range for traceability |
+| `retrieved_chunks[].text` | RAG only | Full chunk text for claim matching |
+| `retrieved_chunks[].score` | RAG only | Retrieval similarity score |
+
+#### 8.5.2 Outputs
+
+| Output | Location | Format |
+|--------|----------|--------|
+| Fidelity results | `results/v2_redo/stage3/fidelity_{timestamp}.jsonl` | One FidelityRecord per query, all three conditions per record |
+| Summary statistics | stdout | Formatted tables printed at end of run |
+
+**FidelityRecord schema (per query):**
+
+```json
+{
+  "query_id": "NORM-001",
+  "query_text": "What is the population of California?",
+  "category": "normal",
+  "timestamp": "2026-02-19T...",
+  "conditions": {
+    "pragmatics": {
+      "fidelity": {
+        "has_data": true,
+        "claims": [{"claim_text": "...", "claim_type": "value", "tool_source": "...", "verdict": "match", "detail": "..."}],
+        "summary": {"total_claims": N, "matched": N, "mismatched": N, "no_source": N, "calculation_correct": N, "calculation_incorrect": N}
+      },
+      "auditability": {
+        "claims": [{"claim_text": "...", "claim_type": "quantitative", "specificity": "auditable", "detail": "..."}],
+        "summary": {"total_claims": N, "auditable": N, "partially_auditable": N, "unauditable": N, "non_claims": N}
+      }
+    },
+    "rag": { "fidelity": {...}, "auditability": {...} },
+    "control": { "fidelity": {...}, "auditability": {...} }
+  }
+}
+```
+
+**Aggregate metrics (computed from FidelityRecords):**
+
+| Metric | Formula | Denominator |
+|--------|---------|-------------|
+| Fidelity score | (matched + calculation_correct) / total_claims × 100 | All claims including `no_source` |
+| Substantive fidelity | (matched + calculation_correct) / (total_claims − no_source) × 100 | Claims with traceable source only |
+| Error rate | (mismatched + calculation_incorrect) / total_claims × 100 | All claims |
+| Auditability rate | auditable / (total_claims − non_claims) × 100 | Excludes `non_claim` items (VR-053) |
+
+#### 8.5.3 Data Transformations
+
+**CRITICAL: Tool result sanitization for fidelity verification.**
+
+Stage 1 ResponseRecords store full unsanitized tool results, which for `get_census_data` calls include the complete pragmatics guidance payload (context IDs, guidance text, thread edges, provenance, related contexts). A single `get_census_data` return can be 100K+ characters, of which ~1.5K is the actual Census API data and ~98.5K is pragmatics guidance.
+
+Before sending tool call data to the fidelity verification model (Haiku 4.5), the `extract_slim_tool_data()` function strips the tool results to essential fields only:
+
+| Field | Retained | Stripped |
+|-------|----------|----------|
+| `tool_calls[].arguments` | ✓ (query parameters: variables, state, county, year, product) | |
+| `tool_calls[].result.data` | ✓ (Census API data array: header row + value rows) | |
+| `tool_calls[].result.pragmatics` | | ✗ Stripped (guidance, related, sources — 98%+ of payload) |
+| `tool_calls[].result.source` | | ✗ Stripped (dataset metadata, API URL, geography dict) |
+
+**Why this matters:** Without sanitization, the verification model receives the full pragmatics payload as "evidence," which would (a) overwhelm the context window, (b) cause the model to produce empty or truncated responses, and (c) conflate curated expert guidance with Census API data as verification ground truth. The fidelity check must verify claims against what the Census API actually returned, not against the pragmatics guidance that influenced the response.
+
+**Implementation:** `extract_slim_tool_data()` in `src/eval/fidelity_check.py` filters to `get_census_data` and `get_acs_data` tool calls only, extracting `{arguments, data}` pairs. All other tool calls (e.g., `get_methodology_guidance`, `explore_variables`) are excluded from the verification evidence — their outputs are not quantitative claims.
+
+**RAG chunk formatting:** `extract_rag_chunk_data()` formats retrieved chunks as numbered entries with source, section path, page range, similarity score, and full text. This provides the verification model with the same evidence the RAG condition had when generating its response.
+
+#### 8.5.4 Verification Strategy by Condition
+
+| Condition | Fidelity Verification | Auditability |
+|-----------|----------------------|--------------|
+| **Pragmatics** | Claims checked against slim tool data (arguments + Census API data array). Tool calls to `get_methodology_guidance` excluded from evidence | ✓ Symmetric measurement |
+| **RAG** | Claims checked against slim tool data (if tool calls present) AND retrieved chunks. Claim types expanded to include methodology, definition, geographic, threshold, recommendation | ✓ Symmetric measurement |
+| **Control** | Claims checked against slim tool data (if tool calls present). Note: V2 control has full tool access, so tool-grounded claims are verifiable | ✓ Symmetric measurement |
+
+#### 8.5.5 Requirements
+
 | ID | Requirement | Priority |
 |----|------------|----------|
-| VR-050 | Fidelity verification SHALL compare every quantitative claim in each response against the evidence available to that condition: tool call returns (all conditions), and additionally retrieved chunks (RAG condition) | Must |
-| VR-051 | Fidelity verification SHALL classify each claim as: `match`, `mismatched`, `no_source`, `calculation_correct`, or `calculation_incorrect` | Must |
-| VR-052 | Fidelity verification SHALL compute auditability for all three conditions symmetrically, classifying claims as `auditable`, `partially_auditable`, `unauditable`, or `non_claim` | Must |
-| VR-053 | Auditability percentages SHALL exclude `non_claim` items (methodological statements, source citations) from the denominator. See data contamination incident where including non_claims diluted pragmatics auditability from 72.8% to 46.0% | Must |
-| VR-054 | Fidelity score SHALL be computed as (matched + calculation_correct) / total_claims × 100, including `no_source` claims in the denominator. A secondary `substantive_fidelity` metric MAY exclude `no_source` from the denominator and SHALL be reported separately | Must |
-| VR-055 | RAG fidelity SHALL use the `retrieved_chunks` field from the RAG ResponseRecord as additional evidence. Each chunk's source, section path, page range, and full text SHALL be included in the verification prompt | Must |
-| VR-056 | RAG fidelity claim types SHALL include methodology, definition, geographic, threshold, and recommendation claims in addition to the quantitative claim types used for all conditions (value, percentage, variable_code, fips_code, table_name, moe, calculation) | Must |
+| VR-050 | Fidelity verification SHALL load three separate per-condition JSONL files from Stage 1 and join on `query_id`. The V1 paired-record format SHALL NOT be used | Must |
+| VR-051 | Fidelity verification SHALL verify claims for all three conditions per query, producing a single FidelityRecord per query containing results for all conditions | Must |
+| VR-052 | For each condition, fidelity verification SHALL extract every quantitative claim from the response text and classify it against available evidence as: `match`, `mismatch`, `no_source`, `calculation_correct`, or `calculation_incorrect` | Must |
+| VR-053 | Fidelity verification SHALL compute auditability for all three conditions symmetrically, classifying claims as `auditable`, `partially_auditable`, `unauditable`, or `non_claim` | Must |
+| VR-054 | Auditability rate denominators SHALL exclude `non_claim` items. See data contamination incident where including non_claims diluted pragmatics auditability from 72.8% to 46.0% | Must |
+| VR-055 | Fidelity score SHALL be computed as (matched + calculation_correct) / total_claims × 100. A secondary `substantive_fidelity` metric SHALL exclude `no_source` from the denominator and be reported separately | Must |
+| VR-056 | RAG fidelity SHALL use the `retrieved_chunks` field as additional evidence beyond tool call data. Each chunk's source, section path, page range, and full text SHALL be included in the verification prompt | Must |
+| VR-057 | Tool result sanitization SHALL strip all fields except `arguments` and `result.data` from tool calls before constructing the verification prompt. Specifically, the `pragmatics`, `source`, `related`, and `provenance` fields SHALL be removed. The full unsanitized tool results SHALL remain in the Stage 1 ResponseRecords for archival purposes | Must |
+| VR-058 | Only `get_census_data` and `get_acs_data` tool calls SHALL be included in verification evidence. Tool calls to `get_methodology_guidance`, `explore_variables`, and other non-data-retrieval tools SHALL be excluded from the fidelity evidence set | Must |
+| VR-059 | Fidelity verification SHALL use a cost-efficient model (currently Haiku 4.5) configured in `judge_config.yaml` `fidelity:` section. The verification model SHALL NOT be the same model used for Stage 1 response generation to avoid self-verification bias | Must |
 
-**Rationale:** Stage 3 replaces the flawed D6 rubric dimension (DEC-4B-023) with automated verification. D6 rewarded vagueness and penalized specificity — judges scored unverifiable hedged claims higher than precise tool-grounded claims because vague claims are harder to falsify. Automated fidelity directly measures whether the system faithfully reports what its tools returned, which is the actual property D6 was intended to measure. In V2, all three conditions have tool calls, so fidelity verification uses the same base method for all three. RAG additionally has chunk verification.
+**Rationale:** Stage 3 replaces the flawed D6 rubric dimension (DEC-4B-023) with automated verification. VR-057 and VR-058 encode the "skinny packet" design discovered empirically: sending full tool results (100K+ chars including pragmatics guidance) to the verification model produced empty or truncated responses, while sending slim data (~1.5K per tool call) produced reliable claim-level verification. This is not an optimization — it is a correctness requirement. The pragmatics guidance is not Census API ground truth and must not be presented as verification evidence.
 
-**Location:** `src/eval/fidelity_check.py`, `src/eval/fidelity_prompts.py`, output in `results/v2_redo/stage3/`.
+**Location:** `src/eval/fidelity_check.py`, `src/eval/fidelity_prompts.py`, config in `src/eval/judge_config.yaml` `fidelity:` section, output in `results/v2_redo/stage3/`.
 
 ### 8.6 Aggregate Analysis
 
@@ -490,8 +594,8 @@ Test dimensions:
 | VR-064 | Aggregate analysis SHALL test for self-enhancement bias by comparing Anthropic's effect size delta against the average of other vendors' deltas. Differences exceeding 0.3 SHALL be flagged | Must |
 | VR-065 | Aggregate analysis SHALL test for verbosity bias by computing Spearman's ρ between response character length and composite CQS score, separately for each condition | Must |
 | VR-066 | Aggregate analysis SHALL compute test-retest reliability as Pearson r separately for each pass-pair (1,2), (3,4), (5,6) per vendor per dimension, and report the overall lumped r as a secondary metric | Must |
-| VR-067 | Statistical tests on paired conditions (Wilcoxon signed-rank) SHALL aggregate to the query level before testing to respect the experimental unit. The experimental unit is the query (n=39), not the judge record. All p-values SHALL be reported as exact two-tailed values | Must |
-| VR-068 | Three-group omnibus analysis SHALL use Friedman test (repeated-measures) with query as the experimental unit, followed by Wilcoxon signed-rank post-hoc with Bonferroni correction (3 comparisons, α = 0.0167) | Must |
+| VR-067 | Statistical tests on paired conditions (Wilcoxon signed-rank, using the Pratt method (`zero_method='pratt'`) for zero-difference handling) SHALL aggregate to the query level before testing to respect the experimental unit. The experimental unit is the query (n=39), not the judge record. All p-values SHALL be reported as exact two-tailed values | Must |
+| VR-068 | Three-group omnibus analysis SHALL use Friedman test (repeated-measures) with query as the experimental unit, followed by Wilcoxon signed-rank post-hoc with Holm-Bonferroni correction (3 comparisons) | Must |
 | VR-069 | Aggregate analysis SHALL stratify results by query category (normal vs edge cases) and report per-stratum effect sizes with bootstrap CIs | Must |
 | VR-070 | Aggregate analysis SHALL compute judge preference rates (per pairwise comparison) per vendor and pooled, mapping the anonymized A/B preference back to condition labels | Must |
 | VR-071 | Aggregate analysis SHALL output: CSV files for each analysis type, a markdown report with publication-ready tables, and a JSON archive of all computed statistics | Must |
@@ -499,6 +603,7 @@ Test dimensions:
 | VR-073 | Three-group analysis SHALL map A/B judge scores back to condition labels using `response_a_label` and `response_b_label` per record. The mapping SHALL NOT assume fixed position — counterbalancing alternates which condition appears as A vs B | Must |
 | VR-074 | Query-level means SHALL be computed by averaging across all vendors and passes for each query before statistical testing. The experimental unit is the query (n=39), not the judge record. This aggregation step SHALL be verified by reporting the per-query mean for at least one query alongside its constituent records | Must |
 | VR-075 | Three-group analysis output SHALL be spot-checked by computing query-level means for at least 3 queries (one normal, one geographic edge, one small-area edge) by hand from raw JSONL and comparing against the script's intermediate values. The raw D3 vectors (n=39) entering the Friedman test SHALL be dumped to CSV for manual inspection | Must |
+| VR-090 | All aggregate analysis parameters (alpha level, bootstrap iterations, correction method, included dimensions, output paths) SHALL be loaded from the `analysis:` section of `judge_config.yaml`. No analysis parameters SHALL be hardcoded in scripts | Must |
 
 **Rationale:** These requirements encode methodological decisions that were made iteratively during Phase 4B development. VR-061 addresses the paired vs independent d decision — the experimental design is paired (every query has all conditions), so paired d is the correct primary metric, but independent d provides a conservative lower bound. VR-067 was added after discovering that running Wilcoxon on non-independent records (multiple vendors × passes per query) produced meaningless p-values. VR-068 specifies the omnibus test for the three-group design with appropriate multiple comparison correction. VR-072 was added after the data contamination incident where stale judge scores inflated the apparent sample size.
 
@@ -515,6 +620,13 @@ Test dimensions:
 **Rationale:** The Phase 4B evaluation went through multiple pipeline versions (V1: confounded tool access, intermediate: truncation bugs, temporal confounds). At one point, aggregate analysis inadvertently loaded multiple versions' outputs simultaneously, contaminating every computed statistic. These requirements formalize the hard-won lesson that data provenance in iterative evaluation pipelines requires active management, not passive file accumulation.
 
 **Location:** Config in `judge_config.yaml` (`stage2_valid_run_ids`), archive in `results/archive_v1_confounded/`.
+
+**V2 Stage 2 production runs (valid run IDs):**
+```
+rag_vs_pragmatics_20260216_092144      (702/702 records)
+control_vs_rag_20260217_083951         (702/702 records)
+control_vs_pragmatics_20260218_065924  (699/702, 3 Google failures — pending backfill per TMP-003/TMP-004)
+```
 
 ### 8.8 RAG Condition Specification
 

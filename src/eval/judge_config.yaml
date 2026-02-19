@@ -89,6 +89,13 @@ fidelity:
   max_retries: 3
   rate_limit_delay: 0.5
 
+analysis:
+  alpha: 0.05
+  bootstrap_iterations: 10000
+  correction_method: 'holm'           # Holm-Bonferroni FWER control (uniformly more powerful than plain Bonferroni)
+  dimensions: ['D1', 'D2', 'D3', 'D4', 'D5']   # D6 excluded from CQS composite (see cqs_rubric_specification.md)
+  output_dir: 'results/v2_redo/stage2/analysis'
+
 paths:
   # V1 (archived, do not use)
   stage1_results: 'results/cqs_responses_20260213_091530.jsonl'
