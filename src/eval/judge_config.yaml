@@ -106,6 +106,13 @@ paths:
   checkpoint_dir: 'results/v2_redo/stage2/checkpoints'
   analysis_output: 'results/v2_redo/stage2/analysis'
 
+  # V2 Stage 3 fidelity inputs (same files as Stage 1 outputs)
+  stage3_inputs:
+    control: 'results/v2_redo/stage1/control_responses_20260216_055354.jsonl'
+    rag: 'results/v2_redo/stage1/rag_responses_20260216_055354.jsonl'
+    pragmatics: 'results/v2_redo/stage1/pragmatics_responses_20260216_074817.jsonl'
+  stage3_output_dir: 'results/v2_redo/stage3'
+
   # V1 archived references (do not mix with V2)
   stage2_valid_run_ids:
     - "20260213_125057"   # OpenAI v3 part 1 (17 queries, 100 records)

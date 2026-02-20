@@ -1,7 +1,10 @@
-"""Stage 3: Pipeline Fidelity Verification.
+"""Stage 3: Pipeline Fidelity Verification (V2).
 
-Verifies treatment response accuracy against tool call data and classifies
-control response auditability. Uses existing judge_pipeline infrastructure.
+Loads three separate per-condition JSONL files (control, rag, pragmatics),
+joins on query_id, and produces one FidelityRecord per query containing
+fidelity and auditability results for all three conditions.
+
+Govering requirements: SRS Section 8.5, VR-050 through VR-059.
 """
 
 import argparse
@@ -9,7 +12,7 @@ import json
 import time
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, Any, Optional
+from typing import Dict, Any, List, Optional
 from collections import defaultdict
 
 import yaml
@@ -239,62 +242,60 @@ def classify_control(
 
 
 def process_query(
-    pair: Dict[str, Any],
+    query_id: str,
+    conditions: Dict[str, Dict[str, Any]],
+    query_metadata: Dict[str, Any],
     config: Dict[str, Any],
     api_caller
 ) -> Dict[str, Any]:
-    """Process one query pair for fidelity checking.
+    """Process one query across all three conditions.
 
     Args:
-        pair: QueryPair dict with control and treatment responses
+        query_id: Query identifier
+        conditions: Dict mapping condition name to ResponseRecord
+                    {'control': {...}, 'rag': {...}, 'pragmatics': {...}}
+        query_metadata: Dict with 'query_text' and 'category'
         config: Full configuration dict
         api_caller: API caller function from judge_pipeline
 
     Returns:
-        Fidelity result for this query
+        FidelityRecord with results for all three conditions (VR-051)
     """
-    query_id = pair['query_id']
-    query_text = pair['query_text']
-    category = pair['category']
-
     print(f"  Processing {query_id}...")
 
-    # Verify treatment
-    treatment = pair['treatment']
-    treatment_result = verify_treatment(
-        query_id,
-        treatment['response_text'],
-        treatment['tool_calls'],
-        config['fidelity'],
-        api_caller,
-        retrieved_chunks=treatment.get('retrieved_chunks', [])
-    )
+    condition_results = {}
+    for cond_name in ('control', 'rag', 'pragmatics'):
+        record = conditions[cond_name]
+        response_text = record.get('response_text', '')
+        tool_calls = record.get('tool_calls', [])
 
-    # Classify treatment auditability (same measure as control, for symmetry)
-    treatment_auditability = classify_control(
-        query_id,
-        treatment["response_text"],
-        config["fidelity"],
-        api_caller
-    )
+        # Fidelity verification — RAG also uses retrieved_chunks (VR-056)
+        if cond_name == 'rag':
+            fidelity = verify_treatment(
+                query_id, response_text, tool_calls, config['fidelity'], api_caller,
+                retrieved_chunks=record.get('retrieved_chunks', [])
+            )
+        else:
+            fidelity = verify_treatment(
+                query_id, response_text, tool_calls, config['fidelity'], api_caller
+            )
 
-    # Classify control
-    control = pair['control']
-    control_result = classify_control(
-        query_id,
-        control['response_text'],
-        config['fidelity'],
-        api_caller
-    )
+        # Auditability classification — symmetric for all conditions (VR-053)
+        auditability = classify_control(
+            query_id, response_text, config['fidelity'], api_caller
+        )
+
+        condition_results[cond_name] = {
+            'fidelity': fidelity,
+            'auditability': auditability
+        }
 
     return {
-        "query_id": query_id,
-        "query_text": query_text,
-        "category": category,
-        "timestamp": datetime.now().isoformat(),
-        "treatment_fidelity": treatment_result,
-        "treatment_auditability": treatment_auditability,
-        "control_auditability": control_result
+        'query_id': query_id,
+        'query_text': query_metadata['query_text'],
+        'category': query_metadata['category'],
+        'timestamp': datetime.now().isoformat(),
+        'conditions': condition_results
     }
 
 
@@ -320,7 +321,7 @@ def load_existing_results(output_path: Path) -> set[str]:
 
 
 def print_summary_statistics(output_path: Path):
-    """Print aggregate statistics from completed fidelity checks.
+    """Print 3-condition comparison table from completed fidelity checks.
 
     Args:
         output_path: Path to output JSONL file
@@ -342,81 +343,79 @@ def print_summary_statistics(output_path: Path):
     print("FIDELITY CHECK SUMMARY")
     print("="*70)
 
-    # Treatment statistics
-    treatment_stats = defaultdict(int)
-    control_stats = defaultdict(int)
-    category_stats = defaultdict(lambda: {'treatment': defaultdict(int), 'control': defaultdict(int)})
+    CONDS = ['control', 'rag', 'pragmatics']
+
+    # Aggregate stats per condition
+    fid_stats = {c: defaultdict(int) for c in CONDS}
+    aud_stats = {c: defaultdict(int) for c in CONDS}
+    cat_stats = defaultdict(
+        lambda: {c: {'fid': defaultdict(int), 'aud': defaultdict(int)} for c in CONDS}
+    )
 
     for record in records:
         category = record['category']
+        for cond in CONDS:
+            cond_data = record.get('conditions', {}).get(cond, {})
 
-        # Treatment
-        tf = record['treatment_fidelity']['summary']
-        for key, val in tf.items():
-            treatment_stats[key] += val
-            category_stats[category]['treatment'][key] += val
+            fid = cond_data.get('fidelity', {}).get('summary', {})
+            for k, v in fid.items():
+                fid_stats[cond][k] += v
+                cat_stats[category][cond]['fid'][k] += v
 
-        # Control
-        ca = record['control_auditability']['summary']
-        for key, val in ca.items():
-            control_stats[key] += val
-            category_stats[category]['control'][key] += val
+            aud = cond_data.get('auditability', {}).get('summary', {})
+            for k, v in aud.items():
+                aud_stats[cond][k] += v
+                cat_stats[category][cond]['aud'][k] += v
 
-    # Overall treatment fidelity
-    print("\n## Treatment Fidelity")
-    total = treatment_stats['total_claims']
-    if total > 0:
-        match_rate = treatment_stats['matched'] / total * 100
-        calc_correct_rate = treatment_stats['calculation_correct'] / total * 100
-        fidelity_score = (treatment_stats['matched'] + treatment_stats['calculation_correct']) / total * 100
+    def fidelity_score(stats: defaultdict):
+        total = stats.get('total_claims', 0)
+        if total == 0:
+            return 0.0, 0
+        return (stats.get('matched', 0) + stats.get('calculation_correct', 0)) / total * 100, total
 
-        print(f"Total claims: {total}")
-        print(f"Matched: {treatment_stats['matched']} ({match_rate:.1f}%)")
-        print(f"Mismatched: {treatment_stats['mismatched']}")
-        print(f"No source: {treatment_stats['no_source']}")
-        print(f"Calculation correct: {treatment_stats['calculation_correct']} ({calc_correct_rate:.1f}%)")
-        print(f"Calculation incorrect: {treatment_stats['calculation_incorrect']}")
-        print(f"**Fidelity score: {fidelity_score:.1f}%**")
-    else:
-        print("No treatment claims found.")
+    def error_rate(stats: defaultdict):
+        total = stats.get('total_claims', 0)
+        if total == 0:
+            return 0.0
+        return (stats.get('mismatched', 0) + stats.get('calculation_incorrect', 0)) / total * 100
 
-    # Overall control auditability
-    print("\n## Control Auditability")
-    total = control_stats['total_claims']
-    if total > 0:
-        audit_rate = control_stats['auditable'] / total * 100
+    def audit_rate(stats: defaultdict):
+        total = stats.get('total_claims', 0)
+        non_claims = stats.get('non_claims', 0)
+        denom = total - non_claims
+        if denom == 0:
+            return 0.0
+        return stats.get('auditable', 0) / denom * 100
 
-        print(f"Total claims: {total}")
-        print(f"Auditable: {control_stats['auditable']} ({audit_rate:.1f}%)")
-        print(f"Partially auditable: {control_stats['partially_auditable']}")
-        print(f"Unauditable: {control_stats['unauditable']}")
-        print(f"Non-claims: {control_stats['non_claims']}")
-    else:
-        print("No control claims found.")
+    # 3-column comparison table
+    COL_W = 14
+    header = f"{'Metric':<22}" + "".join(f"{c.capitalize():>{COL_W}}" for c in CONDS)
+    print(f"\n{header}")
+    print("-" * (22 + COL_W * 3))
+
+    fs = {c: fidelity_score(fid_stats[c]) for c in CONDS}
+    print(f"{'Fidelity Score':<22}" + "".join(f"{fs[c][0]:>{COL_W-1}.1f}%" for c in CONDS))
+    print(f"{'Error Rate':<22}" + "".join(f"{error_rate(fid_stats[c]):>{COL_W-1}.1f}%" for c in CONDS))
+    print(f"{'Auditability':<22}" + "".join(f"{audit_rate(aud_stats[c]):>{COL_W-1}.1f}%" for c in CONDS))
+    print(f"{'Total Claims':<22}" + "".join(f"{fid_stats[c].get('total_claims', 0):>{COL_W}}" for c in CONDS))
 
     # Per-category breakdown
     print("\n## Per-Category Breakdown")
-    for category in sorted(category_stats.keys()):
-        stats = category_stats[category]
-        print(f"\n### {category}")
-
-        t_total = stats['treatment']['total_claims']
-        c_total = stats['control']['total_claims']
-
-        if t_total > 0:
-            t_fidelity = (stats['treatment']['matched'] + stats['treatment']['calculation_correct']) / t_total * 100
-            print(f"  Treatment fidelity: {t_fidelity:.1f}% ({t_total} claims)")
-
-        if c_total > 0:
-            c_audit = stats['control']['auditable'] / c_total * 100
-            print(f"  Control auditability: {c_audit:.1f}% ({c_total} claims)")
+    for category in sorted(cat_stats.keys()):
+        stats = cat_stats[category]
+        print(f"\n  {category}")
+        for cond in CONDS:
+            fs_cat, n = fidelity_score(stats[cond]['fid'])
+            ar_cat = audit_rate(stats[cond]['aud'])
+            if n > 0:
+                print(f"    {cond:<14} fidelity: {fs_cat:.1f}% ({n} claims)  auditability: {ar_cat:.1f}%")
 
     print("\n" + "="*70)
 
 
 def main():
-    """Main entry point for fidelity check pipeline."""
-    parser = argparse.ArgumentParser(description="Stage 3: Pipeline Fidelity Verification")
+    """Main entry point for fidelity check pipeline (V2)."""
+    parser = argparse.ArgumentParser(description="Stage 3: Pipeline Fidelity Verification (V2)")
     parser.add_argument(
         "--config",
         default="src/eval/judge_config.yaml",
@@ -426,10 +425,6 @@ def main():
         "--batch",
         type=int,
         help="Process only first N queries (for testing)"
-    )
-    parser.add_argument(
-        "--input",
-        help="Override input file path (defaults to config stage1_results)"
     )
 
     args = parser.parse_args()
@@ -446,36 +441,60 @@ def main():
     provider = config['fidelity']['provider']
     api_caller = get_api_caller(provider)
 
-    # Determine input/output paths
-    input_path = Path(args.input) if args.input else Path(config['paths']['stage1_results'])
+    # Output path
     output_dir = Path(config['paths']['stage3_output_dir'])
     output_dir.mkdir(parents=True, exist_ok=True)
-
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     output_path = output_dir / f"fidelity_{timestamp}.jsonl"
 
     print("="*70)
-    print("STAGE 3: PIPELINE FIDELITY VERIFICATION")
+    print("STAGE 3: PIPELINE FIDELITY VERIFICATION (V2)")
     print("="*70)
-    print(f"\nInput: {input_path}")
-    print(f"Output: {output_path}")
     print(f"Model: {config['fidelity']['model']} ({provider})")
 
-    # Load Stage 1 results
-    if not input_path.exists():
-        print(f"\nERROR: Input file not found: {input_path}")
-        return
+    # Load all 3 condition files (VR-050)
+    stage3_inputs = config['paths']['stage3_inputs']
+    condition_records: Dict[str, Dict[str, Any]] = {}  # {cond: {query_id: record}}
 
-    pairs = []
-    with open(input_path) as f:
-        for line in f:
-            pairs.append(json.loads(line))
+    for cond_name, file_path in stage3_inputs.items():
+        path = Path(file_path)
+        if not path.exists():
+            print(f"\nERROR: Input file not found: {path}")
+            return
+        records: Dict[str, Any] = {}
+        with open(path) as f:
+            for line in f:
+                record = json.loads(line)
+                records[record['query_id']] = record
+        condition_records[cond_name] = records
+        print(f"  {cond_name}: {len(records)} records")
 
-    print(f"\nLoaded {len(pairs)} query pairs")
+    # Validate all 3 files have the same query IDs
+    all_id_sets = [set(r.keys()) for r in condition_records.values()]
+    common_ids = set.intersection(*all_id_sets)
+    for cond_name, records in condition_records.items():
+        missing = common_ids - set(records.keys())
+        if missing:
+            print(f"WARNING: {cond_name} missing query IDs: {missing}")
+        extra = set(records.keys()) - common_ids
+        if extra:
+            print(f"WARNING: {cond_name} has extra query IDs not in all files: {extra}")
+
+    query_ids = sorted(common_ids)
+    print(f"\nLoaded {len(query_ids)} queries present in all 3 conditions")
+
+    # Load query metadata from battery (query_text, category)
+    battery_path = Path(config['paths']['battery'])
+    with open(battery_path) as f:
+        battery = yaml.safe_load(f)
+    battery_meta = {
+        q['id']: {'query_text': q['text'], 'category': q['category']}
+        for q in battery['queries']
+    }
 
     # Apply batch limit if specified
     if args.batch:
-        pairs = pairs[:args.batch]
+        query_ids = query_ids[:args.batch]
         print(f"Processing first {args.batch} queries only (test mode)")
 
     # Load existing results for checkpointing
@@ -483,18 +502,27 @@ def main():
     if completed:
         print(f"Skipping {len(completed)} already-completed queries")
 
-    # Process each query
+    print(f"Output: {output_path}")
+
+    # Process each query (6 LLM calls per query: 2 per condition × 3 conditions)
     processed = 0
     with open(output_path, 'a') as out_f:
-        for i, pair in enumerate(pairs, 1):
-            query_id = pair['query_id']
-
+        for i, query_id in enumerate(query_ids, 1):
             if query_id in completed:
                 continue
 
-            print(f"\n[{i}/{len(pairs)}] {query_id}")
+            print(f"\n[{i}/{len(query_ids)}] {query_id}")
 
-            result = process_query(pair, config, api_caller)
+            # Build conditions dict for this query
+            conditions = {
+                cond_name: condition_records[cond_name][query_id]
+                for cond_name in ('control', 'rag', 'pragmatics')
+            }
+
+            # Get query metadata from battery (ResponseRecords don't carry query_text/category)
+            query_metadata = battery_meta.get(query_id, {'query_text': '', 'category': 'unknown'})
+
+            result = process_query(query_id, conditions, query_metadata, config, api_caller)
 
             # Write immediately for checkpointing
             out_f.write(json.dumps(result) + '\n')
@@ -506,10 +534,7 @@ def main():
             time.sleep(config['fidelity'].get('rate_limit_delay', 0.5))
 
     print(f"\n\nProcessed {processed} queries")
-
-    # Print summary statistics
     print_summary_statistics(output_path)
-
     print(f"\nComplete! Results: {output_path}")
 
 
