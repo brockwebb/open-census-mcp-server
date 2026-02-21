@@ -4,7 +4,7 @@
 
 **Rule:** No number appears in the paper, slides, or handout unless it has an entry here with status CERTIFIED or COUNTABLE. Numbers with status PENDING or UNTRACED must be resolved before citation.
 
-**Last updated:** 2026-02-21 (session 2: SRS fix, determinism, design derivation, new gaps 011-014)
+**Last updated:** 2026-02-21 (session 3: cost analysis COST-001–013, commit 24c9232)
 
 ---
 
@@ -236,8 +236,13 @@ Verified by: `verify_registry_counts.py`
 | RAG-001 | Embedding model | all-MiniLM-L6-v2 (384-dim) | `rag_retriever.py` | COUNTABLE |
 | RAG-002 | Index type | FAISS IndexFlatIP (cosine) | `rag_retriever.py` | COUNTABLE |
 | RAG-003 | Top-k retrieval | 5 | `rag_retriever.py:27` | COUNTABLE |
-| RAG-004 | Total chunks indexed | 311 | `results/rag_ablation/index/metadata.json` | COUNTABLE |
-| RAG-005 | Source documents | 3 | `results/rag_ablation/index/metadata.json` | COUNTABLE |
+| RAG-004 | Total chunks indexed | 311 | `results/rag_ablation/index/qc_report.txt` (D&M: 210, Handbook: 85, Geography: 16) | COUNTABLE |
+| RAG-005 | Source documents | 3 | `results/rag_ablation/index/sources.txt` | COUNTABLE |
+| RAG-005a | RAG source doc 1 | ACS General Handbook 2020 (89pp) | `sources.txt` | COUNTABLE |
+| RAG-005b | RAG source doc 2 | ACS Design & Methodology 2024 (238pp) | `sources.txt` | COUNTABLE |
+| RAG-005c | RAG source doc 3 | ACS Geography Handbook 2020 (27pp) | `sources.txt` | COUNTABLE |
+| RAG-005d | RAG total source pages | 354pp (89 + 238 + 27) | Derived | COUNTABLE |
+| RAG-005e | Source overlap with pragmatics | 3 of 3 shared (identical source docs). RAG indexes all as chunks; pragmatics cites same 3 via curated items | `sources.txt` vs `neo4j-pragmatics: Context.provenance` | COUNTABLE |
 | RAG-006 | Bootstrap iterations | 10,000 | `judge_config.yaml` (analysis section) | COUNTABLE |
 | RAG-007 | Bootstrap seed | Not set (non-deterministic) | `judge_config.yaml` | COUNTABLE |
 
@@ -270,6 +275,29 @@ Decision pedigree for key design parameters.
 | DRV-002 | Normal/edge split | 38%/62% | Equivalence testing (no-harm claim on normal) needs 15-20; superiority testing (edge cases) at d=0.8 needs 15-20. Edge oversampled because that's where pragmatics value-add is hypothesized | DEC-4B-009 |
 | DRV-003 | Judge passes per comparison | 6 | 3 vendors × 2 orderings. 6→12 passes buys ~1% power — not worth cost. Bottleneck is N=39 queries, not judge noise | DEC-4B-021 |
 | DRV-004 | Edge case oversampling rationale | 62% edge | Hypothesis is directional: pragmatics help on hard queries, neutral on easy. More power needed where effect matters. Not arbitrary. | DEC-4B-009 |
+
+---
+
+## Section 5f: Extraction Provenance
+
+Source: Quarry Neo4j `SourceDocument` nodes + file metadata
+
+| ID | Number | Description | Source | Status |
+|----|--------|-------------|--------|--------|
+| EXT-001 | 3 | Source documents — **identical** for RAG and pragmatics (by design, for fair comparison) | `sources.txt` + quarry SourceDocument nodes | COUNTABLE |
+| EXT-002 | 34 | Pragmatic items pipeline-extracted via quarry (28 from Handbook ACS-GEN-001 + 6 from D&M ACS-DM-2024) | `neo4j-pragmatics: Context.provenance` | COUNTABLE |
+| EXT-003 | 2 | Pragmatic items manually extracted (human + AI source material review): ACS-IND-001 geography from Geography Handbook + ACS-GQ-001 group quarters from CPS-HBM-001. Same sources, not pipeline-extracted. | provenance query | COUNTABLE |
+| EXT-004 | 36 | Total pragmatic items (34 pipeline + 2 manual) = PL-001 | EXT-002 + EXT-003 | COUNTABLE |
+| EXT-005 | 89 | Pages in ACS General Handbook 2020 | Document metadata | COUNTABLE |
+| EXT-006 | 238 | Pages in ACS Design & Methodology Report 2024 | Document metadata | COUNTABLE |
+| EXT-007 | 27 | Pages in ACS Geography Handbook 2020 ("Geography and the American Community Survey: What Data Users Need to Know") | Document metadata, user-confirmed | COUNTABLE |
+| EXT-008 | 354 | Total source pages (89 + 238 + 27) | Derived | COUNTABLE |
+| EXT-009 | 5,233 | Quarry KG nodes from Handbook + D&M (the 2 quarry-extracted docs) | `MATCH (n)-[:SOURCED_FROM]->(s) WHERE s.catalog_id IN [...]` | COUNTABLE |
+| EXT-010 | 0.65% | Extraction yield: 34 quarry-extracted items / 5,233 nodes | EXT-002 / EXT-009 | COUNTABLE |
+
+**Key design point:** Both conditions used the **same 3 source documents**. RAG indexed all 3 as 311 chunks for brute-force top-5 retrieval. Pragmatics pipeline-extracted 34 items from 2 docs and manually extracted 2 items from the others via human + AI source material review. The independent variable is representation method, not source material.
+
+**Dual extraction paths:** The geography handbook didn't yield usable pipeline-extracted pragmatics — a finding itself. Some expert judgment is implicit in how practitioners *use* documents, not explicit in document text. The pipeline captures explicit knowledge; manual extraction via SME conversation captures tacit knowledge. A mature system needs both paths. The 2 manually extracted items are proof-of-concept for the Phase 2 expert validation pathway (structured interviews to elicit tacit knowledge from Census methodology specialists).
 
 ---
 
@@ -310,11 +338,11 @@ Numbers computed from certified data for narrative use (e.g., "X times higher").
 | ~~GAP-007~~ | ~~Substantive fidelity, error rates~~ | — | **CLOSED** → S3-001–003, S3-010–012 filled from fidelity_summary.json |
 | ~~GAP-008~~ | ~~Bootstrap CI parameters~~ | — | **CLOSED** → 10,000 iterations (`judge_config.yaml analysis.bootstrap_iterations`); no seed documented in config |
 | ~~GAP-009~~ | ~~RAG index parameters~~ | — | **CLOSED** → FAISS IndexFlatIP cosine, all-MiniLM-L6-v2 (384-dim), top-k=5 (`rag_retriever.py:27`), 311 chunks, 3 source docs (`results/rag_ablation/index/metadata.json`) |
-| GAP-010 | Source document count and page count for pragmatics | Quarry provenance records | Methods section needs this |
+| ~~GAP-010~~ | ~~Source document count for pragmatics~~ | — | **CLOSED** → Same 3 docs for both conditions (~392pp). 34 pipeline-extracted + 2 manually extracted = 36 items. Section 5f (EXT-001–010). |
 | ~~GAP-011~~ | ~~Stratum treatment effect~~ | — | **CLOSED** → Section 3f (SA-001–022). Normal d=2.347 > Edge d=1.135. No overfitting. |
 | ~~GAP-012~~ | ~~Token overhead~~ | — | **CLOSED** → Section 3g (EFF-001–008). Pragmatics +465% tokens, RAG +307%. Old handoff note (120%/36%) superseded. |
-| GAP-013 | Pragmatics development procedure narrative | `docs/design/quarry_extraction_pipeline.md`, ADR-008, ADR-009 | Methods section needs creation story: extract → thread ID → curate → compile → embed in MCP |
-| GAP-014 | API-driven architecture advantage | System design docs | Discussion section: packs are server-side MCP, centrally maintained, no client files, multi-vendor test bench |
+| ~~GAP-013~~ | ~~Pragmatics development procedure narrative~~ | — | **CLOSED** → `paper/sections/05_extraction_pipeline.md` (dual extraction paths, determinism, curation, compilation pipeline) |
+| ~~GAP-014~~ | ~~API-driven architecture advantage~~ | — | **CLOSED** → `paper/sections/08_discussion_sidecar.md` (sidecar pattern, central maintenance, multi-vendor, cost-effectiveness, scaling) |
 
 ---
 

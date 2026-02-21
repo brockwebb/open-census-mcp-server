@@ -57,13 +57,13 @@ When sections grow complex, create `paper/sections/NN_section_name.md` with deta
 - `docs/decisions/ADR-002-grounding-not-rag.md`
 - `docs/decisions/ADR-003-reasoning-model-requirement.md`
 - `docs/decisions/ADR-004-agent-reasoning-loop.md`
-- `staging/acs/` — 35 pragmatic items
+- `staging/acs/` — 36 pragmatic items (registry: PL-001)
 - `talks/fcsm_2026/notes.md` § "V-Information as Formal Basis"
 
 **Figures/Tables:**
 - Figure 3: Anatomy of a pragmatic context item (context_id, text, latitude, provenance, triggers). {slides:main}
 - Figure 4: Latitude model — none/narrow/wide/full with Census examples. {slides:main}
-- Table 3: The 35 pragmatic items by category and latitude level. {slides:backup}
+- Table 3: The 36 pragmatic items by category and latitude level. {slides:backup}
 
 ---
 
@@ -101,6 +101,9 @@ When sections grow complex, create `paper/sections/NN_section_name.md` with deta
 - Figure 7: Extraction pipeline stages with noise reduction at each step. {slides:backup}
 - Table 4: Extraction quality metrics — nodes by type, relationship distribution, MENTIONS=0. {paper}
 
+**Extraction provenance (registry EXT-001–010):** Same 3 source documents for both RAG and pragmatics (354 pages). 34 items pipeline-extracted from Handbook + D&M (5,233 nodes → 34 items, 0.65% yield). 2 items manually extracted via human + AI source material review (geography + group quarters). RAG: 311 chunks, top-5 brute force. Pragmatics: 36 curated items, targeted delivery.
+**GAP-013 CLOSED:** Full narrative in `paper/sections/05_extraction_pipeline.md`. Covers dual extraction paths (pipeline 34 + manual 2), determinism by design (graph traversal vs vector search, DET-001–004), curation process (0.65% yield as the intelligence), and compilation pipeline (Neo4j → JSON → SQLite, ADR-001 separation).
+
 ---
 
 ## 6. Evaluation Design {paper} {slides:main}
@@ -120,6 +123,7 @@ When sections grow complex, create `paper/sections/NN_section_name.md` with deta
 - Figure 8: Three-condition experimental design (control/RAG/pragmatics). {slides:main}
 - Figure 9: Four-stage evaluation pipeline. {slides:main}
 - Table 5: Test battery composition — categories, counts, edge case rationale. {paper}
+- Table 5b: Power analysis derivation — paired Wilcoxon at d=0.5/α=0.05/power=0.80 → n≥35, stratified 15 normal + 24 edge, Gemini rate limit constraint. (registry: DRV-001–004) {paper}
 - Table 6: Experimental controls — tool filtering, result sanitization, contamination checks. {paper}
 
 ---
@@ -172,6 +176,8 @@ When sections grow complex, create `paper/sections/NN_section_name.md` with deta
 - 8.3 Implications for federal statistical agencies — the sidecar pattern. *Cost data: $0.09/query marginal cost for expert statistical guidance (Sonnet 4.5, COST-003). Negligible at Opus pricing too ($0.14/query, COST-012).*
 - 8.4 The Jobs Doctrine — obsolescence over compensatory complexity
 
+**GAP-014 CLOSED:** Full narrative in `paper/sections/08_discussion_sidecar.md`. Covers server-side delivery (no client FAISS/embedding dependency), central maintenance, multi-vendor validation, cost-effectiveness (2.2× RAG, $0.09/query), and scaling pattern (CPS/SIPP/decennial packs, shared geographic intelligence).
+
 **Figures/Tables:**
 - Figure 12: Information selectivity — training data curation ↔ expert judgment curation. {slides:main}
 
@@ -182,10 +188,11 @@ When sections grow complex, create `paper/sections/NN_section_name.md` with deta
 **Thesis:** Honest accounting of scope and constraints.
 
 - n=39 queries, single caller model (Sonnet 4.5), single domain (ACS)
-- LLM-as-judge biases mitigated but not eliminated
-- Pragmatic content hand-curated by one expert — scalability unproven
-- No user study — evaluation is automated
-- Generalization requires domain-specific pragmatics
+- LLM-as-judge biases mitigated (3 vendors, 2 orderings, 6 passes) but not eliminated
+- Pragmatic content hand-curated by one expert — scalability unproven (but see Future Work: hybrid authoring)
+- No user study — evaluation is automated quality scoring
+- Generalization requires domain-specific pragmatics (but architecture is domain-agnostic)
+- Normal stratum underpowered at d=0.5 (n=15, power≈0.56) though observed effects are large enough to detect (d=2.347)
 
 ---
 
