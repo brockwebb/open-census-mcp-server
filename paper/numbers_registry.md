@@ -151,6 +151,38 @@ Note: Uses actual API token counts (input_tokens, output_tokens) per record.
 | EFF-007 | Mean guidance response (pragmatics) | — | — | 16,106 chars | COMPUTED |
 | EFF-008 | Mean pragmatic items/query | — | — | 21.8 of 36 (61%) | COMPUTED |
 
+### 3h. Cost Analysis
+
+Source: `results/v2_redo/stage1/analysis/cost_analysis.md` + `.json`
+Script: `src/eval/cost_analysis.py`
+
+**Citation:** Anthropic. (2026). Claude model pricing and API overview. Retrieved February 21, 2026, from https://platform.claude.com/docs/en/about-claude/models/overview
+
+**Pricing used:**
+- Claude Sonnet 4.5 (`claude-sonnet-4-5-20250929`, used in experiment): $3.00/$15.00 per MTok input/output
+- Claude Opus 4.6 (`claude-opus-4-6`, premium reference): $5.00/$25.00 per MTok input/output
+
+*Key finding: Pragmatics is 2.2× more cost-effective than RAG (CQS per marginal dollar: 6.28 vs 2.83). Absolute costs are negligible — full 39-query battery costs $4.42 at Sonnet pricing, $7.37 at Opus pricing.*
+
+#### Sonnet 4.5 Pricing ($3/$15 per MTok)
+
+| ID | Metric | Control | RAG | Pragmatics | Status |
+|----|--------|---------|-----|------------|--------|
+| COST-001 | Cost per query | $0.0277 | $0.0819 | $0.1134 | COMPUTED |
+| COST-002 | Total battery cost (39 queries) | $1.08 | $3.20 | $4.42 | COMPUTED |
+| COST-003 | Marginal cost per query vs control | — | $0.0543 | $0.0857 | COMPUTED |
+| COST-004 | CQS per marginal dollar | — | 2.83 | **6.28** | COMPUTED |
+| COST-005 | Pragmatics vs RAG cost-effectiveness ratio | — | — | **2.2×** | COMPUTED |
+
+#### Opus 4.6 Pricing ($5/$25 per MTok)
+
+| ID | Metric | Control | RAG | Pragmatics | Status |
+|----|--------|---------|-----|------------|--------|
+| COST-010 | Cost per query | $0.0461 | $0.1366 | $0.1890 | COMPUTED |
+| COST-011 | Total battery cost (39 queries) | $1.80 | $5.33 | $7.37 | COMPUTED |
+| COST-012 | Marginal cost per query vs control | — | $0.0905 | $0.1429 | COMPUTED |
+| COST-013 | CQS per marginal dollar | — | 1.70 | **3.77** | COMPUTED |
+
 ---
 
 ## Section 4: Stage 3 — Fidelity & Auditability (CERTIFIED)
@@ -245,8 +277,8 @@ Decision pedigree for key design parameters.
 
 | ID | Analysis | CC Task | Registry Section (after completion) |
 |----|----------|---------|------------------------------------|
-| PEND-001 | Stratum treatment effect (edge vs normal) | `cc_tasks/2026-02-21_stratum_analysis.md` | Section 3f: Stratum Analysis |
-| PEND-002 | Token overhead comparison | `cc_tasks/2026-02-21_overhead_analysis.md` | Section 3g: Efficiency Analysis |
+| ~~PEND-001~~ | ~~Stratum treatment effect~~ | `cc_tasks/2026-02-21_stratum_analysis.md` | **DONE** → Section 3f: SA-001–022 |
+| ~~PEND-002~~ | ~~Token overhead~~ | `cc_tasks/2026-02-21_overhead_analysis.md` | **DONE** → Section 3g: EFF-001–008 |
 
 ---
 
@@ -279,8 +311,8 @@ Numbers computed from certified data for narrative use (e.g., "X times higher").
 | ~~GAP-008~~ | ~~Bootstrap CI parameters~~ | — | **CLOSED** → 10,000 iterations (`judge_config.yaml analysis.bootstrap_iterations`); no seed documented in config |
 | ~~GAP-009~~ | ~~RAG index parameters~~ | — | **CLOSED** → FAISS IndexFlatIP cosine, all-MiniLM-L6-v2 (384-dim), top-k=5 (`rag_retriever.py:27`), 311 chunks, 3 source docs (`results/rag_ablation/index/metadata.json`) |
 | GAP-010 | Source document count and page count for pragmatics | Quarry provenance records | Methods section needs this |
-| GAP-011 | Stratum treatment effect (edge vs normal) | CC task `2026-02-21_stratum_analysis.md` | **PENDING** → PEND-001 |
-| GAP-012 | Token overhead per condition | CC task `2026-02-21_overhead_analysis.md` | **PENDING** → PEND-002 |
+| ~~GAP-011~~ | ~~Stratum treatment effect~~ | — | **CLOSED** → Section 3f (SA-001–022). Normal d=2.347 > Edge d=1.135. No overfitting. |
+| ~~GAP-012~~ | ~~Token overhead~~ | — | **CLOSED** → Section 3g (EFF-001–008). Pragmatics +465% tokens, RAG +307%. Old handoff note (120%/36%) superseded. |
 | GAP-013 | Pragmatics development procedure narrative | `docs/design/quarry_extraction_pipeline.md`, ADR-008, ADR-009 | Methods section needs creation story: extract → thread ID → curate → compile → embed in MCP |
 | GAP-014 | API-driven architecture advantage | System design docs | Discussion section: packs are server-side MCP, centrally maintained, no client files, multi-vendor test bench |
 

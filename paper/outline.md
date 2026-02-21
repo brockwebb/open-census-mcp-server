@@ -167,9 +167,9 @@ When sections grow complex, create `paper/sections/NN_section_name.md` with deta
 - Kahneman, Sibony & Sunstein (2021) Noise — expert variance
 
 **Subsections:**
-- 8.1 Why 35 items beat 311 chunks — selectivity principle
+- 8.1 Why 35 items beat 311 chunks — selectivity principle. *Cost data available: pragmatics 2.2× more cost-effective than RAG per CQS point gained (COST-005). Registry: Section 3h.*
 - 8.2 Latitude as calibrated uncertainty over expertise
-- 8.3 Implications for federal statistical agencies — the sidecar pattern
+- 8.3 Implications for federal statistical agencies — the sidecar pattern. *Cost data: $0.09/query marginal cost for expert statistical guidance (Sonnet 4.5, COST-003). Negligible at Opus pricing too ($0.14/query, COST-012).*
 - 8.4 The Jobs Doctrine — obsolescence over compensatory complexity
 
 **Figures/Tables:**
