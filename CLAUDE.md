@@ -10,13 +10,15 @@ WHICH data to use and HOW to interpret it matters more than finding it.
 ## Current State
 **Current Phase:** 4B — Systematic Evaluation (V2 Redo)
 - V1 results archived (confounded tool access — see ADR-011)
-- Stage 1 V2 (response generation): ✅ Complete
-- Stage 2 V2 (judge scoring): ✅ Complete — all 3 pairwise comparisons
-- Aggregate analysis: ⏳ In progress
+- Stage 1 V2 (response generation): ✅ Complete (39 queries × 3 conditions)
+- Stage 2 V2 (judge scoring): ✅ Complete — all 3 pairwise comparisons, 2106 records
+- Aggregate analysis: ✅ Complete — Prag d=1.440 vs Ctrl, d=0.922 vs RAG (certified)
+- Stratum analysis: ✅ Complete — no overfit, d=2.347 normal, d=1.135 edge (SA-001–022)
+- Cost analysis: ✅ Complete — pragmatics 2.2× more cost-effective than RAG (COST-001–013)
 - Stage 3 (fidelity verification): ✅ Complete (Prag 91.2%, Control 78.3%, RAG 74.6%)
 - Stage 4 (expert validation): ⏳ Pending
+- Paper outline: ✅ Up to date — `paper/outline.md`, numbers in `paper/numbers_registry.md`
 - Lab notebook: talks/fcsm_2026/ (dated entries with run details, QC, decisions)
-- Production run details: see handoffs/ and talks/fcsm_2026/
 
 v1/v2 archived to `/Users/brock/Documents/GitHub/archive-opencensusmcp/v2`.
 
@@ -78,69 +80,32 @@ They are structured expert knowledge with latitude (Morris 1938 semiotics).
 MUST conform. Key fields: `context_id`, `domain`, `category`, `latitude`, `context_text`,
 `triggers` (NOT `tags`), `thread_edges`, `provenance` (required: sources list with document/section/page, confidence level, optional synthesis_note and limitations).
 
-**Content principles — MUST follow when authoring or extracting:**
-
-1. **Encode principles, not instances.** Write "independent cities are county-equivalents
-   that break the nesting assumption" — NOT "Virginia has 38 independent cities" or
-   "Baltimore FIPS is 24:510". The LLM knows specific instances from training data.
-   Pragmatics encode the *judgment* the LLM doesn't have.
-
-2. **No lookup tables.** FIPS codes, state lists, city enumerations, variable codes —
-   these belong in the geographic resolver, API layer, or LLM training data. Pragmatics
-   encode *when and why* to use them, not the data itself.
-
-3. **No LLM instructions.** Don't write "Always warn the user..." or "You must check..."
-   Write the factual context: "MOE exceeding the estimate indicates unreliability."
-   The LLM decides what to do with it.
-
-4. **Test: Would a statistician say this to a colleague?** If yes, it's a pragmatic.
-   If it reads like a database record, a prompt instruction, or an encyclopedia entry,
-   it's in the wrong layer.
-
-5. **1-3 sentences per item.** Dense, actionable, factual. No jargon without explanation.
-   No hedging. No "it is important to note that..." filler.
-
-6. **3-6 triggers per item.** Triggers are retrieval hooks, not tags. Over-triggering
-   destroys retrieval specificity.
-
-7. **Latitude must be justified.** `none` = hard constraint ("ACS 1-year requires 65K+ pop").
-   `narrow` = strong guidance with rare exceptions. `wide` = genuinely context-dependent.
-   `full` = background FYI. Most items should be `none` or `narrow`.
-
-8. **Every item needs provenance grounded in documentation, NEVER from LLM training data.**
-   Structured object with `sources` list (each source has document/section/page/extraction_method),
-   `confidence` level (grounded/interpreted/expert_judgment), and optional `synthesis_note` and
-   `limitations`. Unsourced expert opinion is not auditable. LLM training data may contain
-   confabulations — the pragmatics layer exists to provide *auditable* expert judgment with
-   traceable provenance. When authoring: read the source document first, extract the judgment,
-   cite it with page/section. Never reverse-engineer citations onto pre-existing beliefs. If no
-   source document exists for a domain, download it BEFORE authoring content. Source documents
-   live in `docs/references/` and `knowledge-base/source-docs/`.
-
-9. **Thread edges are for retrieval depth, not ontology.** Connect items a user might
-   need together. Don't over-connect — if everything links to everything, traversal
-   is useless.
+**Content principles (summary) — full details in `docs/design/pragmatics_authoring_guide.md`:**
+- **Principles, not instances** — encode the judgment, not the data. The LLM knows FIPS codes; it doesn't know when the nesting assumption breaks.
+- **No lookup tables, no LLM instructions** — factual context only ("MOE exceeding estimate indicates unreliability"), not directives ("always warn the user").
+- **1-3 sentences, 3-6 triggers, latitude justified** — `none`=hard constraint, `narrow`=strong guidance, `wide`=context-dependent, `full`=background FYI.
+- **Provenance from documentation only** — read source first, cite page/section. Never reverse-engineer citations or use LLM training data as source.
+- **Thread edges for retrieval depth** — connect items a user might need together; don't over-connect.
 
 **Staging directory:** `staging/{domain}/{category}.json` — one file per category.
 Manifest in `staging/{domain}/manifest.json`. Compile with `python scripts/compile_all.py`.
 
+## Eval Pipeline Commands
+All scripts runnable as modules from repo root:
+```bash
+python -m src.eval.aggregate_analysis          # Stage 2 CQS aggregate + effect sizes
+python -m src.eval.stratum_analysis            # Normal vs edge stratum breakdown
+python -m src.eval.overhead_analysis           # Token/resource overhead per condition
+python -m src.eval.cost_analysis               # Dollar cost per query per condition
+python -m src.eval.fidelity_aggregate          # Stage 3 fidelity scores
+python -m src.eval.fidelity_qc                 # Stage 3 QC checks (VR-097–100)
+python -m src.eval.verify_registry_counts      # Verify numbers_registry.md claims
+python scripts/compile_all.py                  # Compile staging/ → packs/ SQLite
+```
+
 ## Implementation Schedule
 **See:** `docs/architecture/implementation_schedule.md` for detailed task breakdown.
-
 **Current Phase:** 4B — Systematic Evaluation
-
-**Dependency order:**
-```
-Phase 0A (API Client) ────────────────────┐
-                                           ├──► Phase 3 (MCP) ──► Phase 4 (Eval)
-Phase 0B (Geography) ─────────────────────┤
-                                           │
-Phase 1C (Pack Pipeline) ──► Phase 2 (Pragmatics)┘
-         │
-Phase 1D (Seed Content) ───┘
-```
-
-Track A and B have no internal dependencies — start there.
 
 ## Vocabulary
 All terms defined in `docs/design/pragmatics_vocabulary.md` (normative). Key terms:
@@ -153,7 +118,7 @@ All terms defined in `docs/design/pragmatics_vocabulary.md` (normative). Key ter
 
 ## Neo4j Pragmatics Database (Authoring Environment)
 - **Database name:** `pragmatics` — prefix ALL Cypher queries with `USE pragmatics`
-- **Contains:** Context nodes (25 ACS), Pack nodes (1), thread edges (14 RELATES_TO, 17 BELONGS_TO)
+- **Contains:** Context nodes (36 ACS), Pack nodes (1), thread edges (14 RELATES_TO, 17 BELONGS_TO)
 - **This is the authoring/research environment per ADR-001**
 - **Pipeline:** Neo4j → export script → staging JSON → compile_pack.py → SQLite packs
 - **Arnold/training graph is in the default database — DO NOT mix them**
@@ -210,21 +175,7 @@ All terms defined in `docs/design/pragmatics_vocabulary.md` (normative). Key ter
 - **The MCP is a component** — design tools as composable, stateless units for agentic workflows.
 
 ## Archive Reference
-`/Users/brock/Documents/GitHub/archive-opencensusmcp/v2` — Previous implementation. Useful as archaeology, not as code.
-
-**What's there:**
-- `knowledge-base/2023_ACS_Enriched_Universe.json` — 1GB+ enriched variable metadata for ALL 2023 ACS variables and tables. Dual lookup system with massive metadata per variable.
-- `knowledge-base/concepts/` — Concept templates, ontology attempts
-- `knowledge-base/methodology-db/` — Processed methodology content
-- `knowledge-base/source-docs/` — May overlap with v3 source-docs
-- `knowledge-base/variables-db/`, `variables-faiss/`, `vector-db/` — Multiple generations of embedding indexes
-- `evaluation/` — Previous eval attempts
-- 47+ debug/test/check scripts in root — diagnostic archaeology of what went wrong
-
-**Why it failed (key lesson):**
-RAG over Census variable metadata hits a dimensionality wall. When everything is statistical data about demographic variables, embeddings cluster too tightly — semantic smearing. A 1GB enriched variable file for ONE survey couldn't be effectively searched because the embedding space couldn't differentiate "median household income" from "median family income" from "aggregate income" with enough resolution. The problem isn't retrieval — it's that the domain is too semantically homogeneous for general-purpose embeddings to navigate.
-
-This is WHY we moved to pragmatics (structured expert context with latitude) instead of RAG over metadata.
+`/Users/brock/Documents/GitHub/archive-opencensusmcp/v2` — Previous implementation (v1/v2). Contains embedding indexes, 1GB+ enriched variable metadata, ontology attempts, and 47+ diagnostic scripts. Useful as archaeology, not as code. Key lesson: RAG over semantically homogeneous Census metadata causes semantic smearing — this is why we moved to pragmatics.
 
 ## What NOT to Do
 - Don't add R, tidycensus, or Docker infrastructure (that's v1/v2)
