@@ -578,12 +578,16 @@ Before sending tool call data to the fidelity verification model (Haiku 4.5), th
 | VR-057 | Tool result sanitization SHALL strip all fields except `arguments` and `result.data` from tool calls before constructing the verification prompt. Specifically, the `pragmatics`, `source`, `related`, and `provenance` fields SHALL be removed. The full unsanitized tool results SHALL remain in the Stage 1 ResponseRecords for archival purposes | Must |
 | VR-058 | Only `get_census_data` and `get_acs_data` tool calls SHALL be included in verification evidence. Tool calls to `get_methodology_guidance`, `explore_variables`, and other non-data-retrieval tools SHALL be excluded from the fidelity evidence set | Must |
 | VR-059 | Fidelity verification SHALL use a cost-efficient model (currently Haiku 4.5) configured in `judge_config.yaml` `fidelity:` section. The verification model SHALL NOT be the same model used for Stage 1 response generation to avoid self-verification bias | Must |
-| VR-070 | Stage 3 aggregate analysis SHALL compute per-condition fidelity scores using the formula: (matched + calculation_correct) / total_claims × 100 (VR-055). SHALL also compute substantive_fidelity excluding no_source from denominator, reported separately | Must |
-| VR-071 | Stage 3 aggregate analysis SHALL compute per-condition auditability rates with denominators excluding non_claims items (VR-054). Rates for auditable, partially_auditable, and unauditable SHALL each be reported as percentage of substantive claims | Must |
-| VR-072 | Stage 3 aggregate analysis SHALL compute per-condition error rates: (mismatched + calculation_incorrect) / total_claims × 100 | Must |
-| VR-073 | Stage 3 aggregate analysis SHALL output formatted markdown to results/{run}/stage3/analysis/fidelity_summary.md and structured JSON to fidelity_summary.json. Both files SHALL include the input file path, record count, and generation timestamp | Must |
-| VR-074 | Stage 3 aggregate analysis SHALL break down fidelity and auditability by query category (from battery metadata) in addition to overall totals | Must |
-| VR-075 | Stage 3 aggregate analysis SHALL be implemented in src/eval/fidelity_aggregate.py and configured via judge_config.yaml fidelity: section | Must |
+| VR-091 | Stage 3 aggregate analysis SHALL compute per-condition fidelity scores using the formula: (matched + calculation_correct) / total_claims × 100 (VR-055). SHALL also compute substantive_fidelity excluding no_source from denominator, reported separately | Must |
+| VR-092 | Stage 3 aggregate analysis SHALL compute per-condition auditability rates with denominators excluding non_claims items (VR-054). Rates for auditable, partially_auditable, and unauditable SHALL each be reported as percentage of substantive claims | Must |
+| VR-093 | Stage 3 aggregate analysis SHALL compute per-condition error rates: (mismatched + calculation_incorrect) / total_claims × 100 | Must |
+| VR-094 | Stage 3 aggregate analysis SHALL output formatted markdown to results/{run}/stage3/analysis/fidelity_summary.md and structured JSON to fidelity_summary.json. Both files SHALL include the input file path, record count, and generation timestamp | Must |
+| VR-095 | Stage 3 aggregate analysis SHALL break down fidelity and auditability by query category (from battery metadata) in addition to overall totals | Must |
+| VR-096 | Stage 3 aggregate analysis SHALL be implemented in src/eval/fidelity_aggregate.py and configured via judge_config.yaml fidelity: section | Must |
+| VR-097 | Stage 3 QC script SHALL independently recompute all aggregate fidelity and auditability metrics from raw JSONL, compare against fidelity_summary.json, and fail with exit code 1 if any value diverges by more than 0.05% | Must |
+| VR-098 | Stage 3 QC script SHALL validate record completeness: all 39 query_ids present, all 3 conditions present per record, no null summaries | Must |
+| VR-099 | Stage 3 QC script SHALL verify formula correctness by recomputing from raw claim counts and comparing against stored percentages | Must |
+| VR-100 | Stage 3 QC script SHALL produce a trace report mapping each aggregate number to its computation: numerator sum, denominator sum, formula, SRS requirement ID | Must |
 
 **Rationale:** VR-057 and VR-058 encode the "skinny packet" design: sending full tool results (100K+ chars including pragmatics guidance) to the verification model produced empty or truncated responses, while sending slim data (~1.5K per tool call) produced reliable claim-level verification. This is not an optimization — it is a correctness requirement. The pragmatics guidance is not Census API ground truth and must not be presented as verification evidence.
 
@@ -647,6 +651,21 @@ control_vs_pragmatics_20260218_065924  (699/702, 3 Google failures — pending b
 **Rationale:** The RAG condition addresses the anticipated critique that simple document retrieval could match curated expert judgment. This is a knowledge representation study comparing three forms: no methodology support (control), methodology via retrieved document chunks (RAG), and methodology via curated expert judgment delivered through a structured MCP tool (pragmatics). The "no optimization" requirement (VR-080) ensures a fair comparison — the RAG condition uses standard defaults (section-level chunking, top-5 retrieval, all-MiniLM-L6-v2 embeddings) rather than being tuned to compete with the pragmatics system. VR-081 was added after a provenance audit revealed that 3 of 6 documents in the initial RAG index were never cited by any pragmatic. VR-082 was added after discovering the initial RAG build used pypdf extraction while pragmatics used Docling, introducing an uncontrolled extraction quality variable.
 
 **Location:** `scripts/build_rag_index.py`, `src/eval/rag_retriever.py`, index in `results/rag_ablation/index/`.
+
+### 8.9 Verification & Validation Registry
+
+Every number cited in publication materials MUST trace to a certified output table. A table is certified when a V&V script independently recomputes its contents from raw data and confirms agreement within tolerance.
+
+| V&V Script | What It Validates | Output Tables Certified | SRS Requirements Traced | Exit Behavior |
+|------------|-------------------|------------------------|------------------------|---------------|
+| `src/eval/fidelity_qc.py` | Stage 3 fidelity aggregation correctness, formula compliance, structural integrity, claim count sanity | `fidelity_summary.md` Table 1 (Overall Fidelity), Table 2 (Overall Auditability), per-category breakdowns | VR-054, VR-055, VR-091–096 | Exit 0 = all checks PASS; Exit 1 = any check FAIL |
+| `src/eval/aggregate_analysis.py` | Stage 2 judge score statistical analysis | `aggregate_statistics.md` Omnibus table, Pairwise Comparisons table, Per-Dimension tables | VR-048, VR-060–075 | Outputs to stdout + files |
+
+**Registry rules:**
+- This table grows as V&V scripts are added
+- Every publication number in a numbers registry MUST reference a certified table from this registry
+- A table is NOT certified until its V&V script exits 0 against current data
+- V&V scripts MUST NOT import from the scripts they verify (independence requirement, VR-097)
 
 ---
 

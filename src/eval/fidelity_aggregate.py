@@ -9,7 +9,7 @@ Outputs:
   results/{run}/stage3/analysis/fidelity_summary.md
   results/{run}/stage3/analysis/fidelity_summary.json
 
-SRS: VR-070 through VR-075
+SRS: VR-091 through VR-096
 Config: judge_config.yaml fidelity.aggregate section
 """
 
@@ -26,7 +26,7 @@ import yaml
 CONFIG_PATH = Path("src/eval/judge_config.yaml")
 CONDITIONS = ["control", "rag", "pragmatics"]
 SCRIPT_NAME = "src/eval/fidelity_aggregate.py"
-SRS_REFS = "VR-070 through VR-075"
+SRS_REFS = "VR-091 through VR-096"
 
 
 # ── Config ─────────────────────────────────────────────────────────────────────
