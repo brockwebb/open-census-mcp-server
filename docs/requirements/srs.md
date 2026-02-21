@@ -660,6 +660,7 @@ Every number cited in publication materials MUST trace to a certified output tab
 |------------|-------------------|------------------------|------------------------|---------------|
 | `src/eval/fidelity_qc.py` | Stage 3 fidelity aggregation correctness, formula compliance, structural integrity, claim count sanity | `fidelity_summary.md` Table 1 (Overall Fidelity), Table 2 (Overall Auditability), per-category breakdowns | VR-054, VR-055, VR-091–096 | Exit 0 = all checks PASS; Exit 1 = any check FAIL |
 | `src/eval/aggregate_analysis.py` | Stage 2 judge score statistical analysis | `aggregate_statistics.md` Omnibus table, Pairwise Comparisons table, Per-Dimension tables | VR-048, VR-060–075 | Outputs to stdout + files |
+| `src/eval/verify_registry_counts.py` | Numbers registry countable/pending items: query count, Stage 2 record counts, staged pragmatic items, grounding gate compliance per condition, RAG index parameters, bootstrap config | `paper/registry_verification_report.md` | SD-001, SD-006–009, PL-001–004 | Outputs report (no pass/fail exit code — reports discrepancies for human review) |
 
 **Registry rules:**
 - This table grows as V&V scripts are added
