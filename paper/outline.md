@@ -126,14 +126,24 @@ When sections grow complex, create `paper/sections/NN_section_name.md` with deta
 
 ## 7. Results {paper} {slides:main}
 
-**Thesis:** [PENDING V2 RESULTS]
+**Thesis:** Pragmatics achieves very large effect sizes (d=1.440 vs control, d=0.922 vs RAG) across all query types. Benefits are not limited to edge cases — effect is larger on normal queries (d=2.347) than edge cases (d=1.135), ruling out overfit. Fidelity gap: pragmatics 91.2% vs RAG 74.6% vs control 78.3%.
 
 **Evidence:**
-- `results/v2_redo/stage1/` — 117 responses
-- `results/v2_redo/stage2/` — [PENDING] judge records
-- `results/v2_redo/stage3/` — [PENDING] fidelity
-- `results/v2_redo/analysis/` — [PENDING] statistics
-- V1 preliminary (invalidated): `talks/fcsm_2026/rag_ablation_findings.md`
+- `results/v2_redo/stage1/` — 117 responses (39 queries × 3 conditions)
+- `results/v2_redo/stage2/analysis/aggregate_statistics.md` — CQS scores (CERTIFIED)
+- `results/v2_redo/stage2/analysis/stratum_analysis.md` — normal vs edge breakdown (COMPUTED)
+- `results/v2_redo/stage3/analysis/fidelity_summary.md` — fidelity/auditability (CERTIFIED)
+- Numbers: `paper/numbers_registry.md` Sections 3, 3f, 4
+
+**Key results available:**
+- Omnibus Friedman χ²(2, N=39) = 42.01, p < 0.001 (registry: S2-001)
+- Pragmatics vs Control: Δ=+0.539, d=1.440 (very large), p < 0.001 (registry: S2-010)
+- Pragmatics vs RAG: Δ=+0.385, d=0.922 (large), p < 0.001 (registry: S2-011)
+- RAG vs Control: Δ=+0.154, d=0.546 (medium), p=0.0017 (registry: S2-012)
+- D3 (Uncertainty Calibration) largest effect: d=1.353 Prag vs Ctrl (registry: S2-032)
+- Normal queries: d=2.347 Prag vs Ctrl — no overfit (registry: SA-001)
+- Edge queries: d=1.135 Prag vs Ctrl (registry: SA-010)
+- Pragmatics fidelity 91.2% vs RAG 74.6% vs Control 78.3% (registry: S3-001–003)
 
 **Figures/Tables:**
 - Figure 10: Cohen's d effect sizes by dimension per comparison (forest plot). {slides:main}
@@ -141,7 +151,7 @@ When sections grow complex, create `paper/sections/NN_section_name.md` with deta
 - Table 7: CQS composite scores by condition with bootstrap CIs. {slides:main}
 - Table 8: Friedman + Wilcoxon post-hoc. {paper}
 - Table 9: Bias check results (position, self-enhancement, verbosity). {paper}
-- Table 10: Per-dimension scores stratified by query category. {slides:backup}
+- Table 10: Per-stratum effect sizes (normal vs edge, d values). {slides:backup} — `stratum_analysis.md`
 - Table 11: Judge agreement (Krippendorff's alpha). {paper}
 
 ---
