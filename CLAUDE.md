@@ -13,7 +13,7 @@ WHICH data to use and HOW to interpret it matters more than finding it.
 - Stage 1 V2 (response generation): ✅ Complete
 - Stage 2 V2 (judge scoring): ✅ Complete — all 3 pairwise comparisons
 - Aggregate analysis: ⏳ In progress
-- Stage 3 (fidelity verification): ⏳ SRS updated, implementation pending
+- Stage 3 (fidelity verification): ✅ Complete (Prag 91.2%, Control 78.3%, RAG 74.6%)
 - Stage 4 (expert validation): ⏳ Pending
 - Lab notebook: talks/fcsm_2026/ (dated entries with run details, QC, decisions)
 - Production run details: see handoffs/ and talks/fcsm_2026/
@@ -22,6 +22,15 @@ v1/v2 archived to `/Users/brock/Documents/GitHub/archive-opencensusmcp/v2`.
 
 ## FCSM Talk Lab Notebook
 `talks/fcsm_2026/notes.md` is a **chronological lab notebook**. Add dated entries with lessons learned, insights, and observations. Never edit old entries — append corrections as new entries. Reference files in the same directory store polished context (e.g., `reference_*.md`).
+
+## FCSM 2026 Deliverables
+**Master checklist:** `talks/fcsm_2026/fcsm_master_checklist.md`
+**Talk script:** `talks/fcsm_2026/pragmatics_talking_script_v3.md`
+**TEVV crosswalk (canonical, publication-ready):** `/Users/brock/Documents/GitHub/central_library/crosswalks/fcsm_nist/FCSM_NIST_Crosswalk_Article.md`
+**TEVV crosswalk (earlier drafts, superseded):** `reports/tevv/pure_crosswalk_part1.md` + `part2.md`
+**TEVV methodology:** `reports/tevv/TEVV_methodology_document.md`
+**CQS rubric:** `docs/verification/cqs_rubric_specification.md`
+**Deadline:** ~March 5, 2026 (slide deck). See checklist for daily targets.
 
 ## Repo Structure
 Canonical structure is defined in `docs/requirements/srs.md` section 2 (that is law).
