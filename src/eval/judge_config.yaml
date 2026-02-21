@@ -88,6 +88,10 @@ fidelity:
   max_tokens: 4096
   max_retries: 3
   rate_limit_delay: 0.5
+  aggregate:
+    input_file: 'results/v2_redo/stage3/fidelity_20260219_214225.jsonl'
+    output_dir: 'results/v2_redo/stage3/analysis'
+    battery_path: 'src/eval/battery/queries.yaml'
 
 analysis:
   alpha: 0.05

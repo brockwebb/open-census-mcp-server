@@ -30,7 +30,7 @@ Neither framework alone covers AI-mediated statistical consultation. FCSM assume
 | **D5: Reproducibility & Traceability** | Accessibility; Scientific Integrity; Credibility | Accountable & Transparent | Integrity |
 | **D6: Groundedness & Faithfulness** | N/A — FCSM not designed for AI-mediated use | Valid & Reliable; Fair (epistemic bias) | *(CQS extension)* |
 
-**Note on D6:** Empirically found to reward vagueness and penalize specificity in V2 production evaluation (see ADR-011, DEC-4B-023, and Stage 2 lab notes). D6 is retained in the scoring instrument for data collection but **excluded from CQS composite score** — CQS uses D1-D5 only. Stage 3 fidelity verification provides automated groundedness measurement.
+**Note on D6:** D6 is a binary grounding gate — treatment conditions (RAG, pragmatics) ground in authoritative sources by design; control does not. D6 is **excluded from the CQS composite score** — CQS uses D1-D5 only. Stage 3 fidelity verification provides automated claim-level grounding measurement.
 
 ### 2.2 Key Framework Notes
 

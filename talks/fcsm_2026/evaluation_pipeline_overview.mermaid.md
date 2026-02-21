@@ -125,7 +125,7 @@ flowchart LR
     CALC --> SCORE
 ```
 
-**Speaker notes:** Stage 3 replaces the original D6 groundedness dimension from the judge rubric. We found that human-style judges reward vagueness — hedged claims score higher because they're harder to falsify, while precise tool-grounded claims get penalized for any minor deviation. Automated fidelity measures what D6 was supposed to measure: did the system faithfully report what its tools returned? Every quantitative claim in the response is extracted and compared against the actual tool call data. In V2, all three conditions make tool calls, so all three get fidelity verification. RAG responses are additionally verified against retrieved chunks.
+**Speaker notes:** Stage 3 is the trustworthiness verification stage. D6 (Grounding) is a binary gate — treatment conditions ground in authoritative sources by design; control does not. Automated fidelity provides claim-level verification: every quantitative claim in the response is extracted and compared against the actual tool call data. In V2, all three conditions make tool calls, so all three get fidelity verification. RAG responses are additionally verified against retrieved chunks.
 
 ---
 

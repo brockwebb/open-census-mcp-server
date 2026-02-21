@@ -447,7 +447,7 @@ Test dimensions:
 | VR-034 | Judge prompt SHALL present responses as anonymized "Response A" and "Response B" with no condition labels visible to the judge | Must |
 | VR-035 | Judge prompt SHALL NOT contain temporal anchors (dates, "current year" references) that could bias scoring based on judge training cutoff. See DEC-4B-015 | Must |
 | VR-036 | Judge scoring SHALL use the CQS rubric with dimensions D1 (Source Selection), D2 (Methodology), D3 (Uncertainty Communication), D4 (Definitions), D5 (Reproducibility). Each dimension scored 0-2 with confidence 1-5 and free-text reasoning | Must |
-| VR-037 | D6 (Groundedness) SHALL be excluded from the CQS composite score and reported separately as a methodological note. Groundedness is measured by Stage 3 automated fidelity instead. See DEC-4B-023 | Must |
+| VR-037 | D6 (Grounding) SHALL be excluded from the CQS composite score. D6 is a binary gate — treatment conditions ground in authoritative sources by design; control does not. Grounding is verified by Stage 3 automated fidelity. | Must |
 | VR-038 | Judge scoring SHALL record complete JudgeRecord metadata: run_id, pass_number, presentation_order, response label mapping, raw response text, parse_success flag, and token counts | Must |
 | VR-039 | Judge scoring SHALL use checkpoint-based deduplication with full tuple matching (query_id, judge_key, ordering, pass_number) to enable safe pipeline restarts without re-scoring completed tasks | Must |
 | VR-040 | Judge scoring pipeline SHALL filter to configured valid run IDs (`stage2_valid_run_ids` in config) to prevent contamination from prior pipeline versions. All run parameters SHALL be read from `judge_config.yaml` per C-006 | Must |
@@ -466,7 +466,7 @@ Test dimensions:
 
 ### 8.5 Stage 3: Pipeline Fidelity Verification
 
-Stage 3 replaces the flawed D6 rubric dimension (DEC-4B-023) with automated claim-level verification. D6 rewarded vagueness and penalized specificity — judges scored unverifiable hedged claims higher than precise tool-grounded claims because vague claims are harder to falsify. Stage 3 directly measures whether each condition faithfully reports what its evidence sources contain.
+Stage 3 is the trustworthiness verification stage. D6 (Grounding) is a binary gate — treatment conditions ground in authoritative sources by design; control does not. Stage 3 provides automated claim-level verification that each condition faithfully reports what its evidence sources contain.
 
 #### 8.5.1 Inputs
 
@@ -578,8 +578,14 @@ Before sending tool call data to the fidelity verification model (Haiku 4.5), th
 | VR-057 | Tool result sanitization SHALL strip all fields except `arguments` and `result.data` from tool calls before constructing the verification prompt. Specifically, the `pragmatics`, `source`, `related`, and `provenance` fields SHALL be removed. The full unsanitized tool results SHALL remain in the Stage 1 ResponseRecords for archival purposes | Must |
 | VR-058 | Only `get_census_data` and `get_acs_data` tool calls SHALL be included in verification evidence. Tool calls to `get_methodology_guidance`, `explore_variables`, and other non-data-retrieval tools SHALL be excluded from the fidelity evidence set | Must |
 | VR-059 | Fidelity verification SHALL use a cost-efficient model (currently Haiku 4.5) configured in `judge_config.yaml` `fidelity:` section. The verification model SHALL NOT be the same model used for Stage 1 response generation to avoid self-verification bias | Must |
+| VR-070 | Stage 3 aggregate analysis SHALL compute per-condition fidelity scores using the formula: (matched + calculation_correct) / total_claims × 100 (VR-055). SHALL also compute substantive_fidelity excluding no_source from denominator, reported separately | Must |
+| VR-071 | Stage 3 aggregate analysis SHALL compute per-condition auditability rates with denominators excluding non_claims items (VR-054). Rates for auditable, partially_auditable, and unauditable SHALL each be reported as percentage of substantive claims | Must |
+| VR-072 | Stage 3 aggregate analysis SHALL compute per-condition error rates: (mismatched + calculation_incorrect) / total_claims × 100 | Must |
+| VR-073 | Stage 3 aggregate analysis SHALL output formatted markdown to results/{run}/stage3/analysis/fidelity_summary.md and structured JSON to fidelity_summary.json. Both files SHALL include the input file path, record count, and generation timestamp | Must |
+| VR-074 | Stage 3 aggregate analysis SHALL break down fidelity and auditability by query category (from battery metadata) in addition to overall totals | Must |
+| VR-075 | Stage 3 aggregate analysis SHALL be implemented in src/eval/fidelity_aggregate.py and configured via judge_config.yaml fidelity: section | Must |
 
-**Rationale:** Stage 3 replaces the flawed D6 rubric dimension (DEC-4B-023) with automated verification. VR-057 and VR-058 encode the "skinny packet" design discovered empirically: sending full tool results (100K+ chars including pragmatics guidance) to the verification model produced empty or truncated responses, while sending slim data (~1.5K per tool call) produced reliable claim-level verification. This is not an optimization — it is a correctness requirement. The pragmatics guidance is not Census API ground truth and must not be presented as verification evidence.
+**Rationale:** VR-057 and VR-058 encode the "skinny packet" design: sending full tool results (100K+ chars including pragmatics guidance) to the verification model produced empty or truncated responses, while sending slim data (~1.5K per tool call) produced reliable claim-level verification. This is not an optimization — it is a correctness requirement. The pragmatics guidance is not Census API ground truth and must not be presented as verification evidence.
 
 **Location:** `src/eval/fidelity_check.py`, `src/eval/fidelity_prompts.py`, config in `src/eval/judge_config.yaml` `fidelity:` section, output in `results/v2_redo/stage3/`.
 
