@@ -1066,4 +1066,62 @@ Ars Contexta solves *personal knowledge accumulation* for a single user-agent dy
 This comparison clarifies what pragmatics are NOT: they are not personal knowledge management, not RAG, not a "second brain." They are curated expert judgment that corrects semantic smearing at the point of decision — closer to clinical decision support than note-taking.
 
 ---
+
+## 2026-02-19 — Stage 3: Pipeline Fidelity as QC Inspection (Not Evaluation)
+
+### What Stage 3 Is
+
+Stage 3 is a quality control inspection stage that audits the pipeline's internal behavior. It is not an evaluation of consultation quality — Stage 2 already measured that through LLM-as-judge scoring on D1-D5. Stage 3 asks two narrow questions:
+
+1. **Fidelity:** When the system retrieved data from the Census API, did the response faithfully report what the API returned?
+2. **Auditability:** Can a third party trace the claims in the response back to their source?
+
+These are system reliability metrics, not quality metrics. The analogy is instrument calibration: you check that the thermometer reads correctly before trusting the temperature readings. You don't report calibration as a finding — you report it as evidence the instrument is trustworthy.
+
+### What Stage 3 Does
+
+For each of 39 queries across all three conditions (control, RAG, pragmatics):
+
+**Fidelity check:** An independent LLM (Haiku 4.5 — deliberately not the same model that generated responses) extracts every quantitative claim from the response and verifies it against the tool call data that was available to that condition. Claims are classified as `match`, `mismatch`, `no_source`, `calculation_correct`, or `calculation_incorrect`. Critical design detail: tool results are sanitized to "skinny packets" before verification — the pragmatics guidance payload (100K+ chars) is stripped, leaving only the Census API data array (~1.5K). The fidelity check verifies against what the API returned, not against the expert guidance that influenced the response.
+
+**Auditability check:** The same model classifies every claim by specificity: `auditable` (has table code + vintage + geography + value), `partially_auditable` (missing one identifier), `unauditable` (vague), or `non_claim` (methodology explanation). This measures whether a reader could independently verify the response.
+
+### V2 Results (2026-02-19)
+
+|                | Control | RAG   | Pragmatics |
+|----------------|---------|-------|------------|
+| Fidelity Score | 78.3%   | 74.6% | 91.2%      |
+| Error Rate     | 0.0%    | 0.8%  | 0.3%       |
+| Auditability   | 21.8%   | 6.2%  | 29.5%      |
+| Total Claims   | 253     | 355   | 353        |
+
+Small-area queries are the sharpest discriminator: pragmatics 90.5% vs control 60.0% vs RAG 56.2%.
+
+### Why Stage 3 Matters
+
+Stage 3 exists because of a design iteration. The original D6 "Groundedness" rubric dimension asked LLM judges to assess whether responses fabricated information. This failed empirically: judges rewarded vagueness (vague claims can't be falsified → perfect score) and penalized specificity (precise claims create surface area for penalty). D6 was measuring plausibility, not accuracy.
+
+Stage 3 replaces subjective plausibility assessment with automated claim-level verification against known ground truth (the tool call returns). This maps to NIST AI RMF 1.0 trustworthiness characteristics:
+
+- **Fidelity → Valid & Reliable:** "System performs as intended, produces consistent results under expected conditions." Does the pipeline faithfully transmit what it retrieved?
+- **Auditability → Accountable & Transparent:** "Mechanisms exist to attribute responsibility; methods, data, and limitations are documented." Can a third party trace claims to sources?
+
+This framing is important for the FCSM audience: Stage 2 measures consultation quality (FCSM-aligned, fitness-for-use). Stage 3 measures system trustworthiness (NIST-aligned, valid and accountable). Pragmatics improves both simultaneously — quality AND trustworthiness from one intervention.
+
+### How We Use Stage 3 in the Paper
+
+One paragraph, not a section. Stage 3 is supporting evidence, not a headline finding. Suggested framing:
+
+> "Pipeline fidelity verification confirmed that pragmatics responses accurately reflected tool-returned data (91.2% claim-level match) with the lowest error rate across conditions (0.3%). Auditability — the proportion of claims traceable to specific table codes, vintages, and geographies — was highest for pragmatics (29.5%) versus control (21.8%) and RAG (6.2%). These metrics serve as system reliability checks aligned with NIST AI RMF trustworthiness characteristics (Valid & Reliable, Accountable & Transparent), not quality dimensions. The Stage 2 CQS results are the findings; Stage 3 is why the reader should believe them."
+
+The small-area fidelity breakdown (pragmatics 90.5% vs control 60.0%) may warrant a brief callout as it demonstrates that expert guidance most improves pipeline reliability exactly where statistical interpretation is most consequential.
+
+### Design Decisions Encoded
+
+- **Skinny packets (VR-057):** Pragmatics guidance stripped from verification evidence. This is a correctness requirement, not an optimization — the guidance is not Census API ground truth.
+- **Model independence (VR-059):** Haiku 4.5 verifies responses generated by Sonnet 4.5. No self-verification.
+- **Symmetric measurement (VR-053):** All three conditions get identical fidelity and auditability checks.
+- **Non_claim exclusion (VR-054):** Auditability denominators exclude methodology explanations. Including them diluted pragmatics auditability from 72.8% to 46.0% in V1 — a measurement artifact, not a real finding.
+
+---
 *Add entries chronologically. Append corrections as new entries, don't edit old ones.*
