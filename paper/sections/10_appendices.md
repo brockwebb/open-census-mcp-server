@@ -10,7 +10,7 @@ The full 39-query test battery with category labels and edge case classification
 
 ## Appendix B: Consultation Quality Score (CQS) Rubric
 
-The CQS rubric specifies five scored dimensions (D1–D5) and one binary grounding gate (D6). Full specification is available at `docs/verification/cqs_rubric_specification.md`.
+The CQS rubric specifies five quality dimensions (D1–D5), each scored 0–2. Full specification is available at `docs/verification/cqs_rubric_specification.md`. Grounding compliance is reported as a Stage 3 pipeline verification metric alongside fidelity and auditability.
 
 | Dimension | Name | Scoring |
 |-----------|------|---------|
@@ -19,7 +19,11 @@ The CQS rubric specifies five scored dimensions (D1–D5) and one binary groundi
 | D3 | Appropriate Uncertainty Communication | 0 / 1 / 2 |
 | D4 | Clarity of Explanation | 0 / 1 / 2 |
 | D5 | Avoidance of Harmful Misinterpretation | 0 / 1 / 2 |
-| D6 | Grounding Gate (binary) | pass / fail |
+
+**Stage 3 verification metrics (pipeline behavior, not CQS dimensions):**
+- Fidelity: 91.2% (pragmatics), 74.6% (RAG), 78.3% (control)
+- Auditability: 72.8% (pragmatics), 8.1% (control)
+- Grounding compliance: 100% — all 39 pragmatics queries consulted methodology guidance before data interpretation
 
 [TODO: Include full rubric text or reference]
 

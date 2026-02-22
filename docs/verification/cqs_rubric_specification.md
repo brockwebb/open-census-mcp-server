@@ -104,13 +104,13 @@ Counterbalancing mitigates position bias (judges preferring the first or second 
 - Output: `control_responses.jsonl`, `rag_responses.jsonl`, `pragmatics_responses.jsonl`
 
 **Stage 2: LLM-as-Judge Scoring**
-- Pairwise judge scoring on D1-D6 rubric with counterbalanced presentation
+- Pairwise judge scoring on D1-D5 rubric with counterbalanced presentation
 - Output: `rag_vs_pragmatics.jsonl`, `control_vs_rag.jsonl`, `control_vs_pragmatics.jsonl`
 - Specification: VR-031 through VR-046 (SRS Section 8.4)
 
 **Stage 3: Fidelity Verification**
 - Automated verification of quantitative claims against tool call returns and retrieved chunks
-- Replaces flawed D6 rubric dimension with objective groundedness measurement
+- Provides automated claim-level grounding measurement (D6 excluded from CQS composite — see Note on D6 above)
 - Specification: VR-050 through VR-056 (SRS Section 8.5)
 
 **Stage 4: Expert Validation**
@@ -134,11 +134,11 @@ The CQS development pattern is reusable across domains requiring AI-mediated exp
 1. Identify domain quality framework (FCSM 20-04 for federal statistics)
 2. Cross-reference with NIST AI RMF trustworthiness characteristics
 3. Identify N/A cells where domain framework doesn't cover AI-specific risks
-4. Operationalize novel dimensions for those gaps (D6: Groundedness)
+4. Design stage-based verification for AI-specific concerns (e.g., Stage 3 automated pipeline fidelity for grounding)
 5. Validate via pairwise LLM judges + expert calibration
 
 **Domain-specific vs generalizable:**
-- The six CQS dimensions (D1-D6) are specific to Census data consultation
+- The five CQS dimensions (D1-D5) are specific to Census data consultation
 - The crosswalk methodology and evaluation pipeline are domain-agnostic
 - Other domains (clinical guidelines, legal research, engineering standards) can apply the same pattern with domain-appropriate quality frameworks
 

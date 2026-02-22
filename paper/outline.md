@@ -1,256 +1,86 @@
-# Paper Outline — Knowledge Representation Study
+# Paper Outline — UPDATED to match draft sections
 ## Pragmatics as Point-of-Decision Expert Judgment for Federal Statistical Data
 
 **Target:** arxiv preprint (cs.AI or cs.IR) → FCSM 2026 presentation
-**Status:** Outline v1 — 2026-02-16
+**Status:** Draft v1 complete — 2026-02-21
+**Sections:** 8 + appendices (~7,700 words body)
 
 ---
 
-## How to Use This File
+## Section → File Map
 
-This is the single source of truth for paper structure. Each section has:
-- **Thesis:** What this section argues (1-2 sentences)
-- **Evidence:** File paths (relative to project root) to supporting artifacts
-- **Figures/Tables:** What visual or quantitative output is needed
-- **Tags:** `{paper}` `{slides:main}` `{slides:backup}` `{slides:appendix}`
-
-When sections grow complex, create `paper/sections/NN_section_name.md` with detailed content. This file remains the TOC and index.
-
----
-
-## 1. Introduction {paper} {slides:main}
-
-**Thesis:** Federal statistical agencies have invested heavily in making data AI-ready (syntax, semantics) but implementation reveals a missing third layer — pragmatics — the expert judgment about fitness-for-use that LLMs cannot learn from training data alone.
-
-**Evidence:**
-- `talks/fcsm_2026/reference_fcsm_ai_ready_data_landscape.md`
-- `talks/fcsm_2026/reference_core_thesis.md` § "The Problem We're NOT Solving"
-- `docs/research/rag_fallacy_thinking.md`
-
-**Figures/Tables:**
-- Figure 1: Semiotic framework diagram (syntax → semantics → pragmatics) with Census examples at each layer. {slides:main}
-- Table 1: AI-ready data landscape — what agencies provide vs what practitioners need. {slides:backup}
+| # | Section | File | ~Words |
+|---|---------|------|--------|
+| 0 | Abstract | `00_abstract.md` | TODO |
+| 1 | Introduction | `01_introduction.md` | 900 |
+| 2 | The Semantic Smearing Problem | `02_semantic_smearing.md` | 1,000 |
+| 3 | Pragmatics — Structured Expert Judgment | `03_pragmatics.md` | 1,200 |
+| 4 | Method | `04_method.md` | 1,100 |
+| 5 | Results | `05_results.md` | 1,100 |
+| 6 | Discussion | `06_discussion.md` | 1,300 |
+| 7 | Limitations and Future Work | `07_limitations_future.md` | 800 |
+| 8 | Conclusion | `08_conclusion.md` | 300 |
+| R | References | `09_references.md` | — |
+| A | Appendices | `10_appendices.md` | — |
 
 ---
 
-## 2. The Semantic Smearing Problem {paper} {slides:main}
+## Figures and Tables Plan
 
-**Thesis:** LLMs exhibit semantic smearing in statistical domains — they conflate information that should remain distinct across survey years, estimate types, geographic levels, and methodological contexts. The model doesn't lack knowledge; it lacks precision.
+### Figures
+| ID | Description | Section | Source |
+|----|-------------|---------|--------|
+| F1 | Semiotic framework (syntax→semantics→pragmatics) with Census examples | §1 | Create |
+| F2 | Semantic smearing: enrichment experiment results (MiniLM + RoBERTa) | §2 | `talks/fcsm_2026/analysis/` |
+| F3 | Anatomy of a pragmatic context item (5 components) | §3 | Create |
+| F4 | Latitude model — none/narrow/wide/full with examples | §3 | Create |
+| F5 | Three-condition experimental design diagram | §4 | Create |
+| F6 | Evaluation pipeline (3 stages) | §4 | `talks/fcsm_2026/evaluation_pipeline_overview.mermaid.md` |
+| F7 | Cohen's d effect sizes forest plot (all comparisons × dimensions) | §5 | `results/v2_redo/stage2/analysis/` |
+| F8 | Fidelity scores by condition (bar chart) | §5 | `results/v2_redo/stage3/analysis/` |
+| F9 | Cost-effectiveness: CQS per marginal dollar | §6 | Numbers registry COST section |
 
-**Evidence:**
-- `talks/fcsm_2026/reference_core_thesis.md` § "The Actual Problem," § "What the Model Already Knows"
-- `results/v2_redo/stage1/control_responses_*.jsonl` — concrete examples of smearing
-
-**Figures/Tables:**
-- Figure 2: Example query showing control vs pragmatics response side-by-side. {slides:main}
-- Table 2: Taxonomy of smearing types observed (temporal, geographic, product, threshold). {paper}
-
----
-
-## 3. Pragmatics: Structured Expert Judgment {paper} {slides:main}
-
-**Thesis:** Pragmatic context items are structured expert judgment with calibrated uncertainty (latitude), provenance, and defined retrieval triggers. They deliver clinical judgment at the point of decision — not comprehensive retrieval, but the precise guidance a senior statistician would provide.
-
-**Evidence:**
-- `talks/fcsm_2026/reference_core_thesis.md` § "What Pragmatics Actually Do," § "Three Layers of Noise"
-- `docs/design/pragmatics_vocabulary.md`
-- `docs/decisions/ADR-002-grounding-not-rag.md`
-- `docs/decisions/ADR-003-reasoning-model-requirement.md`
-- `docs/decisions/ADR-004-agent-reasoning-loop.md`
-- `staging/acs/` — 36 pragmatic items (registry: PL-001)
-- `talks/fcsm_2026/notes.md` § "V-Information as Formal Basis"
-
-**Figures/Tables:**
-- Figure 3: Anatomy of a pragmatic context item (context_id, text, latitude, provenance, triggers). {slides:main}
-- Figure 4: Latitude model — none/narrow/wide/full with Census examples. {slides:main}
-- Table 3: The 36 pragmatic items by category and latitude level. {slides:backup}
+### Tables
+| ID | Description | Section | Source |
+|----|-------------|---------|--------|
+| T1 | CQS composite scores by condition with bootstrap CIs | §5 | S2-010–012, S2-015–017 |
+| T2 | Friedman omnibus + Wilcoxon post-hoc with Holm correction | §5 | S2-001–012 |
+| T3 | Per-dimension effect sizes (d values, all 5 dims × 3 comparisons) | §5 | S2-020–042 |
+| T4 | Stratum analysis: normal vs edge effect sizes | §5 | SA-001–022 |
+| T5 | Pipeline fidelity summary (claims, auditability, fidelity by condition) | §5 | S3-001–012 |
+| T6 | Cost per query by condition and model tier | §6 | COST-001–013 |
+| T7 | Test battery composition by category | App A | `queries.yaml` |
+| T8 | Pragmatic item catalog summary (36 items by category/latitude) | App D | `staging/acs/` |
 
 ---
 
-## 4. System Architecture {paper} {slides:main}
-
-**Thesis:** The Census MCP Server implements pragmatics as a composable tool in the Model Context Protocol. The MCP handles validation, fetching, and bundling; the calling LLM performs reasoning. Pragmatics are delivered as structured data alongside Census API responses.
-
-**Evidence:**
-- `docs/requirements/srs.md`
-- `docs/requirements/conops.md`
-- `src/census_mcp/tools/census_tools.py`
-- `src/census_mcp/pragmatics/`
-- `docs/decisions/ADR-001-neo4j-authoring-sqlite-runtime.md`
-- `talks/fcsm_2026/ov0_sidecar_architecture.mermaid.md`
-- `talks/fcsm_2026/v2_stage1_data_flow.mermaid.md`
-
-**Figures/Tables:**
-- Figure 5: High-level architecture — user → LLM agent → MCP → Census API + pragmatics. {slides:main}
-- Figure 6: Production data flow showing tool response with bundled pragmatics. {slides:backup}
-
----
-
-## 5. Extraction Pipeline {paper} {slides:backup}
-
-**Thesis:** Pragmatic content is extracted from authoritative source documents through a structured pipeline: PDF → section-aware chunking → LLM extraction → knowledge graph → harvest → curation → SQLite packs. Each stage is a noise reduction step.
-
-**Evidence:**
-- `docs/decisions/ADR-008-custom-extraction-pipeline.md`
-- `docs/decisions/ADR-009-quarry-toolkit-shippable.md`
-- `docs/decisions/ADR-010-evolutionary-vocabulary.md`
-- `scripts/quarry/`
-- `docs/design/quarry_extraction_pipeline.md`
-
-**Figures/Tables:**
-- Figure 7: Extraction pipeline stages with noise reduction at each step. {slides:backup}
-- Table 4: Extraction quality metrics — nodes by type, relationship distribution, MENTIONS=0. {paper}
-
-**Extraction provenance (registry EXT-001–010):** Same 3 source documents for both RAG and pragmatics (354 pages). 34 items pipeline-extracted from Handbook + D&M (5,233 nodes → 34 items, 0.65% yield). 2 items manually extracted via human + AI source material review (geography + group quarters). RAG: 311 chunks, top-5 brute force. Pragmatics: 36 curated items, targeted delivery.
-**GAP-013 CLOSED:** Full narrative in `paper/sections/05_extraction_pipeline.md`. Covers dual extraction paths (pipeline 34 + manual 2), determinism by design (graph traversal vs vector search, DET-001–004), curation process (0.65% yield as the intelligence), and compilation pipeline (Neo4j → JSON → SQLite, ADR-001 separation).
-
----
-
-## 6. Evaluation Design {paper} {slides:main}
-
-**Thesis:** We evaluate through a knowledge representation study comparing three conditions with equal data tool access. The single variable is methodology support form: none, retrieved document chunks, or curated expert judgment.
-
-**Evidence:**
-- `docs/decisions/ADR-011-v2-evaluation-design-correction.md`
-- `docs/requirements/srs.md` § 8
-- `src/eval/battery/queries.yaml`
-- `src/eval/agent_loop.py`
-- `src/eval/harness.py`
-- `talks/fcsm_2026/2026-02-16_pragmatics_leakage.md`
-- `talks/fcsm_2026/evaluation_pipeline_overview.mermaid.md`
-
-**Figures/Tables:**
-- Figure 8: Three-condition experimental design (control/RAG/pragmatics). {slides:main}
-- Figure 9: Four-stage evaluation pipeline. {slides:main}
-- Table 5: Test battery composition — categories, counts, edge case rationale. {paper}
-- Table 5b: Power analysis derivation — paired Wilcoxon at d=0.5/α=0.05/power=0.80 → n≥35, stratified 15 normal + 24 edge, Gemini rate limit constraint. (registry: DRV-001–004) {paper}
-- Table 6: Experimental controls — tool filtering, result sanitization, contamination checks. {paper}
-
----
-
-## 7. Results {paper} {slides:main}
-
-**Thesis:** Pragmatics achieves very large effect sizes (d=1.440 vs control, d=0.922 vs RAG) across all query types. Benefits are not limited to edge cases — effect is larger on normal queries (d=2.347) than edge cases (d=1.135), ruling out overfit. Fidelity gap: pragmatics 91.2% vs RAG 74.6% vs control 78.3%.
-
-**Evidence:**
-- `results/v2_redo/stage1/` — 117 responses (39 queries × 3 conditions)
-- `results/v2_redo/stage2/analysis/aggregate_statistics.md` — CQS scores (CERTIFIED)
-- `results/v2_redo/stage2/analysis/stratum_analysis.md` — normal vs edge breakdown (COMPUTED)
-- `results/v2_redo/stage3/analysis/fidelity_summary.md` — fidelity/auditability (CERTIFIED)
-- Numbers: `paper/numbers_registry.md` Sections 3, 3f, 4
-
-**Key results available:**
-- Omnibus Friedman χ²(2, N=39) = 42.01, p < 0.001 (registry: S2-001)
-- Pragmatics vs Control: Δ=+0.539, d=1.440 (very large), p < 0.001 (registry: S2-010)
-- Pragmatics vs RAG: Δ=+0.385, d=0.922 (large), p < 0.001 (registry: S2-011)
-- RAG vs Control: Δ=+0.154, d=0.546 (medium), p=0.0017 (registry: S2-012)
-- D3 (Uncertainty Calibration) largest effect: d=1.353 Prag vs Ctrl (registry: S2-032)
-- Normal queries: d=2.347 Prag vs Ctrl — no overfit (registry: SA-001)
-- Edge queries: d=1.135 Prag vs Ctrl (registry: SA-010)
-- Pragmatics fidelity 91.2% vs RAG 74.6% vs Control 78.3% (registry: S3-001–003)
-
-**Figures/Tables:**
-- Figure 10: Cohen's d effect sizes by dimension per comparison (forest plot). {slides:main}
-- Figure 11: Fidelity scores by condition. {slides:main}
-- Table 7: CQS composite scores by condition with bootstrap CIs. {slides:main}
-- Table 8: Friedman + Wilcoxon post-hoc. {paper}
-- Table 9: Bias check results (position, self-enhancement, verbosity). {paper}
-- Table 10: Per-stratum effect sizes (normal vs edge, d values). {slides:backup} — `stratum_analysis.md`
-- Table 11: Judge agreement (Krippendorff's alpha). {paper}
-
----
-
-## 8. Discussion {paper} {slides:main}
-
-**Thesis:** Information selectivity at inference time follows the same pattern as training data curation — precision beats volume. The three-layer noise model (training data, expert judgment, latitude) provides a generalizable framework.
-
-**Evidence:**
-- `talks/fcsm_2026/reference_core_thesis.md` § "Three Layers of Noise"
-- `talks/fcsm_2026/notes.md` § "V-Information as Formal Basis"
-- Xu et al. (2020) V-information — formal grounding
-- Kahneman, Sibony & Sunstein (2021) Noise — expert variance
-
-**Subsections:**
-- 8.1 Why 35 items beat 311 chunks — selectivity principle. *Cost data available: pragmatics 2.2× more cost-effective than RAG per CQS point gained (COST-005). Registry: Section 3h.*
-- 8.2 Latitude as calibrated uncertainty over expertise
-- 8.3 Implications for federal statistical agencies — the sidecar pattern. *Cost data: $0.09/query marginal cost for expert statistical guidance (Sonnet 4.5, COST-003). Negligible at Opus pricing too ($0.14/query, COST-012).*
-- 8.4 The Jobs Doctrine — obsolescence over compensatory complexity
-
-**GAP-014 CLOSED:** Full narrative in `paper/sections/08_discussion_sidecar.md`. Covers server-side delivery (no client FAISS/embedding dependency), central maintenance, multi-vendor validation, cost-effectiveness (2.2× RAG, $0.09/query), and scaling pattern (CPS/SIPP/decennial packs, shared geographic intelligence).
-
-**Figures/Tables:**
-- Figure 12: Information selectivity — training data curation ↔ expert judgment curation. {slides:main}
-
----
-
-## 9. Limitations {paper}
-
-**Thesis:** Honest accounting of scope and constraints.
-
-- n=39 queries, single caller model (Sonnet 4.5), single domain (ACS)
-- LLM-as-judge biases mitigated (3 vendors, 2 orderings, 6 passes) but not eliminated
-- Pragmatic content hand-curated by one expert — scalability unproven (but see Future Work: hybrid authoring)
-- No user study — evaluation is automated quality scoring
-- Generalization requires domain-specific pragmatics (but architecture is domain-agnostic)
-- Normal stratum underpowered at d=0.5 (n=15, power≈0.56) though observed effects are large enough to detect (d=2.347)
-
----
-
-## 10. Future Work {paper} {slides:backup}
-
-**Thesis:** Cross-survey expansion, scalable content generation, community-maintained pragmatics ecosystem.
-
-**Evidence:**
-- `talks/fcsm_2026/ov0_sidecar_architecture.mermaid.md`
-
-**Items:**
-- CPS, SIPP, decennial — shared geographic intelligence
-- Hybrid authoring: LLM-assisted batch generation + human review
-- Community contribution model
-- User study with actual Census data consumers
-
----
-
-## 11. Conclusion {paper} {slides:main}
-
-**Thesis:** Pragmatics fills the gap between AI-ready data (syntax, semantics) and practitioner needs (expert judgment). Operational system, empirical validation, generalizable principle.
-
----
-
-## Appendices {paper} {slides:appendix}
+## Appendices (revised)
 
 ### A. Complete Test Battery
-- `src/eval/battery/queries.yaml`
+- Table of 39 queries by category, edge case flag, topic
+- Source: `src/eval/battery/queries.yaml`
 
-### B. CQS Rubric
-- `src/eval/judge_prompts.py`
+### B. CQS Rubric Specification
+- Full 5-dimension rubric with scoring criteria
+- Source: `src/eval/judge_prompts.py` or `docs/verification/cqs_rubric_specification.md`
 
 ### C. System Prompts
-- `src/eval/agent_loop.py` — BASE_SYSTEM_PROMPT, PRAGMATICS_SYSTEM_PROMPT
+- Base system prompt and pragmatics-specific prompt segment
+- Source: `src/eval/agent_loop.py`
 
-### D. Design Correction Post-Mortem
-- `docs/decisions/ADR-011-v2-evaluation-design-correction.md`
-- `talks/fcsm_2026/2026-02-16_pragmatics_leakage.md`
-
-### E. Pragmatic Item Catalog
-- `staging/acs/`
+### D. Pragmatic Item Catalog
+- Full catalog of 36 items with context text, latitude, triggers, thread edges
+- Source: `staging/acs/*.json`
 
 ---
 
-## Publishing Strategy
-
-### arxiv Preprint
-- Post BEFORE FCSM presentation to establish priority date
-- Category: cs.AI or cs.IR (or cross-list both)
-- Requires endorsement from existing arxiv author in category
-- No PhD required, no peer review — it's a preprint server
-- Cite the arxiv preprint in FCSM slides
-
-### FCSM 2026 Presentation
-- Conference talk establishes institutional credibility
-- Slides filter from this outline using `{slides:main}` tags
-- Backup slides from `{slides:backup}` tags
-- arxiv preprint link on final slide
-
-### Priority Chain
-arxiv preprint (date-stamped) → FCSM talk (credibility) → journal submission (optional, peer review)
+## Citation Files (raw material, not in paper)
+- `paper/citations/ethayarajh_2019_anisotropy.md`
+- `paper/citations/semantic_smearing_evidence.md`
+- `paper/citations/d3_uncertainty_deep_dive.md`
+- `paper/citations/ncses_norc_mlmu25.md`
+- `paper/citations/nsf_norc_landscape.md`
+- `paper/citations/federal_data_evolution_arc.md`
+- `paper/citations/rag_graphrag_cost_comparison.md`
+- `paper/citations/stochastic_tax_framing.md`
+- `paper/core_argument.md`
