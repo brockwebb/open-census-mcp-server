@@ -1,8 +1,38 @@
-# Abstract
+---
+title: "Pragmatics as Point-of-Decision Expert Judgment for Federal Statistical Data"
+author: "Brock Webb"
+date: "February 2026"
+format:
+  pdf:
+    documentclass: article
+    papersize: letter
+    fontsize: 11pt
+    geometry:
+      - margin=1in
+    number-sections: true
+    toc: false
+    pdf-engine: xelatex
+    mainfont: "Palatino"
+    monofont: "Source Code Pro"
+    linestretch: 1.25
+    include-in-header:
+      text: |
+        \usepackage{booktabs}
+        \usepackage{needspace}
+        \usepackage{longtable}
+        \usepackage{array}
+        \renewcommand{\arraystretch}{1.4}
+        \widowpenalty=10000
+        \clubpenalty=10000
+        \usepackage{caption}
+        \captionsetup{justification=raggedright,singlelinecheck=false}
+        \hyphenpenalty=10000
+        \exhyphenpenalty=10000
+        \raggedbottom
+abstract: |
+  [TODO: Abstract — write last, after body is finalized. ~250 words.]
+---
 
-<!-- Write last, after body is finalized. ~250 words. -->
-
-[TODO: Abstract]
 # Section 1: Introduction
 
 <!-- Registry references: SD-001, PL-001, S2-010, S2-011, S3-001–003 -->
@@ -29,6 +59,7 @@ This paper introduces pragmatics as a defined, implementable concept for federal
 The results demonstrate that 36 curated pragmatic items produce very large improvements in consultation quality relative to no support (Cohen's d = 1.440) and large improvements relative to RAG (d = 0.922), with the strongest effects on uncertainty communication — precisely the dimension where fitness-for-use judgment matters most. Pragmatic context achieves 91.2% fidelity to authoritative data sources compared to 74.6% for RAG, at a marginal cost of nine cents per query.
 
 The contribution is not a better retrieval system. It is the identification and operationalization of a missing layer in the federal statistical data ecosystem — a layer that has been conceptually present in quality frameworks for decades but has never been delivered computationally. Making data AI-ready requires three things: refactoring how data is exposed to AI systems, accelerating metadata curation, and encoding the expert judgment needed to evaluate fitness for use. The first two are underway. The third is the subject of this paper.
+
 # Section 2: The Semantic Smearing Problem
 
 <!-- Registry references: RAG-001–007, EXT-001–010 -->
@@ -73,6 +104,7 @@ The gap is not in what the model knows. It is in what the model can judge. Filli
 ## References
 
 Ethayarajh, K. (2019). How contextual are contextualized word representations? Comparing the geometry of BERT, ELMo, and GPT-2 embeddings. *Proceedings of the 2019 Conference on Empirical Methods in Natural Language Processing (EMNLP)*. https://arxiv.org/abs/1909.00512
+
 # Section 3: Pragmatics — Structured Expert Judgment
 
 <!-- Registry references: PL-001, PL-004, DET-001–004 -->
@@ -139,6 +171,7 @@ The practical significance is that pragmatics eliminates one source of compoundi
 Kahneman, D., Sibony, O., & Sunstein, C. R. (2021). *Noise: A flaw in human judgment*. Little, Brown Spark.
 
 Morris, C. W. (1938). Foundations of the theory of signs. In O. Neurath, R. Carnap, & C. Morris (Eds.), *International encyclopedia of unified science* (Vol. 1, No. 2). University of Chicago Press.
+
 # Section 4: Method
 
 <!-- Registry references: SD-001–010, PL-001–004, RAG-001–007, EXT-001–010, DET-001–004, DRV-001–004 -->
@@ -201,6 +234,7 @@ The evaluation design aligns with the NIST AI Risk Management Framework's Test, 
 ## References
 
 National Center for Science and Engineering Statistics. (2025). *Measuring Large Language Model Understanding of Federal Statistical Data* (RFS MLMU-25). National Science Foundation, America's DataHub Consortium. https://www.americasdatahub.org/rfs-mlmu-25/
+
 # Section 5: Results
 
 <!-- Registry references: S2-001–042, S3-001–012, SA-001–022, EFF-001–008, COST-001–013, DET-001–004 -->
@@ -272,6 +306,7 @@ Pragmatics incurred higher per-query token costs than RAG. Mean input tokens per
 However, cost-effectiveness — measured as CQS improvement per marginal dollar spent relative to control — favored pragmatics at 2.2 times the cost-effectiveness of RAG (6.28 vs. 2.83 CQS points per marginal dollar). Pragmatics costs 38% more per query than RAG but delivers disproportionately more quality improvement.
 
 The marginal cost of pragmatic guidance was $0.09 per query at Sonnet pricing and $0.14 at Opus pricing. The full 39-query evaluation battery cost $4.42 at production rates. These figures reflect token costs only; pragmatics requires no vector database, no embedding model, and no retrieval infrastructure at runtime — the pack is a SQLite file served via an API call. The total cost of ownership for pragmatics is dominated by the one-time authoring investment rather than ongoing infrastructure.
+
 # Section 6: Discussion
 
 <!-- Registry references: S2-010–012, S2-032, SA-001–022, COST-001–013, EFF-001–008, DET-001–004 -->
@@ -318,6 +353,7 @@ The pragmatics concept does not compete with existing efforts. Continued investm
 The practical path forward involves packaging statistical expertise as a deliverable resource alongside data products. Not as documentation that users may or may not read, but as structured, machine-deliverable judgment that reaches the point of analysis automatically. The finding that 36 curated items from 354 pages of documentation produce a very large effect size suggests that the investment required is modest relative to the documentation that agencies already produce. The expert judgment exists. It lives in the professional practice of experienced statisticians. The task is to capture it, structure it, and deliver it computationally.
 
 This is not a new obligation. The Federal Committee on Statistical Methodology's own data quality framework codifies characteristics that are fundamentally pragmatic — relevance, accuracy, timeliness, fitness for use. These have been the standard for decades. What pragmatics operationalizes is the delivery of this existing institutional knowledge through the channels where data consumers increasingly encounter federal statistics: AI-mediated analysis.
+
 # Section 7: Limitations and Future Work
 
 <!-- Registry references: SD-001, SD-009, SD-010, PL-001, SA-003 -->
@@ -349,6 +385,7 @@ This study has several constraints that bound the generalizability of its findin
 **Community contribution.** A governance structure for multi-contributor pragmatics authoring would address the single-curator limitation. Federal statisticians, academic demographers, and experienced data users could contribute and review items through the existing authoring pipeline (graph database → staging → compilation), with quality assurance processes ensuring consistency.
 
 **Multi-model caller evaluation.** Testing pragmatics delivery across multiple caller models (not just judges) would establish whether the quality improvement generalizes across the models that data consumers actually use, and whether different model architectures interact differently with structured expert context.
+
 # Section 8: Conclusion
 
 <!-- Registry references: S2-010, S2-032, S3-003, PL-001, COST-003 -->
@@ -360,6 +397,7 @@ This paper has introduced pragmatics as a named, defined, and implementable conc
 We have provided empirical evidence that pragmatics works. A knowledge representation study comparing three conditions with identical data access demonstrated that 36 curated expert judgment items produce very large improvements in statistical consultation quality (Cohen's d = 1.440 vs. control, d = 0.922 vs. RAG), with the strongest effects on uncertainty communication (d = 1.353) — the dimension most directly tied to fitness-for-use assessment. Pragmatic context achieves 91.2% fidelity to authoritative data sources, is 100% deterministic in its delivery, and costs nine cents per query.
 
 The principle underlying these results extends beyond Census data. Just as curating training data reduces variance in what a model learns, curating expert judgment reduces variance in what a model concludes. The federal statistical community has the expertise. The task is to capture it, structure it, and deliver it at the point where decisions are being made — transforming data retrieval into statistical consultation.
+
 # References
 
 Ethayarajh, K. (2019). How contextual are contextualized word representations? Comparing the geometry of BERT, ELMo, and GPT-2 embeddings. *Proceedings of the 2019 Conference on Empirical Methods in Natural Language Processing (EMNLP)*. https://arxiv.org/abs/1909.00512
@@ -381,6 +419,7 @@ U.S. Census Bureau. (2020). *Geography and the American Community Survey: What d
 U.S. Census Bureau. (2024). *American Community Survey: Design and methodology report*. U.S. Department of Commerce.
 
 <!-- TODO: Verify all URLs are live. Add Vaswani et al. 2017 if timeline reference stays. Add GraphRAG cost citations if used in Discussion. -->
+
 # Appendices
 
 ## Appendix A: Complete Test Battery

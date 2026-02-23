@@ -1,0 +1,30 @@
+title: "Pragmatics as Point-of-Decision Expert Judgment for Federal Statistical Data"
+author: "Brock Webb"
+date: "February 2026"
+format:
+  pdf:
+    documentclass: article
+    papersize: letter
+    fontsize: 11pt
+    geometry:
+      - margin=1in
+    number-sections: true
+    toc: false
+    pdf-engine: xelatex
+    mainfont: "Palatino"
+    monofont: "Source Code Pro"
+    linestretch: 1.25
+    include-in-header:
+      text: |
+        \usepackage{booktabs}
+        \usepackage{needspace}
+        \usepackage{longtable}
+        \usepackage{array}
+        \renewcommand{\arraystretch}{1.4}
+        \widowpenalty=10000
+        \clubpenalty=10000
+        \usepackage{caption}
+        \captionsetup{justification=raggedright,singlelinecheck=false}
+        \hyphenpenalty=10000
+        \exhyphenpenalty=10000
+        \raggedbottom
