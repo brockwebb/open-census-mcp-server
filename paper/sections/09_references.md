@@ -18,4 +18,6 @@ U.S. Census Bureau. (2020). *Geography and the American Community Survey: What d
 
 U.S. Census Bureau. (2024). *American Community Survey: Design and methodology report*. U.S. Department of Commerce.
 
+Webb, B. (2026). When AI enters federal statistics: A crosswalk between data quality and AI trustworthiness frameworks. Zenodo. https://doi.org/10.5281/zenodo.18766095
+
 <!-- TODO: Verify all URLs are live. Add Vaswani et al. 2017 if timeline reference stays. Add GraphRAG cost citations if used in Discussion. -->

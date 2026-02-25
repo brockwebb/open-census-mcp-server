@@ -38,27 +38,27 @@ abstract: |
 <!-- Registry references: SD-001, PL-001, S2-010, S2-011, S3-001–003 -->
 <!-- Citation files: federal_data_evolution_arc.md, core_argument.md, nsf_norc_landscape.md -->
 
-Federal statistical agencies have spent two decades making their data accessible to machines. Beginning with the machine-readable mandates of the late 2000s and accelerating through structured APIs, metadata catalogs, and master data registries, the investment has been substantial and real. The Census Bureau's API, the Bureau of Labor Statistics' data retrieval tools, and the standardized metadata schemas across Commerce Department statistical assets represent a mature infrastructure for data access. The syntax layer — how data is structured, formatted, and transmitted — is largely solved.
+Federal statistical agencies have spent two decades making their data accessible to machines. Beginning with the machine-readable mandates of the late 2000s and accelerating through structured APIs, metadata catalogs, and master data registries, the investment has been substantial and real. The Census Bureau's API, the Bureau of Labor Statistics' data retrieval tools, and the standardized metadata schemas across Commerce Department statistical assets represent a mature infrastructure for data access. The syntax layer (how data is structured, formatted, and transmitted) is largely solved.
 
 The semantics layer has followed a parallel trajectory. Variable descriptions, concept classifications, table schemas, and geographic hierarchies are documented, standardized, and published. This metadata infrastructure enables both human researchers and automated systems to identify which data products exist, what they measure, and how they are organized. Recent federal initiatives under the banner of "AI-ready data" have extended this work, recognizing that machine learning systems require well-structured metadata to function effectively.
 
-The emergence of large language models has changed the equation in an unexpected way. Models trained on broad corpora that include statistical documentation, methodology reports, and data dictionaries behave as if they have internalized much of this semantic infrastructure. They can translate natural language questions into domain-appropriate queries, identify relevant variables, resolve geographic entities, and retrieve data through APIs — tasks that previously required specialized training or purpose-built search interfaces. The syntax and semantics layers, painstakingly constructed over two decades, are now partially encoded in model training data.
+The emergence of large language models has changed the equation in an unexpected way. Models trained on broad corpora that include statistical documentation, methodology reports, and data dictionaries behave as if they have internalized much of this semantic infrastructure. They can translate natural language questions into domain-appropriate queries, identify relevant variables, resolve geographic entities, and retrieve data through APIs: tasks that previously required specialized training or purpose-built search interfaces. The syntax and semantics layers, painstakingly constructed over two decades, are now partially encoded in model training data.
 
 This creates a new problem. When a user asks a language model for the poverty rate in a small county, the model can successfully retrieve the correct estimate from the Census API. But it cannot assess whether that estimate is reliable enough to use. It does not know that the margin of error may exceed the estimate itself, that the coefficient of variation renders the figure unsuitable for most analytical purposes, or that the five-year period estimate represents a 60-month weighted average rather than a point-in-time snapshot. The model delivers the number confidently. A non-expert user has no basis to question it.
 
-This failure mode is not a knowledge gap in the conventional sense. The model is not missing information that could be retrieved from a document or looked up in a database. It is missing expert judgment about fitness for use — the kind of assessment that a senior statistician makes reflexively when evaluating whether a particular estimate is appropriate for a particular purpose. This judgment is rarely stated explicitly in documentation. It lives in the professional practice of experienced practitioners, accumulated through years of working with the data and its limitations.
+This failure mode is not a knowledge gap in the conventional sense. The model is not missing information that could be retrieved from a document or looked up in a database. It is missing expert judgment about fitness for use: the kind of assessment that a senior statistician makes reflexively when evaluating whether a particular estimate is appropriate for a particular purpose. This judgment is rarely stated explicitly in documentation. It lives in the professional practice of experienced practitioners, accumulated through years of working with the data and its limitations.
 
-We call this missing layer *pragmatics*, drawing on Charles Morris's 1938 semiotic framework that distinguishes syntax (the formal structure of signs), semantics (the relationship between signs and what they denote), and pragmatics (the relationship between signs and their interpreters — the contextual judgment required for appropriate use). In the context of federal statistical data, pragmatics is the expert assessment of fitness for use that transforms a data retrieval into a statistical consultation.
+We call this missing layer *pragmatics*, drawing on Charles Morris's 1938 semiotic framework that distinguishes syntax (the formal structure of signs), semantics (the relationship between signs and what they denote), and pragmatics (the relationship between signs and their interpreters, specifically the contextual judgment required for appropriate use). In the context of federal statistical data, pragmatics is the expert assessment of fitness for use that transforms a data retrieval into a statistical consultation.
 
-This is not a new concept imposed from outside statistical practice. The Federal Committee on Statistical Methodology's own data quality framework (FCSM 20-04) codifies characteristics — relevance, accuracy, timeliness, accessibility, coherence — that are fundamentally pragmatic in nature. They describe not what the data *is* but whether the data is *appropriate* for a given purpose. These quality characteristics have been the standard for decades. What has not existed, until now, is a mechanism to deliver this expert judgment computationally, at the point where a user or automated system is interpreting statistical data.
+This is not a new concept imposed from outside statistical practice. The Federal Committee on Statistical Methodology's own data quality framework (FCSM 20-04) codifies characteristics (relevance, accuracy, timeliness, accessibility, coherence) that are fundamentally pragmatic in nature. They describe not what the data *is* but whether the data is *appropriate* for a given purpose. These quality characteristics have been the standard for decades. What has not existed, until now, is a mechanism to deliver this expert judgment computationally, at the point where a user or automated system is interpreting statistical data.
 
 The current federal landscape reflects this gap. The National Science Foundation recently solicited proposals to measure how well language models understand federal statistical data, seeking empirical evaluations of LLM accuracy, relevancy, and explainability on government data assets (NCSES, 2025). This and similar benchmarking initiatives share a common focus: measuring how well models perform on statistical tasks. They diagnose the problem. They do not treat it.
 
 This paper introduces pragmatics as a defined, implementable concept for federal statistical AI systems and provides empirical evidence that it works. We present a knowledge representation study comparing three conditions with identical data access: a control with no methodology support, retrieval-augmented generation (RAG) using document chunks from authoritative source material, and pragmatics using curated expert judgment items delivered at the point of statistical reasoning. The three conditions draw from the same 354 pages of Census Bureau documentation, differing only in how that knowledge is represented and delivered.
 
-The results demonstrate that 36 curated pragmatic items produce very large improvements in consultation quality relative to no support (Cohen's d = 1.440) and large improvements relative to RAG (d = 0.922), with the strongest effects on uncertainty communication — precisely the dimension where fitness-for-use judgment matters most. Pragmatic context achieves 91.2% fidelity to authoritative data sources compared to 74.6% for RAG, at a marginal cost of nine cents per query.
+The results demonstrate that 36 curated pragmatic items produce very large improvements in consultation quality relative to no support (Cohen's d = 1.440) and large improvements relative to RAG (d = 0.922), with the strongest effects on uncertainty communication, precisely the dimension where fitness-for-use judgment matters most. Pragmatic context achieves 91.2% fidelity to authoritative data sources compared to 74.6% for RAG, at a marginal cost of nine cents per query.
 
-The contribution is not a better retrieval system. It is the identification and operationalization of a missing layer in the federal statistical data ecosystem — a layer that has been conceptually present in quality frameworks for decades but has never been delivered computationally. Making data AI-ready requires three things: refactoring how data is exposed to AI systems, accelerating metadata curation, and encoding the expert judgment needed to evaluate fitness for use. The first two are underway. The third is the subject of this paper.
+The contribution is not a better retrieval system. It is the identification and operationalization of a missing layer in the federal statistical data ecosystem: a layer that has been conceptually present in quality frameworks for decades but has never been delivered computationally. Making data AI-ready requires three things: refactoring how data is exposed to AI systems, accelerating metadata curation, and encoding the expert judgment needed to evaluate fitness for use. The first two are underway. The third is the subject of this paper.
 
 # Section 2: The Semantic Smearing Problem
 
@@ -67,37 +67,37 @@ The contribution is not a better retrieval system. It is the identification and 
 
 ## 2.1 Anisotropy in Domain-Homogeneous Corpora
 
-Large language models represent text as vectors in high-dimensional embedding spaces, where semantic similarity corresponds to geometric proximity. This representation is effective when the concepts being compared occupy distinct regions of the space. However, Ethayarajh (2019) demonstrated that contextual word representations from models such as BERT, ELMo, and GPT-2 exhibit high anisotropy — the representations occupy a narrow cone in the vector space rather than being uniformly distributed across all directions. In the upper layers of GPT-2, the average cosine similarity between randomly sampled word representations approaches 0.99, meaning that even unrelated concepts are geometrically close.
+Large language models represent text as vectors in high-dimensional embedding spaces, where semantic similarity corresponds to geometric proximity. This representation is effective when the concepts being compared occupy distinct regions of the space. However, Ethayarajh (2019) demonstrated that contextual word representations from models such as BERT, ELMo, and GPT-2 exhibit high anisotropy: the representations occupy a narrow cone in the vector space rather than being uniformly distributed across all directions. In the upper layers of GPT-2, the average cosine similarity between randomly sampled word representations approaches 0.99, meaning that even unrelated concepts are geometrically close.
 
-This property has particular consequences for domain-specific corpora where the vocabulary, sentence structure, and conceptual framing are inherently homogeneous. Federal statistical metadata is an extreme case. Census variable descriptions share a common vocabulary of demographic terms, geographic references, and survey methodology language. A variable measuring median household income in a county and a variable measuring per capita income in a metropolitan statistical area use many of the same words in similar syntactic patterns to describe related but distinct measurements. In embedding space, these descriptions cluster tightly — not because they mean the same thing, but because the representational geometry cannot separate them.
+This property has particular consequences for domain-specific corpora where the vocabulary, sentence structure, and conceptual framing are inherently homogeneous. Federal statistical metadata is an extreme case. Census variable descriptions share a common vocabulary of demographic terms, geographic references, and survey methodology language. A variable measuring median household income in a county and a variable measuring per capita income in a metropolitan statistical area use many of the same words in similar syntactic patterns to describe related but distinct measurements. In embedding space, these descriptions cluster tightly; this is not because they mean the same thing, but because the representational geometry cannot separate them.
 
 ## 2.2 Empirical Evidence: The Enrichment Experiment
 
 We tested this directly using a matched-pairs analysis of 2,500 Census variable descriptions across two embedding models. The experiment compared three representations of each variable: the raw Census label, the label combined with its concept metadata, and an LLM-enriched description incorporating full contextual text generated by a language model.
 
-> **[INSERT FIGURE F2: Semantic smearing — enrichment experiment results showing similarity increase and discrimination collapse for MiniLM-384 and RoBERTa-1024]**
+> **[INSERT FIGURE F2: Semantic smearing: enrichment experiment results showing similarity increase and discrimination collapse for MiniLM-384 and RoBERTa-1024]**
 
-For the all-MiniLM-L6-v2 model (384 dimensions), mean pairwise cosine similarity increased from 0.4297 for raw metadata to 0.6271 for enriched descriptions — a 45.9% increase. More critically, group discrimination — the model's ability to distinguish between variables from different conceptual groups — collapsed by 63.7%. The enrichment process, intended to improve retrieval by adding richer semantic context, instead homogenized the embedding space by introducing shared domain language across all descriptions.
+For the all-MiniLM-L6-v2 model (384 dimensions), mean pairwise cosine similarity increased from 0.4297 for raw metadata to 0.6271 for enriched descriptions, a 45.9% increase. More critically, group discrimination (the model's ability to distinguish between variables from different conceptual groups) collapsed by 63.7%. The enrichment process, intended to improve retrieval by adding richer semantic context, instead homogenized the embedding space by introducing shared domain language across all descriptions.
 
 The effect was worse with larger models. RoBERTa-large (1,024 dimensions) showed an 82.2% increase in mean similarity and an 86.5% collapse in discrimination. Higher dimensionality did not resolve the problem; it amplified it by capturing more of the shared domain signal that was already saturating the space.
 
-This finding has a direct implication: the problem is not in the embedding model. It is in the text. Census methodology documentation uses a constrained vocabulary to describe a large number of related but distinct statistical products. Any embedding model operating on this text will produce representations that cluster in a narrow region of the space, because the text itself provides insufficient signal for geometric separation. Adding more text — enriching, expanding, paraphrasing — makes the problem worse by introducing additional shared vocabulary.
+This finding has a direct implication: the problem is not in the embedding model. It is in the text. Census methodology documentation uses a constrained vocabulary to describe a large number of related but distinct statistical products. Any embedding model operating on this text will produce representations that cluster in a narrow region of the space, because the text itself provides insufficient signal for geometric separation. Adding more text (enriching, expanding, paraphrasing) makes the problem worse by introducing additional shared vocabulary.
 
 We describe this phenomenon as *semantic smearing*: the representations of concepts that should remain distinct are smeared together across the embedding space, making retrieval systems unable to discriminate between them. The metaphor is not a needle in a haystack. It is a needle in a haystack of needles.
 
 ## 2.3 Consequences for Retrieval-Based Approaches
 
-Semantic smearing explains why retrieval-augmented generation underperforms expectations in federal statistical domains. Standard RAG systems retrieve document chunks by embedding the user's query and finding the nearest neighbors in the indexed corpus. When the corpus exhibits high anisotropy and domain homogeneity, the nearest neighbors are likely to be semantically adjacent but contextually wrong — a chunk about poverty thresholds when the query concerns poverty rates, or a passage about one-year estimates when the question requires five-year methodology.
+Semantic smearing explains why retrieval-augmented generation underperforms expectations in federal statistical domains. Standard RAG systems retrieve document chunks by embedding the user's query and finding the nearest neighbors in the indexed corpus. When the corpus exhibits high anisotropy and domain homogeneity, the nearest neighbors are likely to be semantically adjacent but contextually wrong: a chunk about poverty thresholds when the query concerns poverty rates, or a passage about one-year estimates when the question requires five-year methodology.
 
-GraphRAG systems attempt to address this by augmenting vector retrieval with graph structure, traversing relationships between entities to provide richer context. However, GraphRAG incurs substantially higher infrastructure costs — approximately twice the monthly operating expense of standard RAG for comparable workloads — while retrieving significantly more tokens per query (approximately 47,000 versus 3,700 for top-5 RAG) without proportional quality gains on domain-specific tasks. The additional graph infrastructure adds complexity and maintenance burden without addressing the fundamental problem: the embedding space cannot discriminate in a domain where all the content sounds alike.
+GraphRAG systems attempt to address this by augmenting vector retrieval with graph structure, traversing relationships between entities to provide richer context. However, GraphRAG incurs substantially higher infrastructure costs, approximately twice the monthly operating expense of standard RAG for comparable workloads, while retrieving significantly more tokens per query (approximately 47,000 versus 3,700 for top-5 RAG) without proportional quality gains on domain-specific tasks. The additional graph infrastructure adds complexity and maintenance burden without addressing the fundamental problem: the embedding space cannot discriminate in a domain where all the content sounds alike.
 
-Both approaches also introduce stochastic variance into the grounding process. Embedding-based retrieval is inherently approximate — the same query can return different chunks depending on model version, index state, and the numerical precision of similarity computations. This stochastic retrieval compounds with the stochastic nature of language model generation, producing variance at two stages of the pipeline. In domains where precision matters — where the difference between a one-year and five-year estimate, or between a 20% and 40% coefficient of variation, determines whether an answer is useful or harmful — this compounding variance is not a theoretical concern. It is a practical failure mode.
+Both approaches also introduce stochastic variance into the grounding process. Embedding-based retrieval is inherently approximate: the same query can return different chunks depending on model version, index state, and the numerical precision of similarity computations. This stochastic retrieval compounds with the stochastic nature of language model generation, producing variance at two stages of the pipeline. In domains where precision matters, the difference between a one-year and five-year estimate, or between a 20% and 40% coefficient of variation, determines whether an answer is useful or harmful; this compounding variance is not a theoretical concern. It is a practical failure mode.
 
 ## 2.4 The Judgment Gap
 
-The semantic smearing problem reveals that the challenge facing AI systems in statistical domains is not primarily one of retrieval. Language models already perform the syntactic and semantic tasks — translating natural language into domain-appropriate API calls, identifying relevant variables, resolving geographic entities — with sufficient accuracy for practical use. The control condition in our evaluation demonstrates this: models successfully retrieve correct data from the Census API in the majority of cases without any retrieval augmentation.
+The semantic smearing problem reveals that the challenge facing AI systems in statistical domains is not primarily one of retrieval. Language models already perform the syntactic and semantic tasks (translating natural language into domain-appropriate API calls, identifying relevant variables, resolving geographic entities) with sufficient accuracy for practical use. The control condition in our evaluation demonstrates this: models successfully retrieve correct data from the Census API in the majority of cases without any retrieval augmentation.
 
-What models cannot do reliably is assess the fitness of the data they retrieve. They do not know when a margin of error renders an estimate unreliable, when a geographic nesting assumption does not hold, when a period estimate should not be compared to a point-in-time figure, or when the appropriate response is to decline to provide a number rather than deliver it with false confidence. This is not information that can be retrieved from a document chunk. It is expert judgment about appropriate use — judgment that is formed through professional practice, accumulated through experience with the data and its limitations, and rarely stated explicitly in any single passage of any methodology handbook.
+What models cannot do reliably is assess the fitness of the data they retrieve. They do not know when a margin of error renders an estimate unreliable, when a geographic nesting assumption does not hold, when a period estimate should not be compared to a point-in-time figure, or when the appropriate response is to decline to provide a number rather than deliver it with false confidence. This is not information that can be retrieved from a document chunk. It is expert judgment about appropriate use: judgment formed through professional practice, accumulated through experience with the data and its limitations, and rarely stated explicitly in any single passage of any methodology handbook.
 
 The gap is not in what the model knows. It is in what the model can judge. Filling this gap requires not better retrieval, but a different kind of intervention entirely.
 
@@ -105,46 +105,56 @@ The gap is not in what the model knows. It is in what the model can judge. Filli
 
 Ethayarajh, K. (2019). How contextual are contextualized word representations? Comparing the geometry of BERT, ELMo, and GPT-2 embeddings. *Proceedings of the 2019 Conference on Empirical Methods in Natural Language Processing (EMNLP)*. https://arxiv.org/abs/1909.00512
 
-# Section 3: Pragmatics — Structured Expert Judgment
+# Section 3: Pragmatics: Structured Expert Judgment
 
 <!-- Registry references: PL-001, PL-004, DET-001–004 -->
 <!-- Citation files: core_argument.md, federal_data_evolution_arc.md, d3_uncertainty_deep_dive.md -->
 
 ## 3.1 The Semiotic Foundation
 
-Charles Morris's 1938 *Foundations of the Theory of Signs* introduced a tripartite framework for understanding how signs function: syntax concerns the formal relationships between signs, semantics concerns the relationship between signs and the objects they denote, and pragmatics concerns the relationship between signs and their interpreters — the contextual conditions under which signs are appropriately used. This framework has been foundational in linguistics, philosophy of language, and information science for nearly nine decades.
+Charles Morris's 1938 *Foundations of the Theory of Signs* introduced a tripartite framework for understanding how signs function: syntax concerns the formal relationships between signs, semantics concerns the relationship between signs and the objects they denote, and pragmatics concerns the relationship between signs and their interpreters, specifically the contextual conditions under which signs are appropriately used. This framework has been foundational in linguistics, philosophy of language, and information science for nearly nine decades.
 
-Applied to federal statistical data, the three layers map directly to the infrastructure that agencies have built and the gap that remains:
+Applied to federal statistical data, the three layers map directly to the infrastructure that agencies have built and the gap that remains.
 
-- **Syntax** encompasses the structural layer — APIs, machine-readable formats, data transmission protocols, table schemas, and the formal rules governing how data is organized and accessed. This layer is mature. The Census Bureau's API, standardized file formats, and programmatic access points represent decades of investment in making data structurally available to machines.
+*Syntax* encompasses the structural layer: APIs, machine-readable formats, data transmission protocols, table schemas, and the formal rules governing how data is organized and accessed. This layer is mature. The Census Bureau's API, standardized file formats, and programmatic access points represent decades of investment in making data structurally available to machines.
 
-- **Semantics** encompasses the meaning layer — variable descriptions, concept classifications, geographic hierarchies, survey documentation, and the metadata that allows a consumer to understand what a data element represents. This layer is well-developed and continues to improve through AI-ready data initiatives.
+*Semantics* encompasses the meaning layer: variable descriptions, concept classifications, geographic hierarchies, survey documentation, and the metadata that allows a consumer to understand what a data element represents. This layer is well-developed and continues to improve through AI-ready data initiatives.
 
-- **Pragmatics** encompasses the judgment layer — the expert assessment of whether a particular data element is appropriate for a particular use, given the specific context of the question being asked. This layer does not exist as a computationally deliverable resource in any federal statistical system.
+*Pragmatics* encompasses the judgment layer: the expert assessment of whether a particular data element is appropriate for a particular use, given the specific context of the question being asked. This layer does not exist as a computationally deliverable resource in any federal statistical system.
 
 The distinction between semantics and pragmatics is critical. Semantics tells you that variable B19013_001E represents median household income, measured in inflation-adjusted dollars, from the American Community Survey five-year estimates. Pragmatics tells you that for a county with a population of 8,000, the margin of error on this estimate may be large enough to render it unreliable for year-over-year comparison, that the five-year estimate represents a 60-month rolling average rather than a snapshot, and that comparing it directly to a decennial census figure requires accounting for fundamental differences in methodology. The semantic information is in the metadata. The pragmatic judgment is in the heads of experienced statisticians.
 
 ## 3.2 What a Pragmatic Item Is
 
-A pragmatic context item is a structured unit of expert judgment about fitness for use. It is not an instruction, a rule, a constraint, or a lookup table. It is a factual statement of the kind a senior statistician would make to a colleague before they use a particular data product — the professional assessment that transforms a data retrieval into a statistical consultation.
+A pragmatic context item is a structured unit of expert judgment about fitness for use. It is not an instruction, a rule, a constraint, or a lookup table. It is a factual statement of the kind a senior statistician would make to a colleague before they use a particular data product: the professional assessment that transforms a data retrieval into a statistical consultation.
 
-> **[INSERT FIGURE F3: Anatomy of a pragmatic context item — showing context_text, latitude, triggers, thread_edges, provenance]**
+> **[INSERT FIGURE F3: Anatomy of a pragmatic context item: showing context_text, latitude, triggers, thread_edges, provenance]**
 
-Each item in the system has five components:
+Each item in the system has five components.
 
-**Context text** is the judgment itself, expressed in one to three sentences as factual expert knowledge. For example: "When the coefficient of variation exceeds 40 percent, the American Community Survey estimate is considered unreliable for most analytical purposes. The coefficient of variation is calculated as the ratio of the standard error to the estimate, where the standard error is derived from the margin of error divided by 1.645." This is not an instruction telling the model what to do. It is expert knowledge about what the data means, provided at the moment the model is interpreting a specific result.
+### Context Text
 
-> **[INSERT FIGURE F4: Latitude model — none/narrow/wide/full scale with Census examples at each level]**
+Context text is the judgment itself, expressed in one to three sentences as factual expert knowledge. For example: "When the coefficient of variation exceeds 40 percent, the American Community Survey estimate is considered unreliable for most analytical purposes. The coefficient of variation is calculated as the ratio of the standard error to the estimate, where the standard error is derived from the margin of error divided by 1.645." This is not an instruction telling the model what to do. It is expert knowledge about what the data means, provided at the moment the model is interpreting a specific result.
 
-**Latitude** encodes the calibrated uncertainty of the judgment itself, on a four-level scale. An item with latitude *none* represents hard consensus — no reasonable expert disagrees that the one-year American Community Survey requires a population of at least 65,000. An item with latitude *narrow* represents strong professional agreement with rare exceptions — the 40 percent coefficient of variation threshold is widely accepted but not universally applied. An item with latitude *wide* acknowledges genuine context-dependence — whether to use one-year or five-year estimates involves a tradeoff between recency and reliability that depends on the specific analytical purpose. An item with latitude *full* provides background context that informs but does not constrain — the American Community Survey replaced the decennial census long form beginning in 2005.
+### Latitude
+
+> **[INSERT FIGURE F4: Latitude model: none/narrow/wide/full scale with Census examples at each level]**
+
+Latitude encodes the calibrated uncertainty of the judgment itself, on a four-level scale. An item with latitude *none* represents hard consensus: no reasonable expert disagrees that the one-year American Community Survey requires a population of at least 65,000. An item with latitude *narrow* represents strong professional agreement with rare exceptions; the 40 percent coefficient of variation threshold is widely accepted but not universally applied. An item with latitude *wide* acknowledges genuine context-dependence: whether to use one-year or five-year estimates involves a tradeoff between recency and reliability that depends on the specific analytical purpose. An item with latitude *full* provides background context that informs but does not constrain; the American Community Survey replaced the decennial census long form beginning in 2005.
 
 Latitude is not a metadata annotation. It is a calibrated uncertainty model over expert judgment, encoding not just what practitioners know but how confidently the field holds that knowledge and where reasonable experts disagree. This connects to the observation in Kahneman, Sibony, and Sunstein (2021) that professional experts exhibit significant variance in judgments that are nominally deterministic. Latitude structures that variance explicitly rather than leaving it implicit.
 
-**Triggers** are three to six keywords that activate retrieval when the item is relevant to a query. Triggers are authored to reflect how practitioners describe problems rather than how documents index topics — ensuring that a query about "small county poverty data" activates the reliability threshold item even though the query contains none of the technical vocabulary in the item text.
+### Triggers
 
-**Thread edges** connect related items into coherent retrieval bundles. When a user asks about small-area estimates, the system retrieves not just the reliability threshold item but also the margin-of-error interpretation item and the period-estimate caveat — the complete set of judgments a statistician would provide together. Thread structure ensures that pragmatic context arrives as a coherent professional assessment rather than isolated facts.
+Triggers are three to six keywords that activate retrieval when the item is relevant to a query. Triggers are authored to reflect how practitioners describe problems rather than how documents index topics, ensuring that a query about "small county poverty data" activates the reliability threshold item even though the query contains none of the technical vocabulary in the item text.
 
-**Provenance** traces every judgment to its authoritative documentary source — the specific document, section, and page from which the expert knowledge was derived or against which it was validated. This enables audit of every claim in the system back to Census Bureau publications.
+### Thread Edges
+
+Thread edges connect related items into coherent retrieval bundles. When a user asks about small-area estimates, the system retrieves not just the reliability threshold item but also the margin-of-error interpretation item and the period-estimate caveat, the complete set of judgments a statistician would provide together. Thread structure ensures that pragmatic context arrives as a coherent professional assessment rather than isolated facts.
+
+### Provenance
+
+Provenance traces every judgment to its authoritative documentary source: the specific document, section, and page from which the expert knowledge was derived or against which it was validated. This enables audit of every claim in the system back to Census Bureau publications.
 
 ## 3.3 What Pragmatics Are Not
 
@@ -152,7 +162,7 @@ Pragmatic items are deliberately distinct from several related concepts:
 
 They are not *retrieval-augmented generation*. RAG retrieves passages from a document corpus based on embedding similarity. Pragmatics delivers curated expert judgment through deterministic graph traversal. The retrieval mechanism, the content, and the failure modes are fundamentally different.
 
-They are not *prompt engineering*. Pragmatic content is domain knowledge, not model instructions. The system does not tell the model to "always warn about margins of error" — it provides the expert knowledge that margins of error exceeding the estimate indicate unreliability, and allows the model's reasoning to incorporate that knowledge as it would incorporate any factual context.
+They are not *prompt engineering*. Pragmatic content is domain knowledge, not model instructions. The system does not tell the model to "always warn about margins of error"; instead, it provides the expert knowledge that margins of error exceeding the estimate indicate unreliability, and allows the model's reasoning to incorporate that knowledge as it would incorporate any factual context.
 
 They are not *an ontology*. The system does not attempt to represent the full relational structure of Census concepts, variables, geographies, and survey products. Language models already approximate this structure in their training data representations. Pragmatics provide the judgment layer that models cannot derive from relational structure alone.
 
@@ -162,9 +172,9 @@ They are not *constraints or guardrails*. The latitude system explicitly encodes
 
 A defining property of the pragmatics retrieval mechanism is determinism. When a query's topic is identified, the system maps it to a thread identifier, traverses defined edges in the graph structure, and collects the relevant context nodes. This is a lookup, not a search. The same topic always produces the same context set.
 
-This property was verified empirically across two independent replications of the full 39-query test battery plus the original evaluation run. All 39 queries produced identical context retrievals across all three runs — zero mismatches. The determinism is not a tuned property or a statistical regularity. It is a structural consequence of replacing similarity search with graph traversal.
+This property was verified empirically across two independent replications of the full 39-query test battery plus the original evaluation run. All 39 queries produced identical context retrievals across all three runs, with zero mismatches. The determinism is not a tuned property or a statistical regularity. It is a structural consequence of replacing similarity search with graph traversal.
 
-The practical significance is that pragmatics eliminates one source of compounding variance in the AI pipeline. Language model generation is inherently stochastic — the same input can produce different outputs. When retrieval is also stochastic, as in RAG and GraphRAG systems, variance compounds at both stages. Pragmatics reduces this tax by making the grounding deterministic while accepting that reasoning remains stochastic. The lighthouse is fixed. The ship still navigates, but toward a stable signal.
+The practical significance is that pragmatics eliminates one source of compounding variance in the AI pipeline. Language model generation is inherently stochastic: the same input can produce different outputs. When retrieval is also stochastic, as in RAG and GraphRAG systems, variance compounds at both stages. Pragmatics reduces this tax by making the grounding deterministic while accepting that reasoning remains stochastic. The lighthouse is fixed. The ship still navigates, but toward a stable signal.
 
 ## References
 
@@ -181,7 +191,7 @@ Morris, C. W. (1938). Foundations of the theory of signs. In O. Neurath, R. Carn
 
 We conducted a knowledge representation study comparing three experimental conditions with identical data tool access. The single independent variable was the form of methodology support provided to the language model during statistical consultation. All three conditions used the same caller model (Claude Sonnet 4.5), the same Census Bureau API tools, and the same 39-query test battery. The conditions differed only in how domain knowledge was represented and delivered:
 
-> **[INSERT FIGURE F5: Three-condition experimental design — control/RAG/pragmatics with shared data tools, varying methodology support]**
+> **[INSERT FIGURE F5: Three-condition experimental design: control/RAG/pragmatics with shared data tools, varying methodology support]**
 
 - **Control:** The model received Census API tools with no methodology support. This represents the baseline capability of a capable language model performing statistical consultation with data access but no expert guidance.
 
@@ -189,9 +199,9 @@ We conducted a knowledge representation study comparing three experimental condi
 
 - **Pragmatics:** The model received Census API tools plus curated expert judgment delivered through a methodology guidance tool. For each query, the system performed a deterministic graph traversal to retrieve relevant pragmatic context items from a compiled pack of 36 curated items.
 
-The three source documents were identical across the RAG and pragmatics conditions: the ACS General Handbook 2020 (89 pages), the ACS Design and Methodology Report 2024 (238 pages), and the ACS Geography Handbook 2020 (27 pages), totaling 354 pages. RAG indexed all three as 311 chunks. Pragmatics drew 36 curated items from the same sources — 34 through pipeline extraction and 2 through manual expert review. The independent variable was representation method, not source material.
+The three source documents were identical across the RAG and pragmatics conditions: the ACS General Handbook 2020 (89 pages), the ACS Design and Methodology Report 2024 (238 pages), and the ACS Geography Handbook 2020 (27 pages), totaling 354 pages. RAG indexed all three as 311 chunks. Pragmatics drew 36 curated items from the same sources: 34 through pipeline extraction and 2 through manual expert review. The independent variable was representation method, not source material.
 
-Tool access was controlled through distinct tool configurations for each condition. The control and RAG conditions were explicitly denied access to the methodology guidance tool, verified post-hoc through tool call auditing. The pragmatics condition included a grounding gate requiring consultation of methodology guidance before interpreting any data — verified at 100% compliance across all 39 queries.
+Tool access was controlled through distinct tool configurations for each condition. The control and RAG conditions were explicitly denied access to the methodology guidance tool, verified post-hoc through tool call auditing. The pragmatics condition included a grounding gate requiring consultation of methodology guidance before interpreting any data, verified at 100% compliance across all 39 queries.
 
 ## 4.2 Test Battery
 
@@ -203,19 +213,19 @@ Edge cases were drawn from seven categories reflecting known failure modes in st
 
 The 36 pragmatic items were produced through two extraction pathways from the same source documents used by the RAG condition.
 
-**Pipeline extraction** produced 34 items. Source documents were processed through section-aware chunking, yielding structured text segments passed through LLM-based extraction to populate a knowledge graph of 5,233 nodes. From this graph, pragmatic items were harvested through pattern-matching against the FCSM 20-04 quality framework, then curated by a domain expert who assigned latitude levels, retrieval triggers, thread edges, and provenance citations. The extraction yield was 0.65% — a deliberate reduction where each surviving item encodes a specific fitness-for-use judgment stripped of the surrounding exposition that dilutes signal in chunk-based retrieval.
+**Pipeline extraction** produced 34 items. Source documents were processed through section-aware chunking, yielding structured text segments passed through LLM-based extraction to populate a knowledge graph of 5,233 nodes. From this graph, pragmatic items were harvested through pattern-matching against the FCSM 20-04 quality framework, then curated by a domain expert who assigned latitude levels, retrieval triggers, thread edges, and provenance citations. The extraction yield was 0.65%: each surviving item encodes a specific fitness-for-use judgment, stripped of the surrounding exposition that dilutes signal in chunk-based retrieval.
 
-**Manual extraction** produced 2 items through human-AI collaborative review of source material. The Geography Handbook yielded zero usable items through the pipeline — a finding that some expert judgment is implicit in how practitioners use documents rather than explicit in any single passage. The two manually extracted items (geographic hierarchy judgment and group quarters classification) required structured conversation between a domain expert and an AI assistant to articulate tacit knowledge that documents do not state directly.
+**Manual extraction** produced 2 items through human-AI collaborative review of source material. The Geography Handbook yielded zero usable items through the pipeline; this finding suggests that some expert judgment is implicit in how practitioners use documents rather than explicit in any single passage. The two manually extracted items (geographic hierarchy judgment and group quarters classification) required structured conversation between a domain expert and an AI assistant to articulate tacit knowledge that documents do not state directly.
 
-The authoring-to-runtime pipeline implements strict separation of concerns. Items are authored in a graph database, exported to version-controlled JSON staging files, validated against a canonical schema, and compiled to a SQLite database — the deployable pack that the server loads at runtime. The runtime system has no dependency on the graph database, extraction pipeline, or authoring workflow.
+The authoring-to-runtime pipeline implements strict separation of concerns. Items are authored in a graph database, exported to version-controlled JSON staging files, validated against a canonical schema, and compiled to a SQLite database: the deployable pack that the server loads at runtime. The runtime system has no dependency on the graph database, extraction pipeline, or authoring workflow.
 
 ## 4.4 Evaluation Pipeline
 
 Evaluation proceeded through three stages.
 
-> **[INSERT FIGURE F6: Evaluation pipeline — Stage 1 (response generation) → Stage 2 (CQS scoring) → Stage 3 (fidelity verification)]**
+> **[INSERT FIGURE F6: Evaluation pipeline: Stage 1 (response generation), Stage 2 (CQS scoring), Stage 3 (fidelity verification)]**
 
-**Stage 1 (Response Generation)** produced 117 responses — 39 queries across 3 conditions. Each query was processed by the caller model with the condition-specific tool configuration, producing a complete statistical consultation response.
+**Stage 1 (Response Generation)** produced 117 responses: 39 queries across 3 conditions. Each query was processed by the caller model with the condition-specific tool configuration, producing a complete statistical consultation response.
 
 **Stage 2 (Consultation Quality Scoring)** assessed response quality through pairwise comparison using three independent judge models (Anthropic Claude, OpenAI GPT, Google Gemini). Each pair of conditions was evaluated across five quality dimensions: accuracy of statistical claims (D1), completeness of relevant information (D2), appropriate communication of uncertainty (D3), clarity of explanation (D4), and avoidance of potentially harmful misinterpretation (D5). Each comparison was scored by all three judges in both presentation orders, yielding six passes per comparison. This produced 2,106 total judge records (39 queries × 3 comparisons × 3 judges × 2 orderings) with zero parse failures.
 
@@ -229,7 +239,7 @@ Composite Consultation Quality Scores (CQS) were computed as the mean across fiv
 
 Omnibus differences were tested using the Friedman test for related samples. Pairwise comparisons used Wilcoxon signed-rank tests with Holm-Bonferroni correction. Effect sizes were computed as Cohen's d from the paired differences. Bootstrap confidence intervals (10,000 iterations) provided uncertainty estimates for mean differences. Stratum-level analyses tested whether effects differed between normal and edge case queries using permutation tests on the difference-of-differences.
 
-The evaluation design aligns with the NIST AI Risk Management Framework's Test, Evaluation, Verification, and Validation (TEVV) methodology. A crosswalk mapping CQS dimensions to FCSM 20-04 quality characteristics and NIST AI RMF trustworthiness properties is available as a separate publication.
+The evaluation design aligns with the NIST AI Risk Management Framework's Test, Evaluation, Verification, and Validation (TEVV) methodology. A crosswalk mapping CQS dimensions to FCSM 20-04 quality characteristics and NIST AI RMF trustworthiness properties is available as a separate publication (Webb, 2026).
 
 ## References
 
@@ -253,13 +263,13 @@ The ordering was consistent: pragmatics outperformed RAG, which outperformed con
 
 ## 5.2 Per-Dimension Effects
 
-> **[INSERT FIGURE F7: Cohen's d effect sizes by dimension — forest plot showing all comparisons × 5 dimensions]**
+> **[INSERT FIGURE F7: Cohen's d effect sizes by dimension: forest plot showing all comparisons × 5 dimensions]**
 
 > **[INSERT TABLE T3: Per-dimension effect sizes (d values) for all 3 comparisons × 5 dimensions]**
 
 All five quality dimensions showed significant omnibus effects (p < 0.001 for each). The effect sizes for pragmatics versus control varied across dimensions, revealing where expert judgment matters most:
 
-Uncertainty communication (D3) showed the largest effect (d = 1.353 vs. control, d = 1.040 vs. RAG). This dimension captures whether responses appropriately communicate reliability limitations, margins of error, and data fitness — the core of what pragmatics are designed to deliver. The magnitude of this effect is consistent with the mechanism: pragmatic items encode specific reliability thresholds, interpretation formulas, and informed-refusal criteria that the model cannot derive from training data or retrieved document chunks.
+Uncertainty communication (D3) showed the largest effect (d = 1.353 vs. control, d = 1.040 vs. RAG). This dimension captures whether responses appropriately communicate reliability limitations, margins of error, and data fitness: the core of what pragmatics are designed to deliver. The magnitude of this effect is consistent with the mechanism: pragmatic items encode specific reliability thresholds, interpretation formulas, and informed-refusal criteria that the model cannot derive from training data or retrieved document chunks.
 
 Clarity of explanation (D4) showed the second-largest effect (d = 0.957 vs. control). Accuracy (D1, d = 0.541), completeness (D2, d = 0.537), and harm avoidance (D5, d = 0.732) showed medium to large effects. The consistency across all five dimensions indicates that pragmatics improve the overall quality of statistical consultation rather than optimizing a single aspect.
 
@@ -267,45 +277,45 @@ RAG showed its largest advantage over control on clarity (D4, d = 0.546) and unc
 
 ## 5.3 Stratum Analysis: Normal vs. Edge Cases
 
-The evaluation was stratified to test whether pragmatics disproportionately help on edge cases — queries involving small areas, geographic exceptions, temporal comparisons, and ambiguous requests — or whether benefits extend to routine statistical queries.
+The evaluation was stratified to test whether pragmatics disproportionately help on edge cases (queries involving small areas, geographic exceptions, temporal comparisons, and ambiguous requests) or whether benefits extend to routine statistical queries.
 
-> **[INSERT TABLE T4: Stratum analysis — normal vs edge effect sizes for all 3 comparisons]**
+> **[INSERT TABLE T4: Stratum analysis: normal vs edge effect sizes for all 3 comparisons]**
 
 The results contradicted the initial hypothesis. Pragmatics showed a *larger* effect on normal queries (d = 2.347 vs. control, d = 1.436 vs. RAG) than on edge cases (d = 1.135 vs. control, d = 0.683 vs. RAG). Permutation testing confirmed that the edge-greater hypothesis was not supported (p = 0.987 for pragmatics vs. control).
 
-This finding rules out overfitting to edge cases. Pragmatics do not merely catch exotic failure modes — they improve routine statistical consultation by providing the fitness-for-use context that even straightforward queries benefit from. A normal query about median household income in a large county still benefits from knowing that the five-year estimate is a 60-month average, that the margin of error defines a 90% confidence interval, and that direct comparison to decennial census figures requires methodological adjustment.
+This finding rules out overfitting to edge cases. Pragmatics do not merely catch exotic failure modes; they improve routine statistical consultation by providing the fitness-for-use context that even straightforward queries benefit from. A normal query about median household income in a large county still benefits from knowing that the five-year estimate is a 60-month average, that the margin of error defines a 90% confidence interval, and that direct comparison to decennial census figures requires methodological adjustment.
 
-The normal-stratum finding should be interpreted with a power caveat: at n = 15, the Wilcoxon test has approximately 0.56 power to detect a d = 0.5 effect. The observed effects (d = 2.347) are large enough to detect at this sample size, but RAG versus control on normal queries (d = 0.458, p = 0.137) was not significant — consistent with underpowering rather than a null effect.
+The normal-stratum finding should be interpreted with a power caveat: at n = 15, the Wilcoxon test has approximately 0.56 power to detect a d = 0.5 effect. The observed effects (d = 2.347) are large enough to detect at this sample size, but RAG versus control on normal queries (d = 0.458, p = 0.137) was not significant, consistent with underpowering rather than a null effect.
 
 ## 5.4 Pipeline Fidelity
 
 Stage 3 automated verification assessed whether responses accurately reported what Census API tools returned, measuring both auditability (whether claims could be traced to specific API calls) and fidelity (whether traced claims were accurate).
 
-> **[INSERT TABLE T5: Pipeline fidelity — claims count, auditability %, substantive fidelity % by condition]**
+> **[INSERT TABLE T5: Pipeline fidelity: claims count, auditability %, substantive fidelity % by condition]**
 
-> **[INSERT FIGURE F8: Fidelity scores by condition — bar chart]**
+> **[INSERT FIGURE F8: Fidelity scores by condition (bar chart)]**
 
-Pragmatics achieved 91.2% fidelity across 353 claims, compared to 74.6% for RAG (355 claims) and 78.3% for control (253 claims). Substantive fidelity — the rate among claims that could be fully verified — was 99.7% for pragmatics, 98.9% for RAG, and 100.0% for control.
+Pragmatics achieved 91.2% fidelity across 353 claims, compared to 74.6% for RAG (355 claims) and 78.3% for control (253 claims). Substantive fidelity (the rate among claims that could be fully verified) was 99.7% for pragmatics, 98.9% for RAG, and 100.0% for control.
 
 The fidelity gap between pragmatics and RAG (16.6 percentage points) reflects a structural difference. Pragmatic items provide specific criteria for interpreting data, leading the model to make more precise and verifiable claims. RAG-retrieved chunks provide general context that can lead the model to make claims that are plausible but difficult to verify or subtly misaligned with the specific data returned.
 
-The control condition's lower claim count (253 vs. 353) reflects a pattern where models without methodology support produce vaguer, less specific responses — responses that are harder to verify not because they are wrong but because they are not specific enough to check. This is itself a pragmatically significant finding: ungrounded responses evade accountability by avoiding specificity.
+The control condition's lower claim count (253 vs. 353) reflects a pattern where models without methodology support produce vaguer, less specific responses: responses that are harder to verify not because they are wrong but because they are not specific enough to check. This is itself a pragmatically significant finding: ungrounded responses evade accountability by avoiding specificity.
 
 ## 5.5 Determinism
 
-Pragmatic context retrieval was 100% deterministic across all 39 queries, verified through two independent replications producing zero mismatches with the original evaluation run. Given identical topic parameters, the graph traversal returns identical context sets every time. This determinism is a structural property of the retrieval mechanism — graph lookup rather than similarity search — not a statistical regularity of the evaluation.
+Pragmatic context retrieval was 100% deterministic across all 39 queries, verified through two independent replications producing zero mismatches with the original evaluation run. Given identical topic parameters, the graph traversal returns identical context sets every time. This determinism is a structural property of the retrieval mechanism (graph lookup rather than similarity search), not a statistical regularity of the evaluation.
 
 ## 5.6 Cost and Efficiency
 
-Pragmatics incurred higher per-query token costs than RAG. Mean input tokens per query were 32,929 for pragmatics, 23,746 for RAG, and 5,830 for control — reflecting the structured context delivered alongside data. At Claude Sonnet 4.5 pricing ($3/$15 per million tokens input/output), per-query costs were $0.113 (pragmatics), $0.082 (RAG), and $0.028 (control).
+Pragmatics incurred higher per-query token costs than RAG. Mean input tokens per query were 32,929 for pragmatics, 23,746 for RAG, and 5,830 for control, reflecting the structured context delivered alongside data. At Claude Sonnet 4.5 pricing ($3/$15 per million tokens input/output), per-query costs were $0.113 (pragmatics), $0.082 (RAG), and $0.028 (control).
 
 > **[INSERT TABLE T6: Cost per query by condition and model tier (Sonnet/Opus) with cost-effectiveness ratios]**
 
-> **[INSERT FIGURE F9: Cost-effectiveness — CQS improvement per marginal dollar by condition]**
+> **[INSERT FIGURE F9: Cost-effectiveness: CQS improvement per marginal dollar by condition]**
 
-However, cost-effectiveness — measured as CQS improvement per marginal dollar spent relative to control — favored pragmatics at 2.2 times the cost-effectiveness of RAG (6.28 vs. 2.83 CQS points per marginal dollar). Pragmatics costs 38% more per query than RAG but delivers disproportionately more quality improvement.
+However, cost-effectiveness, measured as CQS improvement per marginal dollar spent relative to control, favored pragmatics at 2.2 times the cost-effectiveness of RAG (6.28 vs. 2.83 CQS points per marginal dollar). Pragmatics costs 38% more per query than RAG but delivers disproportionately more quality improvement.
 
-The marginal cost of pragmatic guidance was $0.09 per query at Sonnet pricing and $0.14 at Opus pricing. The full 39-query evaluation battery cost $4.42 at production rates. These figures reflect token costs only; pragmatics requires no vector database, no embedding model, and no retrieval infrastructure at runtime — the pack is a SQLite file served via an API call. The total cost of ownership for pragmatics is dominated by the one-time authoring investment rather than ongoing infrastructure.
+The marginal cost of pragmatic guidance was $0.09 per query at Sonnet pricing and $0.14 at Opus pricing. The full 39-query evaluation battery cost $4.42 at production rates. These figures reflect token costs only; pragmatics requires no vector database, no embedding model, and no retrieval infrastructure at runtime; the pack is a SQLite file served via an API call. The total cost of ownership for pragmatics is dominated by the one-time authoring investment rather than ongoing infrastructure.
 
 # Section 6: Discussion
 
@@ -316,43 +326,43 @@ The marginal cost of pragmatic guidance was $0.09 per query at Sonnet pricing an
 
 The central empirical finding is that 36 curated expert judgment items outperform 311 document chunks retrieved from the same source material, with a large effect size (d = 0.922) and a 16.6 percentage point fidelity advantage. Both conditions drew from the same 354 pages of Census Bureau documentation. The difference is entirely in how that knowledge was represented and delivered.
 
-This result instantiates a broader principle: information selectivity at inference time follows the same pattern as training data curation. The machine learning community has established that curated, high-quality training datasets outperform larger, noisier corpora — that data quality matters more than data volume for what a model learns. The same principle operates at every layer of the AI stack. Curating training data reduces variance in what a model learns. Curating reasoning traces — as in chain-of-thought distillation for inference-time reasoning models — reduces variance in how a model reasons. Curating expert judgment at the point of decision, as pragmatics does, reduces variance in how a model consults. Each is the same insight — precision of signal outperforms volume of context — applied at a different stage of the pipeline. What this study contributes is the empirical demonstration that the selectivity principle extends to inference-time expert knowledge, a layer that existing AI architectures have addressed primarily through retrieval volume rather than judgment curation.
+This result instantiates a broader principle: information selectivity at inference time follows the same pattern as training data curation. The machine learning community has established that curated, high-quality training datasets outperform larger, noisier corpora; data quality matters more than data volume for what a model learns. The same principle operates at every layer of the AI stack. Curating training data reduces variance in what a model learns. Curating reasoning traces (as in chain-of-thought distillation for inference-time reasoning models) reduces variance in how a model reasons. Curating expert judgment at the point of decision, as pragmatics does, reduces variance in how a model consults. Each is the same insight, applied at a different stage of the pipeline: precision of signal outperforms volume of context. What this study contributes is the empirical demonstration that the selectivity principle extends to inference-time expert knowledge, a layer that existing AI architectures have addressed primarily through retrieval volume rather than judgment curation.
 
-The extraction yield — 34 pipeline-extracted items from 5,233 knowledge graph nodes, a 0.65% retention rate — is not a limitation to be overcome through automation. It is the mechanism. Each reduction step in the pipeline (source documents → graph nodes → harvested candidates → curated items) removes content that is semantically related but pragmatically irrelevant. The final 36 items represent the distilled judgment that a senior statistician would actually provide at the point of data interpretation, stripped of the exposition, background, and procedural detail that constitutes the majority of methodology documentation.
+The extraction yield (34 pipeline-extracted items from 5,233 knowledge graph nodes, a 0.65% retention rate) is not a limitation to be overcome through automation. It is the mechanism. Each reduction step in the pipeline (source documents → graph nodes → harvested candidates → curated items) removes content that is semantically related but pragmatically irrelevant. The final 36 items represent the distilled judgment that a senior statistician would actually provide at the point of data interpretation, stripped of the exposition, background, and procedural detail that constitutes the majority of methodology documentation.
 
 The D3 (uncertainty communication) results provide the clearest illustration. This dimension showed the largest effect across all five quality dimensions (d = 1.353 vs. control, d = 1.040 vs. RAG) because it depends most directly on fitness-for-use judgment. RAG can retrieve a passage explaining what a margin of error is. Pragmatics deliver the specific judgment that *this* margin of error renders *this* estimate unreliable for *this* use case. The distinction between retrieving information about uncertainty and delivering judgment about uncertainty is the distinction between semantics and pragmatics.
 
 ## 6.2 Reducing the Stochastic Tax
 
-Every AI system built on language models pays a stochastic tax — variance at every stage of the pipeline that cannot be eliminated because the underlying generation mechanism is non-deterministic. The practical question is not whether variance exists but where it accumulates and how much of it is avoidable.
+Every AI system built on language models pays a stochastic tax: variance at every stage of the pipeline that cannot be eliminated because the underlying generation mechanism is non-deterministic. The practical question is not whether variance exists but where it accumulates and how much of it is avoidable.
 
-RAG and GraphRAG systems compound variance at two stages. Retrieval is stochastic — embedding similarity is approximate, and the same query can return different chunks depending on model version, index state, and numerical precision. Generation is stochastic — the same context can produce different outputs. When both stages vary, the compounding effect produces inconsistent grounding for inconsistent reasoning.
+RAG and GraphRAG systems compound variance at two stages. Retrieval is stochastic: embedding similarity is approximate, and the same query can return different chunks depending on model version, index state, and numerical precision. Generation is stochastic: the same context can produce different outputs. When both stages vary, the compounding effect produces inconsistent grounding for inconsistent reasoning.
 
-Pragmatics eliminates one source of this compounding. Context retrieval is deterministic — a graph traversal that returns identical results every time, verified at 100% across all 39 queries and two independent replications. The model's reasoning over those items remains stochastic, as it must in any language model system. But the grounding is fixed. The variance is isolated to one stage rather than compounding across two.
+Pragmatics eliminates one source of this compounding. Context retrieval is deterministic: a graph traversal that returns identical results every time, verified at 100% across all 39 queries and two independent replications. The model's reasoning over those items remains stochastic, as it must in any language model system. But the grounding is fixed. The variance is isolated to one stage rather than compounding across two.
 
-For federal statistical consultation, this distinction matters practically. The difference between a one-year and five-year estimate, or between a 20% and 40% coefficient of variation, determines whether an answer is useful or harmful. Stochastic retrieval in a domain where all the documentation sounds alike — where anisotropy and domain homogeneity collapse the embedding space — means the grounding itself is unreliable. Deterministic delivery of curated judgment eliminates this failure mode.
+For federal statistical consultation, this distinction matters practically. The difference between a one-year and five-year estimate, or between a 20% and 40% coefficient of variation, determines whether an answer is useful or harmful. Stochastic retrieval in a domain where all the documentation sounds alike (where anisotropy and domain homogeneity collapse the embedding space) means the grounding itself is unreliable. Deterministic delivery of curated judgment eliminates this failure mode.
 
 ## 6.3 The Sidecar Architecture
 
 The empirical results establish that curated expert judgment improves statistical consultation quality. The delivery architecture determines whether that improvement is practically deployable.
 
-Pragmatics are served as a server-side API resource. When a client model requests methodology guidance, the server performs a deterministic graph lookup, bundles the relevant context items, and returns them alongside the Census data response. The client receives expert judgment as structured data in the same response envelope as the statistical estimates. No client-side infrastructure is required — no vector database, no embedding model, no index to build or maintain.
+Pragmatics are served as a server-side API resource. When a client model requests methodology guidance, the server performs a deterministic graph lookup, bundles the relevant context items, and returns them alongside the Census data response. The client receives expert judgment as structured data in the same response envelope as the statistical estimates. No client-side infrastructure is required: no vector database, no embedding model, no index to build or maintain.
 
 This sidecar pattern inverts the cost structure of retrieval-based approaches. RAG requires each client to maintain its own chunked index: acquiring source documents, choosing a chunk strategy, embedding with a specific model, hosting a vector store, and re-indexing when any component changes. GraphRAG adds a graph database and approximately doubles the monthly infrastructure cost. Both approaches scale infrastructure linearly with the number of clients.
 
-Pragmatics concentrates the authoring cost — one expert curates the pack — and distributes the benefit through a negligible-cost API call. Domain experts update the pack centrally; all clients benefit immediately. The runtime cost is a SQLite file read. As input token costs decline across model generations, the absolute cost of delivering expert judgment decreases while the quality advantage, which is structural rather than cost-dependent, remains stable.
+Pragmatics concentrates the authoring cost (one expert curates the pack) and distributes the benefit through a negligible-cost API call. Domain experts update the pack centrally; all clients benefit immediately. The runtime cost is a SQLite file read. As input token costs decline across model generations, the absolute cost of delivering expert judgment decreases while the quality advantage, which is structural rather than cost-dependent, remains stable.
 
-The evaluation provides an unintentional test of vendor independence. Three judge models from three vendors (Anthropic Claude, OpenAI GPT, Google Gemini) all consumed pragmatic context through the same interface and consistently scored pragmatics-assisted responses higher. Any system that can receive structured context — regardless of the reasoning model behind it — benefits from the same expert judgment. This decouples the expertise from the model, allowing agencies to change model vendors without rebuilding their expert judgment infrastructure.
+The evaluation provides an unintentional test of vendor independence. Three judge models from three vendors (Anthropic Claude, OpenAI GPT, Google Gemini) all consumed pragmatic context through the same interface and consistently scored pragmatics-assisted responses higher. Any system that can receive structured context, regardless of the reasoning model behind it, benefits from the same expert judgment. This decouples the expertise from the model, allowing agencies to change model vendors without rebuilding their expert judgment infrastructure.
 
 ## 6.4 Implications for Federal Statistical Agencies
 
 Making federal data AI-ready requires three investments: refactoring how data is exposed to AI systems, accelerating metadata curation, and encoding the expert judgment needed to evaluate fitness for use. The first two are underway across federal statistical agencies. The third is not.
 
-The pragmatics concept does not compete with existing efforts. Continued investment in machine-readable formats, structured APIs, and rich metadata is essential — these ensure that syntax and semantics continue to be available in model training data and through programmatic access. Pragmatics complement this infrastructure by adding the layer that syntax and semantics cannot provide: the expert assessment of whether data is appropriate for a specific purpose.
+The pragmatics concept does not compete with existing efforts. Continued investment in machine-readable formats, structured APIs, and rich metadata is essential; these ensure that syntax and semantics continue to be available in model training data and through programmatic access. Pragmatics complement this infrastructure by adding the layer that syntax and semantics cannot provide: the expert assessment of whether data is appropriate for a specific purpose.
 
 The practical path forward involves packaging statistical expertise as a deliverable resource alongside data products. Not as documentation that users may or may not read, but as structured, machine-deliverable judgment that reaches the point of analysis automatically. The finding that 36 curated items from 354 pages of documentation produce a very large effect size suggests that the investment required is modest relative to the documentation that agencies already produce. The expert judgment exists. It lives in the professional practice of experienced statisticians. The task is to capture it, structure it, and deliver it computationally.
 
-This is not a new obligation. The Federal Committee on Statistical Methodology's own data quality framework codifies characteristics that are fundamentally pragmatic — relevance, accuracy, timeliness, fitness for use. These have been the standard for decades. What pragmatics operationalizes is the delivery of this existing institutional knowledge through the channels where data consumers increasingly encounter federal statistics: AI-mediated analysis.
+This is not a new obligation. The Federal Committee on Statistical Methodology's own data quality framework codifies characteristics that are fundamentally pragmatic: relevance, accuracy, timeliness, fitness for use. These have been the standard for decades. What pragmatics operationalizes is the delivery of this existing institutional knowledge through the channels where data consumers increasingly encounter federal statistics: AI-mediated analysis. A published crosswalk between FCSM 20-04 and the NIST AI Risk Management Framework provides a coordination tool for agencies navigating both quality and trustworthiness requirements simultaneously (Webb, 2026).
 
 # Section 7: Limitations and Future Work
 
@@ -362,7 +372,7 @@ This is not a new obligation. The Federal Committee on Statistical Methodology's
 
 This study has several constraints that bound the generalizability of its findings.
 
-**Single domain.** The evaluation was conducted exclusively on the American Community Survey. While the architecture is domain-agnostic — the pack structure, retrieval mechanism, and delivery protocol impose no ACS-specific assumptions — the pragmatic content is domain-specific by design. Extending to other federal surveys (Current Population Survey, Survey of Income and Program Participation, decennial census) requires domain-specific curation.
+**Single domain.** The evaluation was conducted exclusively on the American Community Survey. While the architecture is domain-agnostic (the pack structure, retrieval mechanism, and delivery protocol impose no ACS-specific assumptions), the pragmatic content is domain-specific by design. Extending to other federal surveys (Current Population Survey, Survey of Income and Program Participation, decennial census) requires domain-specific curation.
 
 **Single caller model.** All Stage 1 responses were generated by a single model (Claude Sonnet 4.5). Although the multi-vendor judge panel (Anthropic, OpenAI, Google) validates that quality assessments are not model-specific, the interaction between pragmatic context and different caller model architectures has not been tested. Models with different training data distributions may respond differently to the same expert judgment items.
 
@@ -378,9 +388,9 @@ This study has several constraints that bound the generalizability of its findin
 
 **Cross-survey expansion.** The immediate extension is developing pragmatics packs for additional federal surveys. Some expert judgment is survey-specific (ACS period estimate interpretation, CPS rotation group effects), while some is shared across surveys (geographic hierarchy rules, FIPS resolution, margin of error interpretation). The pack architecture supports shared modules that multiple survey-specific packs can reference, avoiding redundant curation of common knowledge.
 
-**Expert validation.** Stage 4 of the evaluation pipeline — expert validation by Census methodology specialists — is planned as a two-phase process: blinded rank-order assessment of query responses, followed by structured interviews to elicit additional tacit knowledge for new pragmatic items. The two manually extracted items in the current pack serve as proof-of-concept for the interview-based elicitation pathway.
+**Expert validation.** Stage 4 of the evaluation pipeline (expert validation by Census methodology specialists) is planned as a two-phase process: blinded rank-order assessment of query responses, followed by structured interviews to elicit additional tacit knowledge for new pragmatic items. The two manually extracted items in the current pack serve as proof-of-concept for the interview-based elicitation pathway.
 
-**Hybrid authoring.** The current hand-curation process, while producing high-quality items, does not scale to large numbers of surveys and data products. A hybrid approach — LLM-assisted batch generation of candidate items from source documents, with human expert review and latitude assignment — could accelerate content production while maintaining the quality standard established by the hand-curated items as few-shot exemplars.
+**Hybrid authoring.** The current hand-curation process, while producing high-quality items, does not scale to large numbers of surveys and data products. A hybrid approach involving LLM-assisted batch generation of candidate items from source documents, with human expert review and latitude assignment, could accelerate content production while maintaining the quality standard established by the hand-curated items as few-shot exemplars.
 
 **Community contribution.** A governance structure for multi-contributor pragmatics authoring would address the single-curator limitation. Federal statisticians, academic demographers, and experienced data users could contribute and review items through the existing authoring pipeline (graph database → staging → compilation), with quality assurance processes ensuring consistency.
 
@@ -390,13 +400,13 @@ This study has several constraints that bound the generalizability of its findin
 
 <!-- Registry references: S2-010, S2-032, S3-003, PL-001, COST-003 -->
 
-Federal statistical agencies have invested decades in making their data accessible and interpretable by machines — building the syntax and semantics layers that enable automated access to statistical products. Large language models have absorbed much of this infrastructure, demonstrating that they can translate natural language into domain-appropriate queries and retrieve correct data. The remaining gap is not in access or interpretation but in judgment: the expert assessment of whether retrieved data is fit for a specific purpose.
+Federal statistical agencies have invested decades in making their data accessible and interpretable by machines, building the syntax and semantics layers that enable automated access to statistical products. Large language models have absorbed much of this infrastructure, demonstrating that they can translate natural language into domain-appropriate queries and retrieve correct data. The remaining gap is not in access or interpretation but in judgment: the expert assessment of whether retrieved data is fit for a specific purpose.
 
-This paper has introduced pragmatics as a named, defined, and implementable concept for addressing this gap. Drawing on Morris's (1938) semiotic framework, we define pragmatics as structured expert judgment about fitness for use — the assessment that experienced statisticians provide reflexively but that no existing system delivers computationally.
+This paper has introduced pragmatics as a named, defined, and implementable concept for addressing this gap. Drawing on Morris's (1938) semiotic framework, we define pragmatics as structured expert judgment about fitness for use: the assessment that experienced statisticians provide reflexively but that no existing system delivers computationally.
 
-We have provided empirical evidence that pragmatics works. A knowledge representation study comparing three conditions with identical data access demonstrated that 36 curated expert judgment items produce very large improvements in statistical consultation quality (Cohen's d = 1.440 vs. control, d = 0.922 vs. RAG), with the strongest effects on uncertainty communication (d = 1.353) — the dimension most directly tied to fitness-for-use assessment. Pragmatic context achieves 91.2% fidelity to authoritative data sources, is 100% deterministic in its delivery, and costs nine cents per query.
+We have provided empirical evidence that pragmatics works. A knowledge representation study comparing three conditions with identical data access demonstrated that 36 curated expert judgment items produce very large improvements in statistical consultation quality (Cohen's d = 1.440 vs. control, d = 0.922 vs. RAG), with the strongest effects on uncertainty communication (d = 1.353), the dimension most directly tied to fitness-for-use assessment. Pragmatic context achieves 91.2% fidelity to authoritative data sources, is 100% deterministic in its delivery, and costs nine cents per query.
 
-The principle underlying these results extends beyond Census data. Just as curating training data reduces variance in what a model learns, curating expert judgment reduces variance in what a model concludes. The federal statistical community has the expertise. The task is to capture it, structure it, and deliver it at the point where decisions are being made — transforming data retrieval into statistical consultation.
+The principle underlying these results extends beyond Census data. Just as curating training data reduces variance in what a model learns, curating expert judgment reduces variance in what a model concludes. The federal statistical community has the expertise. The task is to capture it, structure it, and deliver it at the point where decisions are being made, transforming data retrieval into statistical consultation.
 
 # References
 
@@ -417,6 +427,8 @@ U.S. Census Bureau. (2020). *American Community Survey: General handbook*. U.S. 
 U.S. Census Bureau. (2020). *Geography and the American Community Survey: What data users need to know*. U.S. Department of Commerce.
 
 U.S. Census Bureau. (2024). *American Community Survey: Design and methodology report*. U.S. Department of Commerce.
+
+Webb, B. (2026). When AI enters federal statistics: A crosswalk between data quality and AI trustworthiness frameworks. Zenodo. https://doi.org/10.5281/zenodo.18766095
 
 <!-- TODO: Verify all URLs are live. Add Vaswani et al. 2017 if timeline reference stays. Add GraphRAG cost citations if used in Discussion. -->
 
@@ -487,7 +499,7 @@ The CQS rubric specifies five quality dimensions (D1–D5), each scored 0–2. F
 **Stage 3 verification metrics (pipeline behavior, not CQS dimensions):**
 - Fidelity: 91.2% (pragmatics), 74.6% (RAG), 78.3% (control)
 - Auditability: 72.8% (pragmatics), 8.1% (control)
-- Grounding compliance: 100% — all 39 pragmatics queries consulted methodology guidance before data interpretation
+- Grounding compliance: 100%; all 39 pragmatics queries consulted methodology guidance before data interpretation
 
 ### Full Scoring Criteria
 
@@ -497,7 +509,7 @@ The CQS rubric specifies five quality dimensions (D1–D5), each scored 0–2. F
 
 - **Score 0 (Absent):** Wrong product entirely (e.g., decennial for income), wrong vintage, wrong geography level for the population, or no product specified.
 - **Score 1 (Partial):** Correct product family but wrong parameters (e.g., ACS 1-year for a 15K-population area), or correct product but without justification.
-- **Score 2 (Complete):** Correct product, vintage, geography, and universe — with rationale appropriate to the query context. Also scores 2: correctly determining that no available product meets fitness-for-use requirements and explaining why, with redirection to alternatives.
+- **Score 2 (Complete):** Correct product, vintage, geography, and universe, with rationale appropriate to the query context. Also scores 2: correctly determining that no available product meets fitness-for-use requirements and explaining why, with redirection to alternatives.
 
 **Failure modes:** Using ACS 1-year for geographies below 65K population threshold; mixing decennial and ACS concepts without noting design differences; not specifying vintage when temporal precision matters.
 
@@ -505,9 +517,9 @@ The CQS rubric specifies five quality dimensions (D1–D5), each scored 0–2. F
 
 **What it measures:** Are computations, weights, denominators, and formulas correct for the stated analysis?
 
-- **Score 0 (Absent):** Fundamental errors — wrong denominator, unweighted counts used for inference, incorrect derived statistics, or no computation shown.
+- **Score 0 (Absent):** Fundamental errors: wrong denominator, unweighted counts used for inference, incorrect derived statistics, or no computation shown.
 - **Score 1 (Partial):** Core computation correct but missing weight specification, incomplete formula, or minor unit inconsistency.
-- **Score 2 (Complete):** Correct computation with appropriate weights, denominators, and formulas — consistent units, proper aggregation methods.
+- **Score 2 (Complete):** Correct computation with appropriate weights, denominators, and formulas: consistent units, proper aggregation methods.
 
 **Failure modes:** Dividing by total population when the universe is civilian noninstitutionalized; adding MOEs directly instead of root-sum-of-squares; comparing rates with different bases without noting the difference.
 
@@ -535,7 +547,7 @@ The CQS rubric specifies five quality dimensions (D1–D5), each scored 0–2. F
 
 **What it measures:** Can another analyst replicate the stated numbers from the cited sources?
 
-- **Score 0 (Absent):** "According to Census data..." — no table ID, no variable codes, no geography specification.
+- **Score 0 (Absent):** "According to Census data..." (no table ID, no variable codes, no geography specification).
 - **Score 1 (Partial):** Dataset and year specified but missing table ID or variable codes, or geography described but not with FIPS/GEOID precision.
 - **Score 2 (Complete):** Full provenance: dataset, table ID or variable codes, geography (with identifiers), year/vintage, and any filters or transformations described.
 
@@ -582,7 +594,7 @@ Extends the base prompt with a grounding gate instruction that forces consultati
 ```
 You are a statistical consultant helping users access and understand U.S. Census data. Use your available tools to answer the question.
 
-You MUST call get_methodology_guidance FIRST before any other tool calls. This is required for every query — no exceptions. Select topics relevant to the query. After reviewing the methodology guidance, proceed with data retrieval.
+You MUST call get_methodology_guidance FIRST before any other tool calls. This is required for every query; no exceptions. Select topics relevant to the query. After reviewing the methodology guidance, proceed with data retrieval.
 ```
 
 Receives data retrieval tools plus `get_methodology_guidance` (excluded from control and RAG conditions). The `get_methodology_guidance` tool queries the compiled ACS pragmatics pack (SQLite) and returns structured expert judgment relevant to the query topics.
@@ -591,7 +603,7 @@ Receives data retrieval tools plus `get_methodology_guidance` (excluded from con
 
 ## Appendix D: Design Correction Post-Mortem
 
-The V1 evaluation design contained a confound: the pragmatics condition had access to a methodology guidance tool that the control and RAG conditions lacked, making tool access — not knowledge representation — the independent variable. This was identified and corrected in V2, where all conditions received identical data tools and differed only in methodology support form. Full documentation is in `docs/decisions/ADR-011-v2-evaluation-design-correction.md`.
+The V1 evaluation design contained a confound: the pragmatics condition had access to a methodology guidance tool that the control and RAG conditions lacked, making tool access, not knowledge representation, the independent variable. This was identified and corrected in V2, where all conditions received identical data tools and differed only in methodology support form. Full documentation is in `docs/decisions/ADR-011-v2-evaluation-design-correction.md`.
 
 ---
 
@@ -611,15 +623,15 @@ The 36 pragmatic items in the ACS pack. Full content (context text, triggers, th
 | ACS-DIS-002 | disclosure_avoidance | none | ACS does NOT use differential privacy. The 2020 Decennial Census used differential privacy,... | 4 | 0 |
 | ACS-DIS-003 | disclosure_avoidance | narrow | When ACS estimates show a margin of error equal to the estimate itself, or when the Census B... | 5 | 1 |
 | ACS-DOL-001 | dollar_values | narrow | When comparing dollar-denominated estimates (income, rent, home value) across different ACS ... | 5 | 1 |
-| ACS-EQV-001 | geographic_equivalence | narrow | Some census tracts contain an entire county's population — this occurs in very rural or spar... | 5 | 1 |
+| ACS-EQV-001 | geographic_equivalence | narrow | Some census tracts contain an entire county's population, which occurs in very rural or spar... | 5 | 1 |
 | ACS-EQV-002 | geographic_equivalence | narrow | Census Designated Places (CDPs) are statistical entities, not legal jurisdictions. CDPs have... | 5 | 0 |
 | ACS-GEO-001 | geography | none | Block group level data is only available in ACS 5-year estimates, not 1-year estimates. This... | 4 | 1 |
 | ACS-GEO-002 | geography | wide | Public Use Microdata Areas (PUMAs) have a minimum population of 100,000. PUMA boundaries do ... | 4 | 0 |
 | ACS-GEO-003 | geography | wide | Congressional district boundaries change after each decennial census reapportionment. ACS es... | 4 | 0 |
 | ACS-GEO-004 | geography | full | ACS geographic boundaries reflect boundaries as of January 1 of the final year in the survey... | 4 | 0 |
 | ACS-GQ-001 | group_quarters | narrow | ACS includes group quarters population (college dorms, military barracks, prisons). For comm... | 8 | 2 |
-| ACS-GQ-002 | group_quarters | wide | ACS group quarters imputation rates can be very high — up to 30-50% of GQ persons may have ... | 6 | 2 |
-| ACS-IND-001 | independent_cities | none | Some US cities are county-equivalents (independent cities) — they do NOT nest inside a count... | 5 | 0 |
+| ACS-GQ-002 | group_quarters | wide | ACS group quarters imputation rates can be very high, up to 30-50% of GQ persons may have... | 6 | 2 |
+| ACS-IND-001 | independent_cities | none | Some US cities are county-equivalents (independent cities); they do NOT nest inside a count... | 5 | 0 |
 | ACS-MOE-001 | margin_of_error | narrow | To calculate standard error from ACS margin of error: SE = MOE / 1.645. ACS MOEs are report... | 3 | 1 |
 | ACS-MOE-002 | margin_of_error | narrow | Coefficient of variation (CV) = (SE / estimate) × 100. CV above 40% indicates the estimate ... | 3 | 1 |
 | ACS-MOE-003 | margin_of_error | wide | 5-year estimates have smaller margins of error than 1-year estimates for the same geography,... | 3 | 0 |
@@ -632,7 +644,7 @@ The 36 pragmatic items in the ACS pack. Full content (context text, triggers, th
 | ACS-POP-002 | population_threshold | none | ACS 1-year Supplemental Estimates are available for areas with population of 20,000 or more,... | 3 | 0 |
 | ACS-POP-003 | population_threshold | none | ACS 5-year estimates are available for all geographic areas, including census tracts and bloc... | 3 | 0 |
 | ACS-REL-001 | release_schedule | narrow | As of December 2025, the most recent ACS releases are: ACS 1-year 2024 (released September ... | 4 | 0 |
-| ACS-RES-001 | residence_rules | narrow | ACS uses a 'current residence' rule — a person must have lived at an address for 2 months or... | 6 | 2 |
+| ACS-RES-001 | residence_rules | narrow | ACS uses a 'current residence' rule: a person must have lived at an address for 2 months or... | 6 | 2 |
 | ACS-SAM-001 | sampling | wide | ACS sampling rates are not uniform. Sparsely populated areas are sampled at rates up to 5x h... | 6 | 2 |
 | ACS-SUP-001 | suppression | wide | Some 1-year ACS tables may be suppressed if estimates are deemed too unreliable. Suppression... | 3 | 0 |
 | ACS-THR-001 | threshold | narrow | For geographies with total population under approximately 1,000, ACS 5-year estimates may st... | 5 | 2 |

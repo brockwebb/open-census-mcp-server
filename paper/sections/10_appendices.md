@@ -65,7 +65,7 @@ The CQS rubric specifies five quality dimensions (D1–D5), each scored 0–2. F
 **Stage 3 verification metrics (pipeline behavior, not CQS dimensions):**
 - Fidelity: 91.2% (pragmatics), 74.6% (RAG), 78.3% (control)
 - Auditability: 72.8% (pragmatics), 8.1% (control)
-- Grounding compliance: 100% — all 39 pragmatics queries consulted methodology guidance before data interpretation
+- Grounding compliance: 100%; all 39 pragmatics queries consulted methodology guidance before data interpretation
 
 ### Full Scoring Criteria
 
@@ -75,7 +75,7 @@ The CQS rubric specifies five quality dimensions (D1–D5), each scored 0–2. F
 
 - **Score 0 (Absent):** Wrong product entirely (e.g., decennial for income), wrong vintage, wrong geography level for the population, or no product specified.
 - **Score 1 (Partial):** Correct product family but wrong parameters (e.g., ACS 1-year for a 15K-population area), or correct product but without justification.
-- **Score 2 (Complete):** Correct product, vintage, geography, and universe — with rationale appropriate to the query context. Also scores 2: correctly determining that no available product meets fitness-for-use requirements and explaining why, with redirection to alternatives.
+- **Score 2 (Complete):** Correct product, vintage, geography, and universe, with rationale appropriate to the query context. Also scores 2: correctly determining that no available product meets fitness-for-use requirements and explaining why, with redirection to alternatives.
 
 **Failure modes:** Using ACS 1-year for geographies below 65K population threshold; mixing decennial and ACS concepts without noting design differences; not specifying vintage when temporal precision matters.
 
@@ -83,9 +83,9 @@ The CQS rubric specifies five quality dimensions (D1–D5), each scored 0–2. F
 
 **What it measures:** Are computations, weights, denominators, and formulas correct for the stated analysis?
 
-- **Score 0 (Absent):** Fundamental errors — wrong denominator, unweighted counts used for inference, incorrect derived statistics, or no computation shown.
+- **Score 0 (Absent):** Fundamental errors: wrong denominator, unweighted counts used for inference, incorrect derived statistics, or no computation shown.
 - **Score 1 (Partial):** Core computation correct but missing weight specification, incomplete formula, or minor unit inconsistency.
-- **Score 2 (Complete):** Correct computation with appropriate weights, denominators, and formulas — consistent units, proper aggregation methods.
+- **Score 2 (Complete):** Correct computation with appropriate weights, denominators, and formulas: consistent units, proper aggregation methods.
 
 **Failure modes:** Dividing by total population when the universe is civilian noninstitutionalized; adding MOEs directly instead of root-sum-of-squares; comparing rates with different bases without noting the difference.
 
@@ -113,7 +113,7 @@ The CQS rubric specifies five quality dimensions (D1–D5), each scored 0–2. F
 
 **What it measures:** Can another analyst replicate the stated numbers from the cited sources?
 
-- **Score 0 (Absent):** "According to Census data..." — no table ID, no variable codes, no geography specification.
+- **Score 0 (Absent):** "According to Census data..." (no table ID, no variable codes, no geography specification).
 - **Score 1 (Partial):** Dataset and year specified but missing table ID or variable codes, or geography described but not with FIPS/GEOID precision.
 - **Score 2 (Complete):** Full provenance: dataset, table ID or variable codes, geography (with identifiers), year/vintage, and any filters or transformations described.
 
@@ -160,7 +160,7 @@ Extends the base prompt with a grounding gate instruction that forces consultati
 ```
 You are a statistical consultant helping users access and understand U.S. Census data. Use your available tools to answer the question.
 
-You MUST call get_methodology_guidance FIRST before any other tool calls. This is required for every query — no exceptions. Select topics relevant to the query. After reviewing the methodology guidance, proceed with data retrieval.
+You MUST call get_methodology_guidance FIRST before any other tool calls. This is required for every query; no exceptions. Select topics relevant to the query. After reviewing the methodology guidance, proceed with data retrieval.
 ```
 
 Receives data retrieval tools plus `get_methodology_guidance` (excluded from control and RAG conditions). The `get_methodology_guidance` tool queries the compiled ACS pragmatics pack (SQLite) and returns structured expert judgment relevant to the query topics.
@@ -169,7 +169,7 @@ Receives data retrieval tools plus `get_methodology_guidance` (excluded from con
 
 ## Appendix D: Design Correction Post-Mortem
 
-The V1 evaluation design contained a confound: the pragmatics condition had access to a methodology guidance tool that the control and RAG conditions lacked, making tool access — not knowledge representation — the independent variable. This was identified and corrected in V2, where all conditions received identical data tools and differed only in methodology support form. Full documentation is in `docs/decisions/ADR-011-v2-evaluation-design-correction.md`.
+The V1 evaluation design contained a confound: the pragmatics condition had access to a methodology guidance tool that the control and RAG conditions lacked, making tool access, not knowledge representation, the independent variable. This was identified and corrected in V2, where all conditions received identical data tools and differed only in methodology support form. Full documentation is in `docs/decisions/ADR-011-v2-evaluation-design-correction.md`.
 
 ---
 
@@ -189,15 +189,15 @@ The 36 pragmatic items in the ACS pack. Full content (context text, triggers, th
 | ACS-DIS-002 | disclosure_avoidance | none | ACS does NOT use differential privacy. The 2020 Decennial Census used differential privacy,... | 4 | 0 |
 | ACS-DIS-003 | disclosure_avoidance | narrow | When ACS estimates show a margin of error equal to the estimate itself, or when the Census B... | 5 | 1 |
 | ACS-DOL-001 | dollar_values | narrow | When comparing dollar-denominated estimates (income, rent, home value) across different ACS ... | 5 | 1 |
-| ACS-EQV-001 | geographic_equivalence | narrow | Some census tracts contain an entire county's population — this occurs in very rural or spar... | 5 | 1 |
+| ACS-EQV-001 | geographic_equivalence | narrow | Some census tracts contain an entire county's population, which occurs in very rural or spar... | 5 | 1 |
 | ACS-EQV-002 | geographic_equivalence | narrow | Census Designated Places (CDPs) are statistical entities, not legal jurisdictions. CDPs have... | 5 | 0 |
 | ACS-GEO-001 | geography | none | Block group level data is only available in ACS 5-year estimates, not 1-year estimates. This... | 4 | 1 |
 | ACS-GEO-002 | geography | wide | Public Use Microdata Areas (PUMAs) have a minimum population of 100,000. PUMA boundaries do ... | 4 | 0 |
 | ACS-GEO-003 | geography | wide | Congressional district boundaries change after each decennial census reapportionment. ACS es... | 4 | 0 |
 | ACS-GEO-004 | geography | full | ACS geographic boundaries reflect boundaries as of January 1 of the final year in the survey... | 4 | 0 |
 | ACS-GQ-001 | group_quarters | narrow | ACS includes group quarters population (college dorms, military barracks, prisons). For comm... | 8 | 2 |
-| ACS-GQ-002 | group_quarters | wide | ACS group quarters imputation rates can be very high — up to 30-50% of GQ persons may have ... | 6 | 2 |
-| ACS-IND-001 | independent_cities | none | Some US cities are county-equivalents (independent cities) — they do NOT nest inside a count... | 5 | 0 |
+| ACS-GQ-002 | group_quarters | wide | ACS group quarters imputation rates can be very high, up to 30-50% of GQ persons may have... | 6 | 2 |
+| ACS-IND-001 | independent_cities | none | Some US cities are county-equivalents (independent cities); they do NOT nest inside a count... | 5 | 0 |
 | ACS-MOE-001 | margin_of_error | narrow | To calculate standard error from ACS margin of error: SE = MOE / 1.645. ACS MOEs are report... | 3 | 1 |
 | ACS-MOE-002 | margin_of_error | narrow | Coefficient of variation (CV) = (SE / estimate) × 100. CV above 40% indicates the estimate ... | 3 | 1 |
 | ACS-MOE-003 | margin_of_error | wide | 5-year estimates have smaller margins of error than 1-year estimates for the same geography,... | 3 | 0 |
@@ -210,7 +210,7 @@ The 36 pragmatic items in the ACS pack. Full content (context text, triggers, th
 | ACS-POP-002 | population_threshold | none | ACS 1-year Supplemental Estimates are available for areas with population of 20,000 or more,... | 3 | 0 |
 | ACS-POP-003 | population_threshold | none | ACS 5-year estimates are available for all geographic areas, including census tracts and bloc... | 3 | 0 |
 | ACS-REL-001 | release_schedule | narrow | As of December 2025, the most recent ACS releases are: ACS 1-year 2024 (released September ... | 4 | 0 |
-| ACS-RES-001 | residence_rules | narrow | ACS uses a 'current residence' rule — a person must have lived at an address for 2 months or... | 6 | 2 |
+| ACS-RES-001 | residence_rules | narrow | ACS uses a 'current residence' rule: a person must have lived at an address for 2 months or... | 6 | 2 |
 | ACS-SAM-001 | sampling | wide | ACS sampling rates are not uniform. Sparsely populated areas are sampled at rates up to 5x h... | 6 | 2 |
 | ACS-SUP-001 | suppression | wide | Some 1-year ACS tables may be suppressed if estimates are deemed too unreliable. Suppression... | 3 | 0 |
 | ACS-THR-001 | threshold | narrow | For geographies with total population under approximately 1,000, ACS 5-year estimates may st... | 5 | 2 |
