@@ -1,6 +1,9 @@
 title: "Pragmatics as Point-of-Decision Expert Judgment for Federal Statistical Data"
 author: "Brock Webb"
 date: "February 2026"
+bibliography: references.bib
+csl: apa.csl
+link-citations: true
 format:
   pdf:
     documentclass: article

@@ -2,6 +2,9 @@
 title: "Pragmatics as Point-of-Decision Expert Judgment for Federal Statistical Data"
 author: "Brock Webb"
 date: "February 2026"
+bibliography: references.bib
+csl: apa.csl
+link-citations: true
 format:
   pdf:
     documentclass: article
@@ -48,11 +51,11 @@ This creates a new problem. When a user asks a language model for the poverty ra
 
 This failure mode is not a knowledge gap in the conventional sense. The model is not missing information that could be retrieved from a document or looked up in a database. It is missing expert judgment about fitness for use: the kind of assessment that a senior statistician makes reflexively when evaluating whether a particular estimate is appropriate for a particular purpose. This judgment is rarely stated explicitly in documentation. It lives in the professional practice of experienced practitioners, accumulated through years of working with the data and its limitations.
 
-We call this missing layer *pragmatics*, drawing on Charles Morris's 1938 semiotic framework that distinguishes syntax (the formal structure of signs), semantics (the relationship between signs and what they denote), and pragmatics (the relationship between signs and their interpreters, specifically the contextual judgment required for appropriate use). In the context of federal statistical data, pragmatics is the expert assessment of fitness for use that transforms a data retrieval into a statistical consultation.
+We call this missing layer *pragmatics*, drawing on Charles Morris's [-@morris1938] semiotic framework that distinguishes syntax (the formal structure of signs), semantics (the relationship between signs and what they denote), and pragmatics (the relationship between signs and their interpreters, specifically the contextual judgment required for appropriate use). In the context of federal statistical data, pragmatics is the expert assessment of fitness for use that transforms a data retrieval into a statistical consultation.
 
-This is not a new concept imposed from outside statistical practice. The Federal Committee on Statistical Methodology's own data quality framework (FCSM 20-04) codifies characteristics (relevance, accuracy, timeliness, accessibility, coherence) that are fundamentally pragmatic in nature. They describe not what the data *is* but whether the data is *appropriate* for a given purpose. These quality characteristics have been the standard for decades. What has not existed, until now, is a mechanism to deliver this expert judgment computationally, at the point where a user or automated system is interpreting statistical data.
+This is not a new concept imposed from outside statistical practice. The Federal Committee on Statistical Methodology's own data quality framework [@fcsm2020] codifies characteristics (relevance, accuracy, timeliness, accessibility, coherence) that are fundamentally pragmatic in nature. They describe not what the data *is* but whether the data is *appropriate* for a given purpose. These quality characteristics have been the standard for decades. What has not existed, until now, is a mechanism to deliver this expert judgment computationally, at the point where a user or automated system is interpreting statistical data.
 
-The current federal landscape reflects this gap. The National Science Foundation recently solicited proposals to measure how well language models understand federal statistical data, seeking empirical evaluations of LLM accuracy, relevancy, and explainability on government data assets (NCSES, 2025). This and similar benchmarking initiatives share a common focus: measuring how well models perform on statistical tasks. They diagnose the problem. They do not treat it.
+The current federal landscape reflects this gap. The National Science Foundation recently solicited proposals to measure how well language models understand federal statistical data, seeking empirical evaluations of LLM accuracy, relevancy, and explainability on government data assets [@ncses2025]. This and similar benchmarking initiatives share a common focus: measuring how well models perform on statistical tasks. They diagnose the problem. They do not treat it.
 
 This paper introduces pragmatics as a defined, implementable concept for federal statistical AI systems and provides empirical evidence that it works. We present a knowledge representation study comparing three conditions with identical data access: a control with no methodology support, retrieval-augmented generation (RAG) using document chunks from authoritative source material, and pragmatics using curated expert judgment items delivered at the point of statistical reasoning. The three conditions draw from the same 354 pages of Census Bureau documentation, differing only in how that knowledge is represented and delivered.
 
@@ -67,7 +70,7 @@ The contribution is not a better retrieval system. It is the identification and 
 
 ## 2.1 Anisotropy in Domain-Homogeneous Corpora
 
-Large language models represent text as vectors in high-dimensional embedding spaces, where semantic similarity corresponds to geometric proximity. This representation is effective when the concepts being compared occupy distinct regions of the space. However, Ethayarajh (2019) demonstrated that contextual word representations from models such as BERT, ELMo, and GPT-2 exhibit high anisotropy: the representations occupy a narrow cone in the vector space rather than being uniformly distributed across all directions. In the upper layers of GPT-2, the average cosine similarity between randomly sampled word representations approaches 0.99, meaning that even unrelated concepts are geometrically close.
+Large language models represent text as vectors in high-dimensional embedding spaces, where semantic similarity corresponds to geometric proximity. This representation is effective when the concepts being compared occupy distinct regions of the space. However, @ethayarajh2019 demonstrated that contextual word representations from models such as BERT, ELMo, and GPT-2 exhibit high anisotropy: the representations occupy a narrow cone in the vector space rather than being uniformly distributed across all directions. In the upper layers of GPT-2, the average cosine similarity between randomly sampled word representations approaches 0.99, meaning that even unrelated concepts are geometrically close.
 
 This property has particular consequences for domain-specific corpora where the vocabulary, sentence structure, and conceptual framing are inherently homogeneous. Federal statistical metadata is an extreme case. Census variable descriptions share a common vocabulary of demographic terms, geographic references, and survey methodology language. A variable measuring median household income in a county and a variable measuring per capita income in a metropolitan statistical area use many of the same words in similar syntactic patterns to describe related but distinct measurements. In embedding space, these descriptions cluster tightly; this is not because they mean the same thing, but because the representational geometry cannot separate them.
 
@@ -101,10 +104,6 @@ What models cannot do reliably is assess the fitness of the data they retrieve. 
 
 The gap is not in what the model knows. It is in what the model can judge. Filling this gap requires not better retrieval, but a different kind of intervention entirely.
 
-## References
-
-Ethayarajh, K. (2019). How contextual are contextualized word representations? Comparing the geometry of BERT, ELMo, and GPT-2 embeddings. *Proceedings of the 2019 Conference on Empirical Methods in Natural Language Processing (EMNLP)*. https://arxiv.org/abs/1909.00512
-
 # Section 3: Pragmatics: Structured Expert Judgment
 
 <!-- Registry references: PL-001, PL-004, DET-001–004 -->
@@ -112,7 +111,7 @@ Ethayarajh, K. (2019). How contextual are contextualized word representations? C
 
 ## 3.1 The Semiotic Foundation
 
-Charles Morris's 1938 *Foundations of the Theory of Signs* introduced a tripartite framework for understanding how signs function: syntax concerns the formal relationships between signs, semantics concerns the relationship between signs and the objects they denote, and pragmatics concerns the relationship between signs and their interpreters, specifically the contextual conditions under which signs are appropriately used. This framework has been foundational in linguistics, philosophy of language, and information science for nearly nine decades.
+Charles Morris's [-@morris1938] *Foundations of the Theory of Signs* introduced a tripartite framework for understanding how signs function: syntax concerns the formal relationships between signs, semantics concerns the relationship between signs and the objects they denote, and pragmatics concerns the relationship between signs and their interpreters, specifically the contextual conditions under which signs are appropriately used. This framework has been foundational in linguistics, philosophy of language, and information science for nearly nine decades.
 
 Applied to federal statistical data, the three layers map directly to the infrastructure that agencies have built and the gap that remains.
 
@@ -142,7 +141,7 @@ Context text is the judgment itself, expressed in one to three sentences as fact
 
 Latitude encodes the calibrated uncertainty of the judgment itself, on a four-level scale. An item with latitude *none* represents hard consensus: no reasonable expert disagrees that the one-year American Community Survey requires a population of at least 65,000. An item with latitude *narrow* represents strong professional agreement with rare exceptions; the 40 percent coefficient of variation threshold is widely accepted but not universally applied. An item with latitude *wide* acknowledges genuine context-dependence: whether to use one-year or five-year estimates involves a tradeoff between recency and reliability that depends on the specific analytical purpose. An item with latitude *full* provides background context that informs but does not constrain; the American Community Survey replaced the decennial census long form beginning in 2005.
 
-Latitude is not a metadata annotation. It is a calibrated uncertainty model over expert judgment, encoding not just what practitioners know but how confidently the field holds that knowledge and where reasonable experts disagree. This connects to the observation in Kahneman, Sibony, and Sunstein (2021) that professional experts exhibit significant variance in judgments that are nominally deterministic. Latitude structures that variance explicitly rather than leaving it implicit.
+Latitude is not a metadata annotation. It is a calibrated uncertainty model over expert judgment, encoding not just what practitioners know but how confidently the field holds that knowledge and where reasonable experts disagree. This connects to the observation in @kahneman2021 that professional experts exhibit significant variance in judgments that are nominally deterministic. Latitude structures that variance explicitly rather than leaving it implicit.
 
 ### Triggers
 
@@ -175,12 +174,6 @@ A defining property of the pragmatics retrieval mechanism is determinism. When a
 This property was verified empirically across two independent replications of the full 39-query test battery plus the original evaluation run. All 39 queries produced identical context retrievals across all three runs, with zero mismatches. The determinism is not a tuned property or a statistical regularity. It is a structural consequence of replacing similarity search with graph traversal.
 
 The practical significance is that pragmatics eliminates one source of compounding variance in the AI pipeline. Language model generation is inherently stochastic: the same input can produce different outputs. When retrieval is also stochastic, as in RAG and GraphRAG systems, variance compounds at both stages. Pragmatics reduces this tax by making the grounding deterministic while accepting that reasoning remains stochastic. The lighthouse is fixed. The ship still navigates, but toward a stable signal.
-
-## References
-
-Kahneman, D., Sibony, O., & Sunstein, C. R. (2021). *Noise: A flaw in human judgment*. Little, Brown Spark.
-
-Morris, C. W. (1938). Foundations of the theory of signs. In O. Neurath, R. Carnap, & C. Morris (Eds.), *International encyclopedia of unified science* (Vol. 1, No. 2). University of Chicago Press.
 
 # Section 4: Method
 
@@ -239,11 +232,7 @@ Composite Consultation Quality Scores (CQS) were computed as the mean across fiv
 
 Omnibus differences were tested using the Friedman test for related samples. Pairwise comparisons used Wilcoxon signed-rank tests with Holm-Bonferroni correction. Effect sizes were computed as Cohen's d from the paired differences. Bootstrap confidence intervals (10,000 iterations) provided uncertainty estimates for mean differences. Stratum-level analyses tested whether effects differed between normal and edge case queries using permutation tests on the difference-of-differences.
 
-The evaluation design aligns with the NIST AI Risk Management Framework's Test, Evaluation, Verification, and Validation (TEVV) methodology. A crosswalk mapping CQS dimensions to FCSM 20-04 quality characteristics and NIST AI RMF trustworthiness properties is available as a separate publication (Webb, 2026).
-
-## References
-
-National Center for Science and Engineering Statistics. (2025). *Measuring Large Language Model Understanding of Federal Statistical Data* (RFS MLMU-25). National Science Foundation, America's DataHub Consortium. https://www.americasdatahub.org/rfs-mlmu-25/
+The evaluation design aligns with the NIST AI Risk Management Framework's [@nist2023airm] Test, Evaluation, Verification, and Validation (TEVV) methodology. A crosswalk mapping CQS dimensions to FCSM 20-04 quality characteristics and NIST AI RMF trustworthiness properties is available as a separate publication [@webb2026crosswalk].
 
 # Section 5: Results
 
@@ -362,7 +351,7 @@ The pragmatics concept does not compete with existing efforts. Continued investm
 
 The practical path forward involves packaging statistical expertise as a deliverable resource alongside data products. Not as documentation that users may or may not read, but as structured, machine-deliverable judgment that reaches the point of analysis automatically. The finding that 36 curated items from 354 pages of documentation produce a very large effect size suggests that the investment required is modest relative to the documentation that agencies already produce. The expert judgment exists. It lives in the professional practice of experienced statisticians. The task is to capture it, structure it, and deliver it computationally.
 
-This is not a new obligation. The Federal Committee on Statistical Methodology's own data quality framework codifies characteristics that are fundamentally pragmatic: relevance, accuracy, timeliness, fitness for use. These have been the standard for decades. What pragmatics operationalizes is the delivery of this existing institutional knowledge through the channels where data consumers increasingly encounter federal statistics: AI-mediated analysis. A published crosswalk between FCSM 20-04 and the NIST AI Risk Management Framework provides a coordination tool for agencies navigating both quality and trustworthiness requirements simultaneously (Webb, 2026).
+This is not a new obligation. The Federal Committee on Statistical Methodology's own data quality framework codifies characteristics that are fundamentally pragmatic: relevance, accuracy, timeliness, fitness for use. These have been the standard for decades. What pragmatics operationalizes is the delivery of this existing institutional knowledge through the channels where data consumers increasingly encounter federal statistics: AI-mediated analysis. A published crosswalk between FCSM 20-04 and the NIST AI Risk Management Framework provides a coordination tool for agencies navigating both quality and trustworthiness requirements simultaneously [@webb2026crosswalk].
 
 # Section 7: Limitations and Future Work
 
@@ -402,35 +391,16 @@ This study has several constraints that bound the generalizability of its findin
 
 Federal statistical agencies have invested decades in making their data accessible and interpretable by machines, building the syntax and semantics layers that enable automated access to statistical products. Large language models have absorbed much of this infrastructure, demonstrating that they can translate natural language into domain-appropriate queries and retrieve correct data. The remaining gap is not in access or interpretation but in judgment: the expert assessment of whether retrieved data is fit for a specific purpose.
 
-This paper has introduced pragmatics as a named, defined, and implementable concept for addressing this gap. Drawing on Morris's (1938) semiotic framework, we define pragmatics as structured expert judgment about fitness for use: the assessment that experienced statisticians provide reflexively but that no existing system delivers computationally.
+This paper has introduced pragmatics as a named, defined, and implementable concept for addressing this gap. Drawing on Morris's [-@morris1938] semiotic framework, we define pragmatics as structured expert judgment about fitness for use: the assessment that experienced statisticians provide reflexively but that no existing system delivers computationally.
 
 We have provided empirical evidence that pragmatics works. A knowledge representation study comparing three conditions with identical data access demonstrated that 36 curated expert judgment items produce very large improvements in statistical consultation quality (Cohen's d = 1.440 vs. control, d = 0.922 vs. RAG), with the strongest effects on uncertainty communication (d = 1.353), the dimension most directly tied to fitness-for-use assessment. Pragmatic context achieves 91.2% fidelity to authoritative data sources, is 100% deterministic in its delivery, and costs nine cents per query.
 
 The principle underlying these results extends beyond Census data. Just as curating training data reduces variance in what a model learns, curating expert judgment reduces variance in what a model concludes. The federal statistical community has the expertise. The task is to capture it, structure it, and deliver it at the point where decisions are being made, transforming data retrieval into statistical consultation.
 
-# References
+# References {.unnumbered}
 
-Ethayarajh, K. (2019). How contextual are contextualized word representations? Comparing the geometry of BERT, ELMo, and GPT-2 embeddings. *Proceedings of the 2019 Conference on Empirical Methods in Natural Language Processing (EMNLP)*. https://arxiv.org/abs/1909.00512
-
-Federal Committee on Statistical Methodology. (2020). *A framework for data quality* (FCSM 20-04). https://nces.ed.gov/FCSM/pdf/FCSM.20.04_A_Framework_for_Data_Quality.pdf
-
-Kahneman, D., Sibony, O., & Sunstein, C. R. (2021). *Noise: A flaw in human judgment*. Little, Brown Spark.
-
-Morris, C. W. (1938). Foundations of the theory of signs. In O. Neurath, R. Carnap, & C. Morris (Eds.), *International encyclopedia of unified science* (Vol. 1, No. 2). University of Chicago Press.
-
-National Center for Science and Engineering Statistics. (2025). *Measuring Large Language Model Understanding of Federal Statistical Data* (RFS MLMU-25). National Science Foundation, America's DataHub Consortium. https://www.americasdatahub.org/rfs-mlmu-25/
-
-National Institute of Standards and Technology. (2023). *Artificial Intelligence Risk Management Framework* (AI RMF 1.0). U.S. Department of Commerce. https://www.nist.gov/artificial-intelligence/executive-order-safe-secure-and-trustworthy-artificial-intelligence
-
-U.S. Census Bureau. (2020). *American Community Survey: General handbook*. U.S. Department of Commerce.
-
-U.S. Census Bureau. (2020). *Geography and the American Community Survey: What data users need to know*. U.S. Department of Commerce.
-
-U.S. Census Bureau. (2024). *American Community Survey: Design and methodology report*. U.S. Department of Commerce.
-
-Webb, B. (2026). When AI enters federal statistics: A crosswalk between data quality and AI trustworthiness frameworks. Zenodo. https://doi.org/10.5281/zenodo.18766095
-
-<!-- TODO: Verify all URLs are live. Add Vaswani et al. 2017 if timeline reference stays. Add GraphRAG cost citations if used in Discussion. -->
+::: {#refs}
+:::
 
 # Appendices
 

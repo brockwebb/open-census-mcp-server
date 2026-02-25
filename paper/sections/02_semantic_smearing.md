@@ -5,7 +5,7 @@
 
 ## 2.1 Anisotropy in Domain-Homogeneous Corpora
 
-Large language models represent text as vectors in high-dimensional embedding spaces, where semantic similarity corresponds to geometric proximity. This representation is effective when the concepts being compared occupy distinct regions of the space. However, Ethayarajh (2019) demonstrated that contextual word representations from models such as BERT, ELMo, and GPT-2 exhibit high anisotropy: the representations occupy a narrow cone in the vector space rather than being uniformly distributed across all directions. In the upper layers of GPT-2, the average cosine similarity between randomly sampled word representations approaches 0.99, meaning that even unrelated concepts are geometrically close.
+Large language models represent text as vectors in high-dimensional embedding spaces, where semantic similarity corresponds to geometric proximity. This representation is effective when the concepts being compared occupy distinct regions of the space. However, @ethayarajh2019 demonstrated that contextual word representations from models such as BERT, ELMo, and GPT-2 exhibit high anisotropy: the representations occupy a narrow cone in the vector space rather than being uniformly distributed across all directions. In the upper layers of GPT-2, the average cosine similarity between randomly sampled word representations approaches 0.99, meaning that even unrelated concepts are geometrically close.
 
 This property has particular consequences for domain-specific corpora where the vocabulary, sentence structure, and conceptual framing are inherently homogeneous. Federal statistical metadata is an extreme case. Census variable descriptions share a common vocabulary of demographic terms, geographic references, and survey methodology language. A variable measuring median household income in a county and a variable measuring per capita income in a metropolitan statistical area use many of the same words in similar syntactic patterns to describe related but distinct measurements. In embedding space, these descriptions cluster tightly; this is not because they mean the same thing, but because the representational geometry cannot separate them.
 
@@ -39,6 +39,3 @@ What models cannot do reliably is assess the fitness of the data they retrieve. 
 
 The gap is not in what the model knows. It is in what the model can judge. Filling this gap requires not better retrieval, but a different kind of intervention entirely.
 
-## References
-
-Ethayarajh, K. (2019). How contextual are contextualized word representations? Comparing the geometry of BERT, ELMo, and GPT-2 embeddings. *Proceedings of the 2019 Conference on Empirical Methods in Natural Language Processing (EMNLP)*. https://arxiv.org/abs/1909.00512

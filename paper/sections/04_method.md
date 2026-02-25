@@ -55,8 +55,5 @@ Composite Consultation Quality Scores (CQS) were computed as the mean across fiv
 
 Omnibus differences were tested using the Friedman test for related samples. Pairwise comparisons used Wilcoxon signed-rank tests with Holm-Bonferroni correction. Effect sizes were computed as Cohen's d from the paired differences. Bootstrap confidence intervals (10,000 iterations) provided uncertainty estimates for mean differences. Stratum-level analyses tested whether effects differed between normal and edge case queries using permutation tests on the difference-of-differences.
 
-The evaluation design aligns with the NIST AI Risk Management Framework's Test, Evaluation, Verification, and Validation (TEVV) methodology. A crosswalk mapping CQS dimensions to FCSM 20-04 quality characteristics and NIST AI RMF trustworthiness properties is available as a separate publication (Webb, 2026).
+The evaluation design aligns with the NIST AI Risk Management Framework's [@nist2023airm] Test, Evaluation, Verification, and Validation (TEVV) methodology. A crosswalk mapping CQS dimensions to FCSM 20-04 quality characteristics and NIST AI RMF trustworthiness properties is available as a separate publication [@webb2026crosswalk].
 
-## References
-
-National Center for Science and Engineering Statistics. (2025). *Measuring Large Language Model Understanding of Federal Statistical Data* (RFS MLMU-25). National Science Foundation, America's DataHub Consortium. https://www.americasdatahub.org/rfs-mlmu-25/
