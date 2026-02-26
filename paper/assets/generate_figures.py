@@ -65,29 +65,33 @@ DATA_PATHS = {
     "cost": REPO_ROOT / "results/v2_redo/stage1/analysis/cost_analysis.json",
 }
 
-# Okabe-Ito colorblind-safe palette — 3 conditions
+# U.S. Census Bureau xdgov Data Design Standards palette — 3 conditions
+# https://xdgov.github.io/data-design-standards/components/colors
 COLORS = {
-    "Control": "#999999",
-    "RAG": "#E69F00",
-    "Pragmatics": "#0072B2",
+    "Control": "#78909C",      # census-color-grey
+    "RAG": "#FF7043",          # census-color-orange
+    "Pragmatics": "#112E51",   # census-color-navy
 }
 
 # F2 palette — 3 representations
 COLORS_F2 = {
-    "Labels": "#999999",
-    "Raw": "#E69F00",
-    "Enriched": "#D55E00",
+    "Labels": "#78909C",       # census-color-grey
+    "Raw": "#0095A8",          # census-color-teal
+    "Enriched": "#C25432",     # census-color-orange-dark
 }
 
 # F7 comparison palette
 COLORS_F7 = {
-    "Prag vs Ctrl": "#0072B2",
-    "Prag vs RAG": "#E69F00",
-    "RAG vs Ctrl": "#999999",
+    "Prag vs Ctrl": "#112E51",   # census-color-navy
+    "Prag vs RAG": "#FF7043",    # census-color-orange
+    "RAG vs Ctrl": "#78909C",    # census-color-grey
 }
 
+# 508-compliant annotation text color (4.5:1 on white)
+TEXT_COLOR = "#4B636E"           # census-color-grey-dark
+
 FONT_FAMILY = "serif"
-BASE_SIZE = 11
+BASE_SIZE = 12  # bumped from 11 for print legibility
 
 
 def paper_theme(figure_size=(6.5, 4.0)):
@@ -95,12 +99,15 @@ def paper_theme(figure_size=(6.5, 4.0)):
     return (
         theme_minimal(base_size=BASE_SIZE, base_family=FONT_FAMILY)
         + theme(
-            plot_title=element_text(size=12, weight="bold"),
-            axis_title=element_text(size=10),
-            legend_title=element_text(size=10),
+            plot_title=element_text(size=13, weight="bold"),
+            axis_title=element_text(size=11),
+            axis_text=element_text(size=10),
+            legend_title=element_text(size=11),
+            legend_text=element_text(size=10),
             legend_position="bottom",
             panel_grid_minor=element_blank(),
             panel_grid_major=element_line(color="#eeeeee"),
+            plot_margin=0.02,
             figure_size=figure_size,
         )
     )

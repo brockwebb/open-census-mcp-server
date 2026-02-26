@@ -1,41 +1,47 @@
 ##################################################
 # F5: Three-Condition Experimental Design
-# Control / RAG / Pragmatics — shared foundation
+# Control / RAG / Pragmatics -> shared foundation
+# Palette: Census xdgov Data Design Standards
+# 508 compliance: all text/background pairs >= 4.5:1
 ##################################################
 
 direction: down
 
-control: "CONTROL\n─────────\n(no methodology\nsupport)" {
-  style.fill: "#F0F0F0"
-  style.stroke: "#999999"
-  style.font-color: "#444444"
+control: "CONTROL\n---------\n(no methodology\nsupport)" {
+  style.fill: "#E8EFF2"
+  style.stroke: "#78909C"
+  style.stroke-width: 2
+  style.font-color: "#222C31"
   style.border-radius: 8
-  style.font-size: 11
+  style.font-size: 16
 }
 
-rag: "RAG\n─────────\n311 chunks\nFAISS top-5\ncosine similarity" {
-  style.fill: "#FFF3CC"
-  style.stroke: "#E69F00"
-  style.font-color: "#5A3D00"
+rag: "RAG\n---------\n311 chunks\nFAISS top-5\ncosine similarity" {
+  style.fill: "#FF7043"
+  style.stroke: "#C25432"
+  style.stroke-width: 2
+  style.font-color: "#000000"
   style.border-radius: 8
-  style.font-size: 11
+  style.font-size: 16
 }
 
-pragmatics: "PRAGMATICS\n─────────\n36 curated items\ngraph traversal" {
-  style.fill: "#E3F0FB"
-  style.stroke: "#0072B2"
-  style.font-color: "#003A5C"
+pragmatics: "PRAGMATICS\n---------\n36 curated items\ngraph traversal" {
+  style.fill: "#112E51"
+  style.stroke: "#081627"
+  style.stroke-width: 2
+  style.font-color: "#FFFFFF"
   style.border-radius: 8
-  style.font-size: 11
+  style.font-size: 16
 }
 
 foundation: "Shared Foundation\n\nCaller: Claude Sonnet 4.5\nTools: Census Bureau API (get_census_data, explore_variables)\nBattery: 39 queries (15 normal + 24 edge cases)" {
-  style.fill: "#F5F5F5"
-  style.stroke: "#AAAAAA"
+  style.fill: "#E8EFF2"
+  style.stroke: "#78909C"
   style.stroke-dash: 4
+  style.stroke-width: 2
   style.border-radius: 8
-  style.font-size: 11
-  style.font-color: "#444444"
+  style.font-size: 16
+  style.font-color: "#222C31"
 }
 
 control -> foundation

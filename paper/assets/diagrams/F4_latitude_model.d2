@@ -1,43 +1,49 @@
 ##################################################
 # F4: Latitude Model
-# Four-level calibrated uncertainty scale with Census examples
+# Four-level calibrated uncertainty scale
+# Palette: Census xdgov Data Design Standards
+# Dark-to-light progression: none (most constrained) -> full (least)
 ##################################################
 
 direction: right
 
-none: "NONE\n─────────\nHard consensus\n(mandatory)\n\n\"ACS 1-year\nrequires\npop >= 65,000\"" {
-  style.fill: "#333333"
+none: "NONE\n---------\nHard consensus\n(mandatory)\n\n\"ACS 1-year\nrequires\npop >= 65,000\"" {
+  style.fill: "#112E51"
   style.font-color: "#FFFFFF"
-  style.stroke: "#000000"
+  style.stroke: "#081627"
+  style.stroke-width: 2
   style.border-radius: 8
-  style.font-size: 11
+  style.font-size: 16
 }
 
-narrow: "NARROW\n─────────\nStrong agreement\n(rare exceptions)\n\n\"CV > 40% =\nunreliable\"" {
-  style.fill: "#0072B2"
+narrow: "NARROW\n---------\nStrong agreement\n(rare exceptions)\n\n\"CV > 40% =\nunreliable\"" {
+  style.fill: "#0095A8"
   style.font-color: "#FFFFFF"
-  style.stroke: "#005A8C"
+  style.stroke: "#006C7A"
+  style.stroke-width: 2
   style.border-radius: 8
-  style.font-size: 11
+  style.font-size: 16
 }
 
-wide: "WIDE\n─────────\nContext-dependent\n(judgment required)\n\n\"1-year vs 5-year\ndepends on\npurpose\"" {
-  style.fill: "#56B4E9"
-  style.font-color: "#000000"
-  style.stroke: "#2F9CC8"
+wide: "WIDE\n---------\nContext-dependent\n(judgment required)\n\n\"1-year vs 5-year\ndepends on\npurpose\"" {
+  style.fill: "#78909C"
+  style.font-color: "#FFFFFF"
+  style.stroke: "#4B636E"
+  style.stroke-width: 2
   style.border-radius: 8
-  style.font-size: 11
+  style.font-size: 16
 }
 
-full: "FULL\n─────────\nBackground context\n(always mention)\n\n\"ACS replaced\nlong-form census\nin 2005\"" {
-  style.fill: "#CCCCCC"
-  style.font-color: "#333333"
-  style.stroke: "#999999"
+full: "FULL\n---------\nBackground context\n(always mention)\n\n\"ACS replaced\nlong-form census\nin 2005\"" {
+  style.fill: "#E8EFF2"
+  style.font-color: "#222C31"
+  style.stroke: "#78909C"
+  style.stroke-width: 2
   style.border-radius: 8
-  style.font-size: 11
+  style.font-size: 16
 }
 
 none -> narrow -> wide -> full: "" {
-  style.stroke: "#666666"
+  style.stroke: "#4B636E"
   style.stroke-width: 2
 }
