@@ -66,7 +66,7 @@ SRS: VR-048, VR-060–065
 
 | ID | Comparison | CQS Δ | Cohen's d | 95% CI | p (Holm) | Eff. N | Status |
 |----|------------|-------|-----------|--------|----------|--------|--------|
-| S2-010 | Pragmatics vs Control | +0.539 | 1.440 | [0.421, 0.651] | < 0.001 | 36/39 | CERTIFIED |
+| S2-010 | Pragmatics vs Control | +0.538 | 1.440 | [0.421, 0.651] | < 0.001 | 36/39 | CERTIFIED |
 | S2-011 | Pragmatics vs RAG | +0.385 | 0.922 | [0.256, 0.513] | < 0.001 | 32/39 | CERTIFIED |
 | S2-012 | RAG vs Control | +0.154 | 0.546 | [0.072, 0.244] | 0.0017 | 30/39 | CERTIFIED |
 
@@ -206,8 +206,8 @@ SRS: VR-091–096 (aggregate), VR-097–100 (QC)
 
 | ID | Condition | Auditable | Partially | Unauditable | Subst. Claims | Status |
 |----|-----------|-----------|-----------|-------------|---------------|--------|
-| S3-010 | Control | 6.2% | 63.0% | 15.2% | 257 | CERTIFIED |
-| S3-011 | RAG | 21.8% | 76.0% | 17.8% | 242 | CERTIFIED |
+| S3-010 | Control | 21.8% | 63.0% | 15.2% | 257 | CERTIFIED |
+| S3-011 | RAG | 6.2% | 76.0% | 17.8% | 242 | CERTIFIED |
 | S3-012 | Pragmatics | 29.5% | 51.8% | 18.7% | 278 | CERTIFIED |
 
 *All values from `fidelity_summary.json` (certified source). Non-claims excluded from auditability denominators per VR-054.*
