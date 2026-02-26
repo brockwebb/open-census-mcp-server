@@ -346,6 +346,24 @@ Numbers computed from certified data for narrative use (e.g., "X times higher").
 
 ---
 
+## Section 8: Paper Asset Provenance
+
+| Asset | Source JSON | Generator Script | Registry IDs |
+|-------|-------------|-----------------|--------------|
+| T1 | aggregate_statistics.json | paper/assets/generate_tables.py | S2-040, S2-041, S2-042 |
+| T2 | aggregate_statistics.json | paper/assets/generate_tables.py | S2-001, S2-002, S2-010–S2-012 |
+| T3 | aggregate_statistics.json | paper/assets/generate_tables.py | S2-030–S2-034 |
+| T4 | stratum_analysis.json | paper/assets/generate_tables.py | SA-001–SA-022 |
+| T5 | fidelity_summary.json | paper/assets/generate_tables.py | S3-001–S3-012 |
+| T6 | cost_analysis.json | paper/assets/generate_tables.py | COST-001–COST-013 |
+
+**Notes:**
+- All numbers read from JSON ground truth; no hardcoded values in generator script.
+- S3-010/S3-011 auditability swap corrected 2026-02-26: Control=21.8%, RAG=6.2% (per fidelity_summary.json). Registry and validate_registry.py both updated.
+- T6 Opus RAG marginal cost: JSON value is $0.090 (0.0904515 rounded 3dp). Task spec example showed $0.091; JSON is authoritative.
+
+---
+
 ## Maintenance Rules
 
 1. **Adding a number:** Create entry with appropriate status. If PENDING/UNTRACED, add to Section 7 gaps.

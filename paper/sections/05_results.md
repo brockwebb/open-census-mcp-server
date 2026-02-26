@@ -6,9 +6,29 @@
 
 The Friedman test revealed a significant omnibus difference across the three conditions (χ²(2, N = 39) = 42.01, p < 0.001). All three pairwise comparisons were significant after Holm-Bonferroni correction.
 
-> **[INSERT TABLE T1: CQS composite scores by condition with bootstrap 95% CIs]**
+| Condition | Mean CQS | *n* |
+|-----------|----------|-----|
+| Pragmatics | 1.528 | 39 |
+| RAG | 1.144 | 39 |
+| Control | 0.990 | 39 |
 
-> **[INSERT TABLE T2: Friedman omnibus + Wilcoxon pairwise post-hoc with Holm-Bonferroni correction]**
+: CQS composite scores by condition (D1–D5 mean of per-query medians). {#tbl-cqs-means}
+
+**Panel A: Omnibus**
+
+| Test | Statistic | *p* | *n* |
+|------|-----------|-----|-----|
+| Friedman χ²(2) | 42.01 | < .001 | 39 |
+
+**Panel B: Pairwise (Holm-corrected)**
+
+| Comparison | Δ CQS | Cohen’s *d* | 95% CI | *p* (Holm) | Eff. *n* |
+|------------|-------|-------------|--------|------------|----------|
+| Pragmatics vs Control | +0.538 | 1.440 | [0.421, 0.651] | < .001 | 36 |
+| Pragmatics vs RAG | +0.385 | 0.922 | [0.256, 0.513] | < .001 | 32 |
+| RAG vs Control | +0.154 | 0.546 | [0.072, 0.244] | .002 | 30 |
+
+: Friedman omnibus and Wilcoxon signed-rank pairwise comparisons with Holm–Bonferroni correction. Bootstrap 95% CIs (10,000 iterations) on CQS deltas. {#tbl-pairwise}
 
 Pragmatics produced a very large improvement over the control condition (Δ CQS = +0.539, Cohen's d = 1.440, 95% CI [0.421, 0.651], p < 0.001) and a large improvement over RAG (Δ CQS = +0.385, d = 0.922, 95% CI [0.256, 0.513], p < 0.001). RAG produced a medium improvement over control (Δ CQS = +0.154, d = 0.546, 95% CI [0.072, 0.244], p = 0.0017). Mean composite scores were 1.528 (pragmatics), 1.144 (RAG), and 0.990 (control).
 
@@ -18,7 +38,15 @@ The ordering was consistent: pragmatics outperformed RAG, which outperformed con
 
 > **[INSERT FIGURE F7: Cohen's d effect sizes by dimension: forest plot showing all comparisons × 5 dimensions]**
 
-> **[INSERT TABLE T3: Per-dimension effect sizes (d values) for all 3 comparisons × 5 dimensions]**
+| Dimension | Prag vs Ctrl *d* | Prag vs RAG *d* | RAG vs Ctrl *d* |
+|-----------|-----------------|-----------------|-----------------|
+| D1 (Accuracy) | 0.541 | 0.515 | 0.190 |
+| D2 (Completeness) | 0.537 | 0.297 | 0.246 |
+| D3 (Uncertainty Communication) | **1.353** | **1.040** | 0.417 |
+| D4 (Contextual Clarity) | **0.957** | 0.577 | 0.546 |
+| D5 (Fitness-for-Use Assessment) | 0.732 | 0.521 | 0.148 |
+
+: Per-dimension Cohen’s *d* effect sizes. Bold indicates *d* > 0.8 (large). {#tbl-dimension-effects}
 
 All five quality dimensions showed significant omnibus effects (p < 0.001 for each). The effect sizes for pragmatics versus control varied across dimensions, revealing where expert judgment matters most:
 
@@ -32,7 +60,13 @@ RAG showed its largest advantage over control on clarity (D4, d = 0.546) and unc
 
 The evaluation was stratified to test whether pragmatics disproportionately help on edge cases (queries involving small areas, geographic exceptions, temporal comparisons, and ambiguous requests) or whether benefits extend to routine statistical queries.
 
-> **[INSERT TABLE T4: Stratum analysis: normal vs edge effect sizes for all 3 comparisons]**
+| Comparison | Normal *d* (*n*=15) | Edge *d* (*n*=24) | Δ*d* (Edge−Normal) | *p* (Edge > Normal) |
+|------------|--------------------|--------------------|---------------------|---------------------|
+| Prag vs Ctrl | **2.347** | 1.135 | -0.273 | .987 |
+| Prag vs RAG | **1.436** | 0.683 | -0.318 | .987 |
+| RAG vs Ctrl | 0.458 | 0.590 | +0.044 | .347 |
+
+: Stratum analysis comparing normal (*n*=15) and edge-case (*n*=24) queries. Δ*d* is the delta-of-deltas (edge minus normal mean CQS delta). Mann-Whitney *p* tests whether edge deltas exceed normal deltas. {#tbl-stratum}
 
 The results contradicted the initial hypothesis. Pragmatics showed a *larger* effect on normal queries (d = 2.347 vs. control, d = 1.436 vs. RAG) than on edge cases (d = 1.135 vs. control, d = 0.683 vs. RAG). Permutation testing confirmed that the edge-greater hypothesis was not supported (p = 0.987 for pragmatics vs. control).
 
@@ -44,7 +78,13 @@ The normal-stratum finding should be interpreted with a power caveat: at n = 15,
 
 Stage 3 automated verification assessed whether responses accurately reported what Census API tools returned, measuring both auditability (whether claims could be traced to specific API calls) and fidelity (whether traced claims were accurate).
 
-> **[INSERT TABLE T5: Pipeline fidelity: claims count, auditability %, substantive fidelity % by condition]**
+| Condition | Claims | Fidelity | Subst. Fidelity | Error Rate | Auditable |
+|-----------|--------|----------|-----------------|------------|-----------|
+| Pragmatics | 353 | 91.2% | 99.7% | 0.3% | 29.5% |
+| RAG | 355 | 74.6% | 98.9% | 0.8% | 6.2% |
+| Control | 253 | 78.3% | 100.0% | 0.0% | 21.8% |
+
+: Stage 3 fidelity verification. Fidelity = (matched + calculation_correct) / total_claims. Substantive fidelity excludes no_source claims. Error rate = (mismatched + calculation_incorrect) / total_claims. Auditable = fully auditable claims / substantive claims. {#tbl-fidelity}
 
 > **[INSERT FIGURE F8: Fidelity scores by condition (bar chart)]**
 
@@ -62,7 +102,20 @@ Pragmatic context retrieval was 100% deterministic across all 39 queries, verifi
 
 Pragmatics incurred higher per-query token costs than RAG. Mean input tokens per query were 32,929 for pragmatics, 23,746 for RAG, and 5,830 for control, reflecting the structured context delivered alongside data. At Claude Sonnet 4.5 pricing ($3/$15 per million tokens input/output), per-query costs were $0.113 (pragmatics), $0.082 (RAG), and $0.028 (control).
 
-> **[INSERT TABLE T6: Cost per query by condition and model tier (Sonnet/Opus) with cost-effectiveness ratios]**
+| Metric | Control | RAG | Pragmatics |
+|--------|---------|-----|------------|
+| **Sonnet 4.5** ($3/$15 per MTok) | | | |
+| Cost per query | $0.028 | $0.082 | $0.113 |
+| Marginal cost vs control | — | $0.054 | $0.086 |
+| CQS per marginal $ | — | 2.83 | **6.28** |
+| **Opus 4.6** ($5/$25 per MTok) | | | |
+| Cost per query | $0.046 | $0.137 | $0.189 |
+| Marginal cost vs control | — | $0.090 | $0.143 |
+| CQS per marginal $ | — | 1.70 | 3.77 |
+| | | | |
+| Cost-effectiveness ratio (Prag/RAG) | — | — | **2.2×** |
+
+: Cost analysis at two pricing tiers. Marginal cost = condition cost minus control baseline. CQS per marginal dollar = CQS improvement over control / marginal cost per query. Cost-effectiveness ratio is constant across pricing tiers. {#tbl-cost}
 
 > **[INSERT FIGURE F9: Cost-effectiveness: CQS improvement per marginal dollar by condition]**
 
