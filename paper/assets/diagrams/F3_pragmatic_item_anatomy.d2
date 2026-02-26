@@ -1,0 +1,52 @@
+##################################################
+# F3: Anatomy of a Pragmatic Context Item
+# Example: ACS-MOE-002 (Coefficient of Variation)
+##################################################
+
+item: ACS-MOE-002 {
+  grid-rows: 5
+  grid-columns: 1
+  style.fill: "#F8F8F8"
+  style.stroke: "#0072B2"
+  style.stroke-width: 2
+  style.border-radius: 8
+  style.font-color: "#0072B2"
+  style.bold: true
+  style.font-size: 13
+
+  ctx: "Context Text\n\nCV = (SE / estimate) × 100.\nCV above 40%: estimate may be too unreliable for most uses." {
+    style.fill: "#FFFFFF"
+    style.stroke: "#0072B2"
+    style.stroke-width: 2
+    style.border-radius: 6
+    style.font-size: 11
+  }
+
+  lat: "Latitude:  none  |  NARROW  |  wide  |  full\n(Strong professional agreement with rare exceptions)" {
+    style.fill: "#E3F0FB"
+    style.stroke: "#0072B2"
+    style.border-radius: 6
+    style.font-size: 11
+  }
+
+  trig: "Triggers:  margin_of_error  ·  reliability  ·  coefficient_of_variation" {
+    style.fill: "#FFF8E7"
+    style.stroke: "#E69F00"
+    style.border-radius: 6
+    style.font-size: 11
+  }
+
+  edges: "Thread Edges:  relates_to ACS-MOE-001  ·  relates_to ACS-MOE-003" {
+    style.fill: "#F0F0F0"
+    style.stroke: "#999999"
+    style.border-radius: 6
+    style.font-size: 11
+  }
+
+  prov: "Provenance:  Handbook Ch. 7  |  pipeline (quarry KG)  |  grounded" {
+    style.fill: "#F0F0F0"
+    style.stroke: "#999999"
+    style.border-radius: 6
+    style.font-size: 11
+  }
+}

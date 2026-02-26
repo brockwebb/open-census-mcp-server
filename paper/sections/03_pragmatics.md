@@ -21,7 +21,7 @@ The distinction between semantics and pragmatics is critical. Semantics tells yo
 
 A pragmatic context item is a structured unit of expert judgment about fitness for use. It is not an instruction, a rule, a constraint, or a lookup table. It is a factual statement of the kind a senior statistician would make to a colleague before they use a particular data product: the professional assessment that transforms a data retrieval into a statistical consultation.
 
-> **[INSERT FIGURE F3: Anatomy of a pragmatic context item: showing context_text, latitude, triggers, thread_edges, provenance]**
+![Anatomy of a pragmatic context item, showing the five structural components using ACS-MOE-002 (coefficient of variation threshold) as an example.](assets/figures/F3_pragmatic_item_anatomy.pdf){#fig-anatomy}
 
 Each item in the system has five components.
 
@@ -31,7 +31,7 @@ Context text is the judgment itself, expressed in one to three sentences as fact
 
 ### Latitude
 
-> **[INSERT FIGURE F4: Latitude model: none/narrow/wide/full scale with Census examples at each level]**
+![The latitude model: a four-level calibrated uncertainty scale for expert judgment.](assets/figures/F4_latitude_model.pdf){#fig-latitude}
 
 Latitude encodes the calibrated uncertainty of the judgment itself, on a four-level scale. An item with latitude *none* represents hard consensus: no reasonable expert disagrees that the one-year American Community Survey requires a population of at least 65,000. An item with latitude *narrow* represents strong professional agreement with rare exceptions; the 40 percent coefficient of variation threshold is widely accepted but not universally applied. An item with latitude *wide* acknowledges genuine context-dependence: whether to use one-year or five-year estimates involves a tradeoff between recency and reliability that depends on the specific analytical purpose. An item with latitude *full* provides background context that informs but does not constrain; the American Community Survey replaced the decennial census long form beginning in 2005.
 

@@ -7,7 +7,7 @@
 
 We conducted a knowledge representation study comparing three experimental conditions with identical data tool access. The single independent variable was the form of methodology support provided to the language model during statistical consultation. All three conditions used the same caller model (Claude Sonnet 4.5), the same Census Bureau API tools, and the same 39-query test battery. The conditions differed only in how domain knowledge was represented and delivered:
 
-> **[INSERT FIGURE F5: Three-condition experimental design: control/RAG/pragmatics with shared data tools, varying methodology support]**
+![Three-condition experimental design. All conditions share the same caller model, API tools, and query battery; they differ only in methodology support.](assets/figures/F5_experimental_design.pdf){#fig-design}
 
 - **Control:** The model received Census API tools with no methodology support. This represents the baseline capability of a capable language model performing statistical consultation with data access but no expert guidance.
 
@@ -39,7 +39,7 @@ The authoring-to-runtime pipeline implements strict separation of concerns. Item
 
 Evaluation proceeded through three stages.
 
-> **[INSERT FIGURE F6: Evaluation pipeline: Stage 1 (response generation), Stage 2 (CQS scoring), Stage 3 (fidelity verification)]**
+![Three-stage evaluation pipeline: response generation, consultation quality scoring, and fidelity verification.](assets/figures/F6_evaluation_pipeline.pdf){#fig-pipeline}
 
 **Stage 1 (Response Generation)** produced 117 responses: 39 queries across 3 conditions. Each query was processed by the caller model with the condition-specific tool configuration, producing a complete statistical consultation response.
 

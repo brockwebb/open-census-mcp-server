@@ -1,0 +1,43 @@
+##################################################
+# F5: Three-Condition Experimental Design
+# Control / RAG / Pragmatics — shared foundation
+##################################################
+
+direction: down
+
+control: "CONTROL\n─────────\n(no methodology\nsupport)" {
+  style.fill: "#F0F0F0"
+  style.stroke: "#999999"
+  style.font-color: "#444444"
+  style.border-radius: 8
+  style.font-size: 11
+}
+
+rag: "RAG\n─────────\n311 chunks\nFAISS top-5\ncosine similarity" {
+  style.fill: "#FFF3CC"
+  style.stroke: "#E69F00"
+  style.font-color: "#5A3D00"
+  style.border-radius: 8
+  style.font-size: 11
+}
+
+pragmatics: "PRAGMATICS\n─────────\n36 curated items\ngraph traversal" {
+  style.fill: "#E3F0FB"
+  style.stroke: "#0072B2"
+  style.font-color: "#003A5C"
+  style.border-radius: 8
+  style.font-size: 11
+}
+
+foundation: "Shared Foundation\n\nCaller: Claude Sonnet 4.5\nTools: Census Bureau API (get_census_data, explore_variables)\nBattery: 39 queries (15 normal + 24 edge cases)" {
+  style.fill: "#F5F5F5"
+  style.stroke: "#AAAAAA"
+  style.stroke-dash: 4
+  style.border-radius: 8
+  style.font-size: 11
+  style.font-color: "#444444"
+}
+
+control -> foundation
+rag -> foundation
+pragmatics -> foundation
