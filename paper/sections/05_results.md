@@ -1,8 +1,8 @@
-# Section 5: Results
+# Results
 
 <!-- Registry references: S2-001–042, S3-001–012, SA-001–022, EFF-001–008, COST-001–013, DET-001–004 -->
 
-## 5.1 Overall Consultation Quality
+## Overall Consultation Quality
 
 The Friedman test revealed a significant omnibus difference across the three conditions (χ²(2, N = 39) = 42.01, p < 0.001). All three pairwise comparisons were significant after Holm-Bonferroni correction.
 
@@ -34,7 +34,7 @@ Pragmatics produced a very large improvement over the control condition (Δ CQS 
 
 The ordering was consistent: pragmatics outperformed RAG, which outperformed control, across every level of analysis.
 
-## 5.2 Per-Dimension Effects
+## Per-Dimension Effects
 
 ![Cohen's *d* effect sizes by dimension. Vertical lines: *d* = 0.2 (small), 0.5 (medium), 0.8 (large).](assets/figures/F7_effect_sizes_forest.pdf){#fig-effect-sizes width=6.5in}
 
@@ -50,13 +50,13 @@ The ordering was consistent: pragmatics outperformed RAG, which outperformed con
 
 All five quality dimensions showed significant omnibus effects (p < 0.001 for each). The effect sizes for pragmatics versus control varied across dimensions, revealing where expert judgment matters most:
 
-Uncertainty communication (D3) showed the largest effect (d = 1.353 vs. control, d = 1.040 vs. RAG). This dimension captures whether responses appropriately communicate reliability limitations, margins of error, and data fitness: the core of what pragmatics are designed to deliver. The magnitude of this effect is consistent with the mechanism: pragmatic items encode specific reliability thresholds, interpretation formulas, and informed-refusal criteria that the model cannot derive from training data or retrieved document chunks.
+Uncertainty communication (D3) showed the largest effect (d = 1.353 vs. control, d = 1.040 vs. RAG). This dimension captures whether responses appropriately communicate reliability limitations, margins of error, and data fitness: the core of what pragmatics are designed to deliver. The magnitude of this effect is consistent with the mechanism: pragmatics encode specific reliability thresholds, interpretation formulas, and informed-refusal criteria that the model cannot derive from training data or retrieved document chunks.
 
 Clarity of explanation (D4) showed the second-largest effect (d = 0.957 vs. control). Accuracy (D1, d = 0.541), completeness (D2, d = 0.537), and harm avoidance (D5, d = 0.732) showed medium to large effects. The consistency across all five dimensions indicates that pragmatics improve the overall quality of statistical consultation rather than optimizing a single aspect.
 
 RAG showed its largest advantage over control on clarity (D4, d = 0.546) and uncertainty (D3, d = 0.417), with smaller effects on accuracy (D1, d = 0.190) and harm avoidance (D5, d = 0.148). The pattern suggests that retrieved document chunks provide some contextual value but lack the precision to substantially improve reliability assessment or harm prevention.
 
-## 5.3 Stratum Analysis: Normal vs. Edge Cases
+## Stratum Analysis: Normal vs. Edge Cases
 
 The evaluation was stratified to test whether pragmatics disproportionately help on edge cases (queries involving small areas, geographic exceptions, temporal comparisons, and ambiguous requests) or whether benefits extend to routine statistical queries.
 
@@ -74,7 +74,7 @@ This finding rules out overfitting to edge cases. Pragmatics do not merely catch
 
 The normal-stratum finding should be interpreted with a power caveat: at n = 15, the Wilcoxon test has approximately 0.56 power to detect a d = 0.5 effect. The observed effects (d = 2.347) are large enough to detect at this sample size, but RAG versus control on normal queries (d = 0.458, p = 0.137) was not significant, consistent with underpowering rather than a null effect.
 
-## 5.4 Pipeline Fidelity
+## Pipeline Fidelity
 
 Stage 3 automated verification assessed whether responses accurately reported what Census API tools returned, measuring both auditability (whether claims could be traced to specific API calls) and fidelity (whether traced claims were accurate).
 
@@ -90,15 +90,15 @@ Stage 3 automated verification assessed whether responses accurately reported wh
 
 Pragmatics achieved 91.2% fidelity across 353 claims, compared to 74.6% for RAG (355 claims) and 78.3% for control (253 claims). Substantive fidelity (the rate among claims that could be fully verified) was 99.7% for pragmatics, 98.9% for RAG, and 100.0% for control.
 
-The fidelity gap between pragmatics and RAG (16.6 percentage points) reflects a structural difference. Pragmatic items provide specific criteria for interpreting data, leading the model to make more precise and verifiable claims. RAG-retrieved chunks provide general context that can lead the model to make claims that are plausible but difficult to verify or subtly misaligned with the specific data returned.
+The fidelity gap between pragmatics and RAG (16.6 percentage points) reflects a structural difference. Pragmatics provide specific criteria for interpreting data, leading the model to make more precise and verifiable claims. RAG-retrieved chunks provide general context that can lead the model to make claims that are plausible but difficult to verify or subtly misaligned with the specific data returned.
 
 The control condition's lower claim count (253 vs. 353) reflects a pattern where models without methodology support produce vaguer, less specific responses: responses that are harder to verify not because they are wrong but because they are not specific enough to check. This is itself a pragmatically significant finding: ungrounded responses evade accountability by avoiding specificity.
 
-## 5.5 Determinism
+## Determinism
 
 Pragmatic context retrieval was 100% deterministic across all 39 queries, verified through two independent replications producing zero mismatches with the original evaluation run. Given identical topic parameters, the graph traversal returns identical context sets every time. This determinism is a structural property of the retrieval mechanism (graph lookup rather than similarity search), not a statistical regularity of the evaluation.
 
-## 5.6 Cost and Efficiency
+## Cost and Efficiency
 
 Pragmatics incurred higher per-query token costs than RAG. Mean input tokens per query were 32,929 for pragmatics, 23,746 for RAG, and 5,830 for control, reflecting the structured context delivered alongside data. At Claude Sonnet 4.5 pricing ($3/$15 per million tokens input/output), per-query costs were $0.113 (pragmatics), $0.082 (RAG), and $0.028 (control).
 

@@ -173,9 +173,13 @@ The V1 evaluation design contained a confound: the pragmatics condition had acce
 
 ---
 
-## Appendix E: Pragmatic Item Catalog
+## Appendix E: Pragmatics Catalog
 
-The 36 pragmatic items in the ACS pack. Full content (context text, triggers, thread edges, provenance) is available in `staging/acs/*.json` (18 category files). Items sorted by category.
+The 36 pragmatics in the ACS pack. Full content (context text, triggers, thread edges, provenance) is available in `staging/acs/*.json` (18 category files). Items sorted by category.
+
+```{=latex}
+\begin{landscape}
+```
 
 | Item ID | Category | Latitude | Context (first 100 chars) | Triggers | Thread Edges |
 |---------|----------|----------|--------------------------|----------|-------------|
@@ -217,3 +221,7 @@ The 36 pragmatic items in the ACS pack. Full content (context text, triggers, th
 | ACS-THR-002 | threshold | narrow | When a user requests data for a small place (population under 5,000), proactively check whet... | 4 | 1 |
 
 **Latitude key:** `none` = hard constraint (no exceptions); `narrow` = strong guidance with rare exceptions; `wide` = context-dependent; `full` = background information.
+
+```{=latex}
+\end{landscape}
+```

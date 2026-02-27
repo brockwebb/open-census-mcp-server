@@ -1,9 +1,9 @@
-# Section 6: Discussion
+# Discussion
 
 <!-- Registry references: S2-010–012, S2-032, SA-001–022, COST-001–013, EFF-001–008, DET-001–004 -->
 <!-- Citation files: core_argument.md, stochastic_tax_framing.md, rag_graphrag_cost_comparison.md, d3_uncertainty_deep_dive.md -->
 
-## 6.1 Selectivity Beats Volume
+## Selectivity Beats Volume
 
 The central empirical finding is that 36 curated expert judgment items outperform 311 document chunks retrieved from the same source material, with a large effect size (d = 0.922) and a 16.6 percentage point fidelity advantage. Both conditions drew from the same 354 pages of Census Bureau documentation. The difference is entirely in how that knowledge was represented and delivered.
 
@@ -13,7 +13,7 @@ The extraction yield (34 pipeline-extracted items from 5,233 knowledge graph nod
 
 The D3 (uncertainty communication) results provide the clearest illustration. This dimension showed the largest effect across all five quality dimensions (d = 1.353 vs. control, d = 1.040 vs. RAG) because it depends most directly on fitness-for-use judgment. RAG can retrieve a passage explaining what a margin of error is. Pragmatics deliver the specific judgment that *this* margin of error renders *this* estimate unreliable for *this* use case. The distinction between retrieving information about uncertainty and delivering judgment about uncertainty is the distinction between semantics and pragmatics.
 
-## 6.2 Reducing the Stochastic Tax
+## Reducing the Stochastic Tax
 
 Every AI system built on language models pays a stochastic tax: variance at every stage of the pipeline that cannot be eliminated because the underlying generation mechanism is non-deterministic. The practical question is not whether variance exists but where it accumulates and how much of it is avoidable.
 
@@ -23,7 +23,7 @@ Pragmatics eliminates one source of this compounding. Context retrieval is deter
 
 For federal statistical consultation, this distinction matters practically. The difference between a one-year and five-year estimate, or between a 20% and 40% coefficient of variation, determines whether an answer is useful or harmful. Stochastic retrieval in a domain where all the documentation sounds alike (where anisotropy and domain homogeneity collapse the embedding space) means the grounding itself is unreliable. Deterministic delivery of curated judgment eliminates this failure mode.
 
-## 6.3 The Sidecar Architecture
+## The Sidecar Architecture
 
 The empirical results establish that curated expert judgment improves statistical consultation quality. The delivery architecture determines whether that improvement is practically deployable.
 
@@ -35,7 +35,7 @@ Pragmatics concentrates the authoring cost (one expert curates the pack) and dis
 
 The evaluation provides an unintentional test of vendor independence. Three judge models from three vendors (Anthropic Claude, OpenAI GPT, Google Gemini) all consumed pragmatic context through the same interface and consistently scored pragmatics-assisted responses higher. Any system that can receive structured context, regardless of the reasoning model behind it, benefits from the same expert judgment. This decouples the expertise from the model, allowing agencies to change model vendors without rebuilding their expert judgment infrastructure.
 
-## 6.4 Implications for Federal Statistical Agencies
+## Implications for Federal Statistical Agencies
 
 Making federal data AI-ready requires three investments: refactoring how data is exposed to AI systems, accelerating metadata curation, and encoding the expert judgment needed to evaluate fitness for use. The first two are underway across federal statistical agencies. The third is not.
 

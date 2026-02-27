@@ -1,4 +1,4 @@
-# Section 1: Introduction
+# Introduction
 
 <!-- Registry references: SD-001, PL-001, S2-010, S2-011, S3-001–003 -->
 <!-- Citation files: federal_data_evolution_arc.md, core_argument.md, nsf_norc_landscape.md -->
@@ -21,6 +21,6 @@ The current federal landscape reflects this gap. The National Science Foundation
 
 This paper introduces pragmatics as a defined, implementable concept for federal statistical AI systems and provides empirical evidence that it works. We present a knowledge representation study comparing three conditions with identical data access: a control with no methodology support, retrieval-augmented generation (RAG) using document chunks from authoritative source material, and pragmatics using curated expert judgment items delivered at the point of statistical reasoning. The three conditions draw from the same 354 pages of Census Bureau documentation, differing only in how that knowledge is represented and delivered.
 
-The results demonstrate that 36 curated pragmatic items produce very large improvements in consultation quality relative to no support (Cohen's d = 1.440) and large improvements relative to RAG (d = 0.922), with the strongest effects on uncertainty communication, precisely the dimension where fitness-for-use judgment matters most. Pragmatic context achieves 91.2% fidelity to authoritative data sources compared to 74.6% for RAG, at a marginal cost of nine cents per query.
+The results demonstrate that 36 curated pragmatics produce very large improvements in consultation quality relative to no support (Cohen's d = 1.440) and large improvements relative to RAG (d = 0.922), with the strongest effects on uncertainty communication, precisely the dimension where fitness-for-use judgment matters most. Pragmatic context achieves 91.2% fidelity to authoritative data sources compared to 74.6% for RAG, at a marginal cost of nine cents per query.
 
 The contribution is not a better retrieval system. It is the identification and operationalization of a missing layer in the federal statistical data ecosystem: a layer that has been conceptually present in quality frameworks for decades but has never been delivered computationally. Making data AI-ready requires three things: refactoring how data is exposed to AI systems, accelerating metadata curation, and encoding the expert judgment needed to evaluate fitness for use. The first two are underway. The third is the subject of this paper.

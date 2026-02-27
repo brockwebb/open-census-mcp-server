@@ -1,4 +1,4 @@
-# Section 8: Conclusion
+# Conclusion
 
 <!-- Registry references: S2-010, S2-032, S3-003, PL-001, COST-003 -->
 
