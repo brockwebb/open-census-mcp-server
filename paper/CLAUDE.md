@@ -53,6 +53,13 @@ cd paper && python build.py --open    # assemble + render + open PDF
 | Number sections | yes | Academic standard |
 | TOC | no | Article, not report |
 
+## Figure Style
+
+Plot style is centralized in `central_library/style/census_plot_style.py`,
+symlinked to `paper/assets/census_plot_style.py`. Uses plotnine (Python ggplot2)
+with the U.S. Census Bureau xdgov Data Design Standards palette. All figure
+scripts import from this module. Do not define colors, fonts, or themes inline.
+
 ## Writing Conventions (Mandatory)
 
 These rules are inherited from `/Users/brock/Documents/GitHub/central_library/crosswalks/fcsm_nist/WRITING_CONVENTIONS.md` and apply to all section files.

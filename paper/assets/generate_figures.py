@@ -32,8 +32,6 @@ from plotnine import (
     aes,
     annotate,
     coord_cartesian,
-    element_blank,
-    element_line,
     element_text,
     facet_wrap,
     geom_col,
@@ -51,8 +49,8 @@ from plotnine import (
     scale_y_continuous,
     scale_y_discrete,
     theme,
-    theme_minimal,
 )
+from census_plot_style import COLORS, COLORS_F2, COLORS_F7, paper_theme, save_figure
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 FIGURES_DIR = REPO_ROOT / "paper/assets/figures"
@@ -64,54 +62,6 @@ DATA_PATHS = {
     "fidelity": REPO_ROOT / "results/v2_redo/stage3/analysis/fidelity_summary.json",
     "cost": REPO_ROOT / "results/v2_redo/stage1/analysis/cost_analysis.json",
 }
-
-# U.S. Census Bureau xdgov Data Design Standards palette — 3 conditions
-# https://xdgov.github.io/data-design-standards/components/colors
-COLORS = {
-    "Control": "#78909C",      # census-color-grey
-    "RAG": "#FF7043",          # census-color-orange
-    "Pragmatics": "#112E51",   # census-color-navy
-}
-
-# F2 palette — 3 representations
-COLORS_F2 = {
-    "Labels": "#78909C",       # census-color-grey
-    "Raw": "#0095A8",          # census-color-teal
-    "Enriched": "#C25432",     # census-color-orange-dark
-}
-
-# F7 comparison palette
-COLORS_F7 = {
-    "Prag vs Ctrl": "#112E51",   # census-color-navy
-    "Prag vs RAG": "#FF7043",    # census-color-orange
-    "RAG vs Ctrl": "#78909C",    # census-color-grey
-}
-
-# 508-compliant annotation text color (4.5:1 on white)
-TEXT_COLOR = "#4B636E"           # census-color-grey-dark
-
-FONT_FAMILY = "serif"
-BASE_SIZE = 12  # bumped from 11 for print legibility
-
-
-def paper_theme(figure_size=(6.5, 4.0)):
-    """Consistent publication theme for all figures."""
-    return (
-        theme_minimal(base_size=BASE_SIZE, base_family=FONT_FAMILY)
-        + theme(
-            plot_title=element_text(size=13, weight="bold"),
-            axis_title=element_text(size=11),
-            axis_text=element_text(size=10),
-            legend_title=element_text(size=11),
-            legend_text=element_text(size=10),
-            legend_position="bottom",
-            panel_grid_minor=element_blank(),
-            panel_grid_major=element_line(color="#eeeeee"),
-            plot_margin=0.02,
-            figure_size=figure_size,
-        )
-    )
-
 
 # ---------------------------------------------------------------------------
 # Data loading
@@ -511,14 +461,6 @@ def make_F9(data: dict):
 # ---------------------------------------------------------------------------
 
 
-def save_figure(p, filename: str, width: float = 6.5, height: float = 4.0) -> None:
-    """Save a plotnine figure to paper/assets/figures/ as PDF."""
-    FIGURES_DIR.mkdir(parents=True, exist_ok=True)
-    path = FIGURES_DIR / filename
-    p.save(str(path), width=width, height=height, units="in", dpi=300, verbose=False)
-    print(f"  Saved: {path}")
-
-
 FIGURES: dict = {
     "F2a": {
         "fn": make_F2a,
@@ -678,7 +620,7 @@ def main() -> None:
         print("Generating all figures...")
         for key, cfg in FIGURES.items():
             p = cfg["fn"](data)
-            save_figure(p, cfg["filename"], width=cfg["width"], height=cfg["height"])
+            save_figure(p, cfg["filename"], output_dir=FIGURES_DIR, width=cfg["width"], height=cfg["height"])
 
     elif args.figure:
         key = args.figure.upper()
@@ -691,7 +633,7 @@ def main() -> None:
             sys.exit(1)
         cfg = FIGURES[key]
         p = cfg["fn"](data)
-        save_figure(p, cfg["filename"], width=cfg["width"], height=cfg["height"])
+        save_figure(p, cfg["filename"], output_dir=FIGURES_DIR, width=cfg["width"], height=cfg["height"])
 
     elif args.preview:
         import matplotlib.pyplot as plt
