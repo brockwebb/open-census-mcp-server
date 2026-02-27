@@ -55,7 +55,7 @@ cd paper && python build.py --open    # assemble + render + open PDF
 
 ## Writing Conventions (Mandatory)
 
-These rules are inherited from `central_library/crosswalks/fcsm_nist/WRITING_CONVENTIONS.md` and apply to all section files.
+These rules are inherited from `/Users/brock/Documents/GitHub/central_library/crosswalks/fcsm_nist/WRITING_CONVENTIONS.md` and apply to all section files.
 
 ### Zero tolerance
 - **No em dashes.** Replace with commas, semicolons, colons, parenthetical rewrites, or sentence restructuring.
@@ -107,6 +107,14 @@ Do not invent or round numbers. All statistics come from `paper/numbers_registry
 - Source pages: 354
 - Determinism: 100% (39/39, 2 replications, 0 mismatches)
 - Cost: $0.09/query marginal (Sonnet), $0.14 (Opus)
+
+## Prose Editing Process
+
+See `editing_tools/prose_editing_workflow.md` for the AI-assisted editing workflow. Short version: AI flags sentences in chat with proposed rewrites, human approves/rejects, CC applies approved edits as exact string replacements. No direct file edits without explicit approval.
+
+Supporting tools in `editing_tools/`:
+- `readability_scores.py` — Flesch-Kincaid grade per section
+- `editing_tools_srs.md` — tool documentation and current FK baseline
 
 ## Repo-Level Context
 
