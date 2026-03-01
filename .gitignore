@@ -28,6 +28,13 @@ docs/references/**/*.pdf
 !knowledge-base/rules/.gitkeep
 !knowledge-base/methodology/.gitkeep
 
+# PaperBanana intermediate outputs (101MB+, not tracked)
+paper/assets/diagrams/paperbanana/outputs/
+paper/assets/diagrams/paperbanana/.env
+
+# Claude metadata
+**/.claude/
+
 #FS
 **/.DS_Store
 

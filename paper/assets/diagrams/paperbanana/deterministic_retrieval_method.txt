@@ -1,0 +1,135 @@
+DIAGRAM: Deterministic vs. Stochastic Retrieval
+ASPECT RATIO: 3:2 (1600w × 850h logical units)
+STYLE: Publication-quality academic diagram. Clean serif font (Georgia or similar). White text on dark backgrounds. Two-panel swimlane layout with a centered "vs." divider. Left panel muted/greyed (RAG = inferior). Right panel vivid/saturated (Pragmatics = superior).
+
+=== LAYOUT OVERVIEW ===
+Two vertical swimlane panels side by side. Left = RAG Pipeline (stochastic, greyed out palette). Right = Pragmatics Pipeline (deterministic, full Census orange palette). "vs." label centered between panels. Bottom insight annotation spanning full width.
+
+=== TITLE (above both panels) ===
+- "Deterministic vs. Stochastic Retrieval" — 18px serif bold, centered
+- Subtitle: "Why pragmatics achieve 100% replication consistency" — 11px serif, muted #4B636E
+
+=== LEFT PANEL: RAG PIPELINE (Stochastic) ===
+Panel border: grey #78909C, 2px, rounded corners
+Panel background: very light grey #FAFAFA (slightly tinted, opacity ~85%)
+Panel header: "RAG PIPELINE" (14px serif bold, grey #78909C)
+Subheader: "Stochastic • Embedding-dependent • Variable results" (10px serif, muted #9E9E9E)
+
+All nodes use desaturated palette: fills #ECEFF1, borders #B0BEC5, text #78909C (greyed)
+Variance callouts use red #EF5350 dashed connectors with ⚠ symbol
+
+Nodes (top to bottom):
+
+1. QUERY (rounded rectangle)
+- Fill: #ECEFF1, border #B0BEC5, text #78909C bold
+- Label: "Query"
+
+2. EMBED QUERY (rounded rectangle)
+- Fill: #ECEFF1, border #B0BEC5, text #78909C bold
+- Label: "Embed Query" / "sentence-transformers / 384-dim vector" (9px)
+- ⚠ Variance callout (right, dashed red): "⚠ Embedding model drift" (#EF5350, 9px)
+
+3. VECTOR DATABASE (cylinder)
+- Fill: #CFD8DC, border #90A4AE, text #78909C bold
+- Label: "Vector Database" / "FAISS / Chroma / Pinecone / 311 chunks indexed" (9px)
+- ⚠ Variance callout (right, dashed red): "⚠ Chunk boundary artifacts" (#EF5350, 9px)
+
+4. COSINE SIMILARITY (rounded rectangle)
+- Fill: #ECEFF1, border #B0BEC5, text #78909C bold
+- Label: "Cosine Similarity" / "Continuous scores / Threshold-dependent ranking" (9px)
+- ⚠ Variance callout (right, dashed red): "⚠ Threshold effects" (#EF5350, 9px)
+
+5. TOP-K SELECTION (rounded rectangle)
+- Fill: #ECEFF1, border #B0BEC5, text #78909C bold
+- Label: "Top-k Selection" / "k=5 nearest neighbors / Rank-order instability" (9px)
+
+6. VARIABLE RESULTS (rounded rectangle, dashed red border)
+- Fill: #ECEFF1, border #EF5350 (2px dashed), text #78909C bold
+- Label: "Variable Results" / "Different context across runs / Non-reproducible" (9px)
+
+7. SCORE BOX (rounded rectangle)
+- Fill: #ECEFF1, border #90A4AE (2px)
+- Label: "64.9% fidelity" (12px bold, grey #78909C) / "to authoritative sources" (9px, lighter grey)
+
+All arrows in this panel: grey #B0BEC5, 1px, classic arrowhead
+
+=== CENTER DIVIDER ===
+- "vs." label: 20px serif bold, muted #4B636E, centered between the two panels at mid-height
+
+=== RIGHT PANEL: PRAGMATICS PIPELINE (Deterministic) ===
+Panel border: dark orange #E64A19, 2px, rounded corners
+Panel background: white
+Panel header: "PRAGMATICS PIPELINE" (14px serif bold, orange #E64A19)
+Subheader: "Deterministic • Tag-based • Identical every run" (10px serif, muted #4B636E)
+
+All main flow nodes: fill #FF7043, border #E64A19, white text
+Determinism callouts use green #2E7D32 dashed connectors with ✓ symbol
+
+Nodes (top to bottom):
+
+1. QUERY PARAMETERS (rounded rectangle)
+- Fill: light orange/warm #FFF3E0, border #E64A19, dark text
+- Label: "Query Parameters" (bold) / "topics: [small_area, geography, margin_of_error]" (9px)
+
+2. SQL TAG MATCH (rounded rectangle)
+- Fill: #FF7043, border #E64A19 (2px), white text bold
+- Label: "SQL Tag Match" / "WHERE trigger IN ('small_area','geography','margin_of_error')" (9px)
+- ✓ Determinism callout (right, dashed green): "✓ Exact string matching" (#2E7D32, 9px)
+
+3. DIRECT MATCHES (rounded rectangle)
+- Fill: #FF7043, border #E64A19, white text bold
+- Label: "Direct Matches" / "Exact set of pragmatic items / No ranking, no scoring" (9px)
+
+4. THREAD TRAVERSAL (rounded rectangle)
+- Fill: #FF7043, border #E64A19, white text bold
+- Label: "Thread Traversal" / "Graph walk: RELATES_TO edges / Depth ≤ 2, fixed topology" (9px)
+- ✓ Determinism callout (right, dashed green): "✓ Fixed graph edges" (#2E7D32, 9px)
+- Mini graph inset (left side of panel): three small orange ellipses labeled "small area", "pop threshold", "MOE" connected by undirected lines, labeled "RELATES_TO" in italic orange 8px
+
+5. RELATED ITEMS (rounded rectangle)
+- Fill: #FF7043, border #E64A19, white text bold
+- Label: "Related Items" / "Union of direct + traversed / Complete pragmatic bundle" (9px)
+- ✓ Determinism callout (right, dashed green): "✓ No embedding dependency" (#2E7D32, 9px)
+
+6. IDENTICAL RESULTS (rounded rectangle, green border)
+- Fill: warm white #FFF3E0, border #2E7D32 (2px), dark text
+- Label: "Identical Results" (bold) / "Same context every run / Fully reproducible" (9px)
+
+7. SCORE BOX (rounded rectangle)
+- Fill: warm white #FFF3E0, border #E64A19 (2px)
+- Label: "91.6% fidelity" (12px bold, orange #E64A19) / "39/39 compliance • 0 mismatches across replications" (9px, muted)
+
+All arrows in this panel: orange #E64A19, 2px, classic arrowhead
+
+=== BOTTOM INSIGHT ANNOTATION ===
+- Centered, spanning full width below both panels
+- Text: "Same topics → same WHERE clause → same items → same graph edges → identical output"
+- Second line: "No cosine thresholds. No top-k variance. No embedding model drift."
+- Font: 11px serif, muted #4B636E. "identical output" in bold.
+
+=== COLOR PALETTE (Census xdgov) ===
+RAG side (desaturated):
+- Panel fill: #FAFAFA | Border: #78909C
+- Node fill: #ECEFF1 | DB fill: #CFD8DC
+- Text: #78909C | Light text: #9E9E9E
+- Variance callout: #EF5350
+
+Pragmatics side (full Census palette):
+- Orange: #FF7043 | Dark orange: #E64A19
+- Warm white: #FFF3E0
+- Green: #2E7D32
+- Muted text: #4B636E
+
+=== TYPOGRAPHY ===
+- All text: serif (Georgia preferred)
+- Node labels: 10-11px, bold headers + 9px body
+- Panel headers: 14px bold
+- Title: 18px bold
+- White text on orange fills; dark text on light fills
+
+=== DO NOT ===
+- No gradients
+- No drop shadows
+- Do not make the RAG panel invisible — it should be clearly readable but visually subordinate (muted)
+- No clip art
+- Mini graph inset must remain small and unobtrusive

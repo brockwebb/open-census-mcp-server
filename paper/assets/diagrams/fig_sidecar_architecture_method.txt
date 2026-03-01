@@ -1,0 +1,133 @@
+DIAGRAM: RAG vs. Pragmatics Sidecar Architecture
+ASPECT RATIO: 3:2 (1600w × 900h logical units)
+STYLE: Publication-quality academic diagram. Clean serif font (Georgia or similar). Two-panel side-by-side comparison. Minimal decorative elements. No gradients, no drop shadows.
+
+=== CORE ARCHITECTURE (applies to BOTH panels) ===
+BOTH panels share the same base infrastructure:
+  User → LLM → MCP Server → Census Data API → (data returns to MCP Server) → (MCP Server returns to LLM) → (LLM responds to User)
+
+There is NO separate Response box. The flow closes when the LLM returns the answer to the User via a return arrow. User is both the start and end of the flow.
+
+The ONLY structural difference between panels:
+- LEFT: LLM also queries a client-side Vector DB (bolt-on, external to MCP Server)
+- RIGHT: MCP Server also queries a server-side Pragmatics Sidecar (cloud database)
+
+=== LEFT PANEL: RAG ARCHITECTURE ===
+Panel background: white, light grey border #78909C, 2px
+Panel header: "RAG" — 14px serif bold, grey #546E7A
+Subheader: "Client-side retrieval" — 10px serif, #546E7A
+
+Nodes and flow (top to bottom):
+
+1. USER
+- Rounded rectangle, white fill, border #546E7A
+- Label: "User" bold
+- Arrow DOWN to LLM labeled "query" (9px muted)
+- Arrow back UP from LLM labeled "response" (9px muted) — the flow returns here
+
+2. LLM
+- Rounded rectangle, navy #205493 fill, border #112E51, white text
+- Label: "LLM" bold
+- Arrow DOWN to MCP Server labeled "data request" (9px muted)
+- Arrow RIGHT to Vector DB labeled "query" (9px muted)
+
+3. VECTOR DB — to the RIGHT of LLM, at the same vertical level as LLM
+- Cylinder shape, grey #B0BEC5 fill, border #78909C, dark text
+- Label line 1: "Vector DB" bold
+- Label line 2: "client-maintained" (9px italic)
+- Annotation above or beside: "client-side bolt-on" (9px italic, grey #546E7A)
+- Arrow back LEFT to LLM labeled "top-k chunks" (9px muted)
+
+4. MCP SERVER — below LLM
+- Rounded rectangle, white fill, border #205493, dark text
+- Label line 1: "MCP Server" bold
+- Label line 2: "Census Data API gateway" (9px)
+- Arrow DOWN to Census Data API labeled "API call" (9px muted)
+- Arrow UP back to LLM labeled "data" (9px muted)
+
+5. CENSUS DATA API — below MCP Server
+- Rounded rectangle, light blue #DCEEFB fill, border #205493, dark text
+- Label line 1: "Census Data API" bold
+- Label line 2: "Estimates + MOEs" (9px)
+- Arrow UP back to MCP Server labeled "data" (9px muted)
+
+=== VERTICAL DIVIDER ===
+Thin dashed vertical line, grey #B0BEC5, 1px
+Centered label: "vs." — bold 14px serif, grey #546E7A
+
+=== RIGHT PANEL: PRAGMATICS SIDECAR ARCHITECTURE ===
+Panel background: white, orange border #E64A19, 2px
+Panel header: "PRAGMATICS" — 14px serif bold, orange #E64A19
+Subheader: "Server-side sidecar" — 10px serif, #546E7A
+
+Nodes and flow (top to bottom):
+
+1. USER
+- Rounded rectangle, white fill, border #546E7A
+- Label: "User" bold
+- Arrow DOWN to LLM labeled "query" (9px muted)
+- Arrow back UP from LLM labeled "response" (9px muted) — flow closes here
+
+2. LLM
+- Rounded rectangle, navy #205493 fill, border #112E51, white text
+- Label: "LLM" bold
+- ONE arrow DOWN to MCP Server labeled "data request" (9px muted)
+- NO arrow to any Vector DB — that component does not exist here
+
+3. MCP SERVER — below LLM, same position as left panel
+- Rounded rectangle, white fill, border #205493, dark text
+- Label line 1: "MCP Server" bold
+- Label line 2: "Census Data API gateway" (9px)
+- Arrow DOWN to Census Data API labeled "API call" (9px muted)
+- Arrow UP back to LLM labeled "data + expert judgment" (9px muted) — HEAVIER stroke (2px), to show the enriched return
+- Arrow RIGHT to Pragmatics Sidecar labeled "guidance request" (9px muted)
+
+4. CENSUS DATA API — below MCP Server, same position as left panel
+- Rounded rectangle, light blue #DCEEFB fill, border #205493, dark text
+- Label line 1: "Census Data API" bold
+- Label line 2: "Estimates + MOEs" (9px)
+- Arrow UP back to MCP Server labeled "data" (9px muted)
+
+5. PRAGMATICS SIDECAR — to the RIGHT of MCP Server (mirrors Vector DB position on left, but one level lower)
+- Rounded rectangle, orange #FF7043 fill, border #E64A19, white text
+- Label line 1: "Pragmatics Sidecar" bold
+- Label line 2: "server-maintained" (9px italic)
+- Annotation above or beside: "cloud database" (9px italic, orange #E64A19)
+- Arrow back LEFT to MCP Server labeled "expert judgment" (9px muted)
+
+=== KEY VISUAL ARGUMENT ===
+The diagram makes one argument:
+
+LEFT:  Vector DB (grey) attaches at the CLIENT layer — next to LLM. Client-maintained. One extra client-side component.
+RIGHT: Pragmatics Sidecar (orange) attaches at the SERVER layer — next to MCP Server. Server-maintained. No client-side addition.
+
+The vertical position of the bolt-on component IS the argument. Everything else is symmetric.
+
+There is no separate Response box on either side. The LLM returns an answer to the User via a return arrow — the loop closes at the User node.
+
+=== COLOR PALETTE (Census xdgov) ===
+- Navy: #205493 | Dark navy: #112E51
+- Orange: #FF7043 | Dark orange: #E64A19
+- Grey: #B0BEC5 | Dark grey: #78909C | Text grey: #546E7A
+- Light blue: #DCEEFB
+- Background: white #FFFFFF
+
+=== TYPOGRAPHY ===
+- All text: serif (Georgia preferred)
+- Panel headers: 14px bold
+- Node labels: 11px bold (primary), 9px regular (sublabels)
+- Arrow labels: 9px muted grey
+- Annotations: 9px italic grey or orange
+
+=== DO NOT ===
+- Do NOT include a separate Response box — the response is the return arrow from LLM to User
+- Do NOT include "311 chunks" on the Vector DB label
+- Do NOT include "36 curated expert judgments" on the Pragmatics Sidecar label
+- Do NOT omit the MCP Server from the left panel
+- Do NOT omit the Census Data API return arrow (Census API → MCP Server) from either panel
+- Do NOT place the Pragmatics Sidecar inside the MCP Server box — it is alongside it
+- No comparison table
+- No resource usage axis or scale
+- No gradients or drop shadows
+- No clip art or emoji
+- Do NOT label either panel "Federal Statistical AI"

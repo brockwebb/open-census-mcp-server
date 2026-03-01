@@ -1,0 +1,152 @@
+<mxfile host="app.diagrams.net" agent="Claude" version="24.0.0">
+  <diagram name="Semiotic Triangle" id="semiotic-triangle-v2">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="700" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- TITLE -->
+        <mxCell id="title" value="&lt;font style=&quot;font-size:18px;font-family:Georgia,serif;&quot;&gt;&lt;b&gt;The Semiotic Stack Applied to Federal Data&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px;color:#4B636E;font-family:Georgia,serif;&quot;&gt;Morris, C. W. (1938). Foundations of the Theory of Signs&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="250" y="20" width="500" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- ============================================================ -->
+        <!-- ISOMETRIC PARALLELOGRAM LAYERS                               -->
+        <!-- Template: layers-how-they-work.drawio                        -->
+        <!-- parallelogram with fixedSize=1, size controls skew           -->
+        <!-- ============================================================ -->
+
+        <!-- Layer 1: SYNTAX (bottom, widest) — Census grey -->
+        <mxCell id="syntax_layer" value="" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;size=80;fillColor=#B0BEC5;strokeColor=#78909C;strokeWidth=2;opacity=90;" vertex="1" parent="1">
+          <mxGeometry x="170" y="430" width="520" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="syntax_label" value="&lt;font style=&quot;font-size:16px;font-family:Georgia,serif;&quot;&gt;&lt;b&gt;SYNTAX&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px;font-family:Georgia,serif;&quot;&gt;Structure, Format, APIs&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontColor=#333333;" vertex="1" parent="1">
+          <mxGeometry x="355" y="460" width="170" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Layer 2: SEMANTICS (middle) — Census navy -->
+        <mxCell id="semantics_layer" value="" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;size=80;fillColor=#205493;strokeColor=#112E51;strokeWidth=2;opacity=90;" vertex="1" parent="1">
+          <mxGeometry x="215" y="310" width="430" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="semantics_label" value="&lt;font style=&quot;font-size:16px;color:#FFFFFF;font-family:Georgia,serif;&quot;&gt;&lt;b&gt;SEMANTICS&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px;color:#FFFFFF;font-family:Georgia,serif;&quot;&gt;Meaning, Metadata, Definitions&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="330" y="335" width="230" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Layer 3: PRAGMATICS (top, narrowest) — Census orange -->
+        <mxCell id="pragmatics_layer" value="" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;size=80;fillColor=#FF7043;strokeColor=#E64A19;strokeWidth=3;opacity=95;" vertex="1" parent="1">
+          <mxGeometry x="260" y="190" width="340" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="pragmatics_label" value="&lt;font style=&quot;font-size:16px;color:#FFFFFF;font-family:Georgia,serif;&quot;&gt;&lt;b&gt;PRAGMATICS&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px;color:#FFFFFF;font-family:Georgia,serif;&quot;&gt;Fitness-for-Use, Expert Judgment&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="325" y="215" width="230" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- ============================================================ -->
+        <!-- RIGHT SIDE: Census examples (dashed connector lines)         -->
+        <!-- ============================================================ -->
+
+        <!-- Syntax example connector -->
+        <mxCell id="syntax_ex_line" value="" style="endArrow=none;html=1;strokeWidth=1;strokeColor=#78909C;dashed=1;dashPattern=5 3;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="650" y="485" as="sourcePoint" />
+            <mxPoint x="770" y="485" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="syntax_examples" value="&lt;font color=&quot;#4B636E&quot; style=&quot;font-family:Georgia,serif;&quot;&gt;&lt;i&gt;CSV schemas, Census API&lt;br&gt;endpoints, FIPS codes&lt;/i&gt;&lt;/font&gt;" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="775" y="470" width="140" height="35" as="geometry" />
+        </mxCell>
+
+        <!-- Semantics example connector -->
+        <mxCell id="sem_ex_line" value="" style="endArrow=none;html=1;strokeWidth=1;strokeColor=#112E51;dashed=1;dashPattern=5 3;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="610" y="365" as="sourcePoint" />
+            <mxPoint x="770" y="365" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sem_examples" value="&lt;font color=&quot;#4B636E&quot; style=&quot;font-family:Georgia,serif;&quot;&gt;&lt;i&gt;&quot;B19013_001E = Median&lt;br&gt;Household Income&quot;&lt;/i&gt;&lt;/font&gt;" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="775" y="350" width="140" height="35" as="geometry" />
+        </mxCell>
+
+        <!-- Pragmatics example connector -->
+        <mxCell id="prag_ex_line" value="" style="endArrow=none;html=1;strokeWidth=1;strokeColor=#E64A19;dashed=1;dashPattern=5 3;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="565" y="245" as="sourcePoint" />
+            <mxPoint x="770" y="245" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="prag_examples" value="&lt;font color=&quot;#4B636E&quot; style=&quot;font-family:Georgia,serif;&quot;&gt;&lt;i&gt;&quot;Don't use 1-yr ACS for&lt;br&gt;populations under 65K&quot;&lt;/i&gt;&lt;/font&gt;" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="775" y="230" width="140" height="35" as="geometry" />
+        </mxCell>
+
+        <!-- ============================================================ -->
+        <!-- LEFT SIDE: Coverage status                                   -->
+        <!-- ============================================================ -->
+
+        <!-- Syntax status -->
+        <mxCell id="syntax_st_line" value="" style="endArrow=none;html=1;strokeWidth=1;strokeColor=#78909C;dashed=1;dashPattern=5 3;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="210" y="485" as="sourcePoint" />
+            <mxPoint x="110" y="485" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="syntax_status" value="&lt;font color=&quot;#2E7D32&quot; style=&quot;font-family:Georgia,serif;&quot;&gt;&lt;b&gt;✓ Solved&lt;/b&gt;&lt;/font&gt;" style="text;html=1;align=right;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="20" y="475" width="85" height="25" as="geometry" />
+        </mxCell>
+
+        <!-- Semantics status -->
+        <mxCell id="sem_st_line" value="" style="endArrow=none;html=1;strokeWidth=1;strokeColor=#112E51;dashed=1;dashPattern=5 3;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="250" y="365" as="sourcePoint" />
+            <mxPoint x="110" y="365" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sem_status" value="&lt;font color=&quot;#2E7D32&quot; style=&quot;font-family:Georgia,serif;&quot;&gt;&lt;b&gt;✓ Solved&lt;/b&gt;&lt;/font&gt;" style="text;html=1;align=right;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="20" y="355" width="85" height="25" as="geometry" />
+        </mxCell>
+
+        <!-- Pragmatics status — THE GAP -->
+        <mxCell id="prag_st_line" value="" style="endArrow=none;html=1;strokeWidth=1;strokeColor=#E64A19;dashed=1;dashPattern=5 3;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="295" y="245" as="sourcePoint" />
+            <mxPoint x="110" y="245" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="prag_status" value="&lt;font color=&quot;#D32F2F&quot; style=&quot;font-family:Georgia,serif;&quot;&gt;&lt;b&gt;✗ The Gap&lt;/b&gt;&lt;/font&gt;" style="text;html=1;align=right;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="15" y="235" width="90" height="25" as="geometry" />
+        </mxCell>
+
+        <!-- ============================================================ -->
+        <!-- ORANGE BRACKET: "This Paper" spanning pragmatics             -->
+        <!-- ============================================================ -->
+        <mxCell id="bracket_vert" value="" style="endArrow=none;html=1;strokeWidth=3;strokeColor=#E64A19;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="130" y="190" as="sourcePoint" />
+            <mxPoint x="130" y="300" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="bracket_top_cap" value="" style="endArrow=none;html=1;strokeWidth=3;strokeColor=#E64A19;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="130" y="190" as="sourcePoint" />
+            <mxPoint x="140" y="190" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="bracket_bot_cap" value="" style="endArrow=none;html=1;strokeWidth=3;strokeColor=#E64A19;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="130" y="300" as="sourcePoint" />
+            <mxPoint x="140" y="300" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="bracket_label" value="&lt;font color=&quot;#E64A19&quot; style=&quot;font-family:Georgia,serif;&quot;&gt;&lt;b&gt;This&lt;br&gt;Paper&lt;/b&gt;&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="95" y="227" width="45" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- ============================================================ -->
+        <!-- BOTTOM ANNOTATION                                            -->
+        <!-- ============================================================ -->
+        <mxCell id="bottom_note" value="&lt;font style=&quot;font-size:11px;color:#4B636E;font-family:Georgia,serif;&quot;&gt;Federal AI-ready data guidance covers syntax and semantics.&lt;br&gt;The missing layer is &lt;b&gt;pragmatics&lt;/b&gt; — expert judgment about fitness-for-use.&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="240" y="575" width="420" height="40" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

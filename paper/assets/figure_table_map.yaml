@@ -370,30 +370,41 @@ figures:
 appendix_figures:
 
   App-F1:
-    title: "RAG vs Sidecar Architecture Comparison"
+    title: "RAG vs. Pragmatics Sidecar Architecture"
     description: >
-      Side-by-side comparison of traditional RAG architecture (client-side
-      vector DB + embeddings) vs sidecar architecture (server-side expert
-      judgment via MCP). Shows that pragmatics eliminates client-side vector
-      infrastructure while moving curation to a hostable, scalable server.
+      Two-panel comparison. Both panels share User → LLM → MCP Server →
+      Census Data API base infrastructure. Left (RAG): LLM also queries a
+      client-side Vector DB bolt-on (grey, client-maintained). Right
+      (Pragmatics): MCP Server also queries a server-side Pragmatics Sidecar
+      (orange, cloud database, server-maintained). Vector DB attaches at the
+      client layer; Pragmatics Sidecar attaches at the server layer. No
+      Response box — loop closes at User. Census API return arrow shown on
+      both sides.
     section: "Appendix"
-    figure_type: drawio
+    figure_type: paperbanana
     generation:
-      tool: drawio
+      tool: paperbanana
       source_file: "paper/assets/diagrams/sidecar_architecture.drawio"
-      source_data: null
-      build_command: null
+      method_file: "paper/assets/diagrams/fig_sidecar_architecture_method.txt"
+      build_command: >
+        cd paper/assets/diagrams/paperbanana &&
+        paperbanana generate --input sidecar_architecture_method.txt
+        --caption "RAG vs Pragmatics: Client-Side Retrieval vs Server-Side Sidecar"
+        --vlm-model gemini-3.1-pro-preview
+        --image-model gemini-3.1-flash-image-preview
+        --iterations 3
+      provenance: "run_20260301_141340_b38b2c"
     output:
-      current: "diagrams/sidecar_architecture_extracted.png"
+      paper: "diagrams/fig_sidecar_architecture.png"
       paper_format: png
       paper_dimensions:
         width: 6.5
         height: null
-    caption: "RAG vs sidecar architecture. The sidecar pattern eliminates client-side vector infrastructure."
+    caption: "RAG vs. pragmatics sidecar architecture. Both architectures share the same MCP server gateway to Census data. The difference is where methodology support attaches: client-side bolt-on (RAG) vs. server-side sidecar (pragmatics)."
     quarto_ref: "#fig-sidecar"
     registry_ids: []
-    status: draft
-    notes: "Needs label fix: 'Expert Judgment Server' → 'Pragmatics MCP Server'. Otherwise publication-quality."
+    status: final
+    notes: "Rendered via PaperBanana (Nano Banana 2 + gemini-3.1-pro-preview VLM). Method file saved as companion at fig_sidecar_architecture_method.txt."
     slides: []
     variants: {}
 

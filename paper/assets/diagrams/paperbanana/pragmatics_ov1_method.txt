@@ -1,0 +1,130 @@
+DIAGRAM: Pragmatics System Architecture — Authoring and Runtime Pipelines
+ASPECT RATIO: 3:2 (1600w × 900h logical units, plus legend row below)
+STYLE: Publication-quality academic diagram. Clean serif font (Georgia or similar). White text on dark backgrounds. Two-panel swimlane layout separated by a vertical dashed orange compile boundary line.
+
+=== LAYOUT OVERVIEW ===
+Two vertical swimlane panels side by side, separated by a vertical dashed orange line labeled "COMPILE BOUNDARY" (rotated 90°). Left panel = Authoring Pipeline (navy border). Right panel = Runtime Pipeline (orange border). Legend bar at bottom spanning both panels.
+
+=== TITLE (above both panels) ===
+- "Pragmatics System Overview (OV-1)" — 18px serif bold, centered
+- Subtitle: "Authoring Pipeline → Compile Boundary → Runtime Pipeline" — 11px serif, muted #4B636E
+
+=== LEFT PANEL: AUTHORING PIPELINE ===
+Panel border: navy #112E51, 2px, rounded corners
+Panel header: "AUTHORING PIPELINE" (14px serif bold, navy #112E51)
+Subheader: "Human-time • Offline • Version-controlled" (10px serif, muted #4B636E)
+
+Nodes (top to bottom, two inputs merging then linear):
+
+1a. SOURCE DOCUMENTS (document shape)
+- Fill: light blue #DCEEFB, border #205493
+- Label: "Source Documents" (bold) / "ACS Handbook, CPS Methods, Census tech docs (89+ pages)" (9px)
+- Position: left of center
+
+1b. SME INTERVIEWS (document shape)
+- Fill: light blue #DCEEFB, border #205493
+- Label: "SME Interviews" (bold) / "Domain experts with Census methodology experience" (9px)
+- Position: right of center
+- Both 1a and 1b have arrows converging downward to node 2
+
+2. EXPERT EXTRACTION (rounded rectangle)
+- Fill: navy #205493, border #112E51, white text
+- Label: "Expert Extraction" (bold) / "Read document → Extract judgment → Cite with page numbers" (9px)
+- Arrow down to node 3
+- Side note left: "📄 Document-forward" (9px muted)
+- Side note right: "🔍 Failure-forward" (9px muted)
+
+3. NEO4J KNOWLEDGE GRAPH (cylinder shape)
+- Fill: navy #205493, border #112E51, white text
+- Label: "Neo4j Knowledge Graph" (bold) / "The Workshop / Nodes: PragmaticItem, Topic, Source / Edges: RELATES_TO, TRIGGERED_BY" (9px)
+- Arrow down to node 4
+
+4. STAGING JSON (plain rectangle)
+- Fill: light blue #DCEEFB, border #205493, dark text
+- Label: "Staging JSON" (bold) / "Version-controlled export / Git-trackable, diffable" (9px)
+- Arrow down to node 5, labeled "compile" in orange #E64A19 bold
+
+5. SQLITE PACK (cylinder shape)
+- Fill: orange #FF7043, border #E64A19 (2px), white text
+- Label: "SQLite Pack" (bold) / "The Product / 49 pragmatic items, indexed / Deterministic retrieval target" (9px)
+
+Annotation below node 5 (italic, muted):
+"Graph is the workshop environment. SQLite is the compiled product. No vector DB. No embeddings."
+
+=== COMPILE BOUNDARY (vertical divider) ===
+- Dashed vertical line, stroke #E64A19, 3px, dash 12-8
+- Rotated label: "COMPILE BOUNDARY" — bold, orange #E64A19, 12px serif, rotated -90°
+
+=== RIGHT PANEL: RUNTIME PIPELINE ===
+Panel border: orange #E64A19, 2px, rounded corners
+Panel header: "RUNTIME PIPELINE" (14px serif bold, orange #E64A19)
+Subheader: "Query-time • Deterministic • Milliseconds" (10px serif, muted #4B636E)
+
+Nodes (top to bottom, linear with one side branch):
+
+1. USER QUESTION (rounded rectangle)
+- Fill: light blue #DCEEFB, border #205493, dark text
+- Label: "User Question" (bold) / '"What is median income in Severna Park?"' (9px)
+- Arrow down to node 2
+
+2. CALLER LLM (rounded rectangle)
+- Fill: navy #205493, border #112E51, white text
+- Label: "Caller LLM" (bold) / "Picks topics: small_area, geography, margin_of_error" (9px)
+- Arrow down (orange, 2px) to node 3
+
+3. PRAGMATICS MCP SERVER (rounded rectangle)
+- Fill: orange #FF7043, border #E64A19 (2px), white text
+- Label: "Pragmatics MCP Server" (bold) / "get_methodology_guidance() / SQL: WHERE trigger IN (...)" (9px)
+- Two arrows out: one down to 4 (SQLite), one right-and-down to 4b (Census API)
+
+4a. SQLITE (cylinder shape, main path)
+- Fill: orange #FF7043, border #E64A19, white text
+- Label: "SQLite" (bold) / "Tag match + thread traversal / Depth ≤ 2, deterministic" (9px)
+- Arrow down to node 5
+
+4b. CENSUS API (rounded rectangle, side branch)
+- Fill: light blue #DCEEFB, border #205493, dark text
+- Label: "Census API" (bold) / "get_census_data() / Estimates + MOEs" (9px)
+- Arrow curves down-left to node 5
+
+5. BUNDLE CONTEXT (rounded rectangle)
+- Fill: orange #FF7043, border #E64A19, white text
+- Label: "Bundle Context" (bold) / "Pragmatics + Data + Caveats / packaged for LLM reasoning" (9px)
+- Arrow down to node 6
+
+6. LLM REASONS (rounded rectangle)
+- Fill: navy #205493, border #112E51, white text
+- Label: "LLM Reasons" (bold) / "With expert context in window / Applies caveats, warns on fitness" (9px)
+- Arrow down (green #2E7D32, 2px) to node 7
+
+7. EXPERT-QUALITY ANSWER (rounded rectangle)
+- Fill: light green #C8E6C9, border #2E7D32 (2px), dark text
+- Label: "Expert-Quality Answer" (bold) / "91.6% fidelity to authoritative sources / 39/39 methodology compliance" (9px)
+
+=== LEGEND (bottom bar, spanning full width) ===
+Dashed border, light grey. Four color swatches with labels:
+- Navy #205493 → "LLM / Knowledge"
+- Orange #FF7043 → "MCP / Pragmatics"
+- Light blue #DCEEFB → "Census API / Sources"
+- Light green #C8E6C9 → "Output"
+
+=== COLOR PALETTE (Census xdgov) ===
+- Navy: #205493 | Dark navy: #112E51
+- Orange: #FF7043 | Dark orange: #E64A19
+- Light blue: #DCEEFB
+- Light green: #C8E6C9 | Green border: #2E7D32
+- Muted text: #4B636E
+- Background: white
+
+=== TYPOGRAPHY ===
+- All text: serif (Georgia preferred)
+- Node labels: 10px, bold headers + 9px body
+- Panel headers: 14px bold
+- Title: 18px bold
+- White text on navy and orange fills
+
+=== DO NOT ===
+- No gradients
+- No drop shadows
+- No clip art or icons (emoji labels are acceptable inline text)
+- No vector DB imagery on the runtime side
