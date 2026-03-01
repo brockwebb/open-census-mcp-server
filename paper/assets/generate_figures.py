@@ -478,29 +478,29 @@ FIGURES: dict = {
         "placeholder_section": None,  # replaced together with F2a
         "placeholder_key": None,
     },
-    "F7": {
+    "F8": {
         "fn": make_F7,
-        "filename": "F7_effect_sizes_forest.pdf",
+        "filename": "F8_effect_sizes_forest.pdf",
         "width": 6.5,
         "height": 5.0,
-        "placeholder_section": "05_results.md",
-        "placeholder_key": "F7",
-    },
-    "F8": {
-        "fn": make_F8,
-        "filename": "F8_fidelity_bars.pdf",
-        "width": 5.0,
-        "height": 4.0,
         "placeholder_section": "05_results.md",
         "placeholder_key": "F8",
     },
     "F9": {
+        "fn": make_F8,
+        "filename": "F9_fidelity_bars.pdf",
+        "width": 5.0,
+        "height": 4.0,
+        "placeholder_section": "05_results.md",
+        "placeholder_key": "F9",
+    },
+    "F10": {
         "fn": make_F9,
-        "filename": "F9_cost_effectiveness.pdf",
+        "filename": "F10_cost_effectiveness.pdf",
         "width": 4.5,
         "height": 4.5,
         "placeholder_section": "05_results.md",
-        "placeholder_key": "F9",
+        "placeholder_key": "F10",
     },
 }
 
@@ -509,7 +509,7 @@ def apply_figures() -> None:
     """Replace [INSERT FIGURE Fn] placeholders with Quarto image references.
 
     F2: replaced with TWO figure references (F2a and F2b subfigures).
-    F7, F8, F9: each replaced with one figure reference.
+    F8, F9, F10: each replaced with one figure reference.
     """
     import re
 
@@ -524,22 +524,22 @@ def apply_figures() -> None:
             "(assets/figures/F2b_semantic_smearing_discrimination.pdf)"
             "{#fig-smearing-discrimination width=6.5in}"
         ),
-        "F7": (
+        "F8": (
             "![Cohen's *d* effect sizes by dimension. Vertical lines: "
             "*d* = 0.2 (small), 0.5 (medium), 0.8 (large).]"
-            "(assets/figures/F7_effect_sizes_forest.pdf)"
+            "(assets/figures/F8_effect_sizes_forest.pdf)"
             "{#fig-effect-sizes width=6.5in}"
         ),
-        "F8": (
+        "F9": (
             "![Stage 3 pipeline fidelity by condition. Substantive fidelity "
             "(98.9–100.0%) and error rates (0.0–0.8%) annotated in caption.]"
-            "(assets/figures/F8_fidelity_bars.pdf)"
+            "(assets/figures/F9_fidelity_bars.pdf)"
             "{#fig-fidelity width=5.0in}"
         ),
-        "F9": (
+        "F10": (
             "![Cost-effectiveness: CQS improvement per marginal dollar. "
             "Pragmatics is 2.2\u00d7 more cost-effective than RAG.]"
-            "(assets/figures/F9_cost_effectiveness.pdf)"
+            "(assets/figures/F10_cost_effectiveness.pdf)"
             "{#fig-cost-effectiveness width=4.5in}"
         ),
     }

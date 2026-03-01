@@ -31,7 +31,7 @@ The semantic information is in the metadata. The pragmatic judgment is scattered
 
 A pragmatic is a structured unit of expert judgment about fitness for use. It is not an instruction, a rule, a constraint, or a lookup table. It is a factual statement of the kind a senior statistician would make to a colleague before they use a particular data product: the professional assessment that transforms a data retrieval into a statistical consultation. In library science terms, pragmatics serve the role a skilled reference librarian plays: not retrieving information, but advising whether the retrieved information is fit for the patron's purpose.
 
-![Anatomy of a pragmatic, showing the five structural components using ACS-MOE-002 (coefficient of variation threshold) as an example.](assets/figures/F3_pragmatic_item_anatomy.pdf){#fig-anatomy}
+![Anatomy of a pragmatic, showing the five structural components using ACS-MOE-002 (coefficient of variation threshold) as an example.](assets/figures/F4_pragmatic_item_anatomy.pdf){#fig-anatomy}
 
 Each pragmatic has five components.
 
@@ -41,7 +41,7 @@ Context text is the judgment itself, expressed in one to three sentences as fact
 
 ### Latitude
 
-![The latitude model: a four-level calibrated uncertainty scale for expert judgment.](assets/figures/F4_latitude_model.pdf){#fig-latitude}
+![The latitude model: a four-level calibrated uncertainty scale for expert judgment.](assets/figures/F5_latitude_model.pdf){#fig-latitude}
 
 Latitude encodes the calibrated uncertainty of the judgment itself, on a four-level scale. A pragmatic with latitude *none* represents hard consensus: no reasonable expert disagrees that the one-year American Community Survey requires a population of at least 65,000. A pragmatic with latitude *narrow* represents strong professional agreement with rare exceptions; the 40 percent coefficient of variation threshold is widely accepted but not universally applied. A pragmatic with latitude *wide* acknowledges genuine context-dependence: whether to use one-year or five-year estimates involves a tradeoff between recency and reliability that depends on the specific analytical purpose. A pragmatic with latitude *full* provides background context that informs but does not constrain; the American Community Survey replaced the decennial census long form beginning in 2005.
 

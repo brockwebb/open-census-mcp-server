@@ -36,7 +36,7 @@ The ordering was consistent: pragmatics outperformed RAG, which outperformed con
 
 ## Per-Dimension Effects
 
-![Cohen's *d* effect sizes by dimension. Vertical lines: *d* = 0.2 (small), 0.5 (medium), 0.8 (large).](assets/figures/F7_effect_sizes_forest.pdf){#fig-effect-sizes width=6.5in}
+![Cohen's *d* effect sizes by dimension. Vertical lines: *d* = 0.2 (small), 0.5 (medium), 0.8 (large).](assets/figures/F8_effect_sizes_forest.pdf){#fig-effect-sizes width=6.5in}
 
 | Dimension | Prag vs Ctrl *d* | Prag vs RAG *d* | RAG vs Ctrl *d* |
 |-----------|-----------------|-----------------|-----------------|
@@ -86,7 +86,7 @@ Stage 3 automated verification assessed whether responses accurately reported wh
 
 : Stage 3 fidelity verification. Fidelity = (matched + calculation_correct) / total_claims. Substantive fidelity excludes no_source claims. Error rate = (mismatched + calculation_incorrect) / total_claims. Auditable = fully auditable claims / substantive claims. {#tbl-fidelity}
 
-![Stage 3 pipeline fidelity by condition. Substantive fidelity (98.9–100.0%) and error rates (0.0–0.8%) annotated in caption.](assets/figures/F8_fidelity_bars.pdf){#fig-fidelity width=5.0in}
+![Stage 3 pipeline fidelity by condition. Substantive fidelity (98.9–100.0%) and error rates (0.0–0.8%) annotated in caption.](assets/figures/F9_fidelity_bars.pdf){#fig-fidelity width=5.0in}
 
 Pragmatics achieved 91.2% fidelity across 353 claims, compared to 74.6% for RAG (355 claims) and 78.3% for control (253 claims). Substantive fidelity (the rate among claims that could be fully verified) was 99.7% for pragmatics, 98.9% for RAG, and 100.0% for control.
 
@@ -117,7 +117,7 @@ Pragmatics incurred higher per-query token costs than RAG. Mean input tokens per
 
 : Cost analysis at two pricing tiers. Marginal cost = condition cost minus control baseline. CQS per marginal dollar = CQS improvement over control / marginal cost per query. Cost-effectiveness ratio is constant across pricing tiers. {#tbl-cost}
 
-![Cost-effectiveness: CQS improvement per marginal dollar. Pragmatics is 2.2× more cost-effective than RAG.](assets/figures/F9_cost_effectiveness.pdf){#fig-cost-effectiveness width=4.5in}
+![Cost-effectiveness: CQS improvement per marginal dollar. Pragmatics is 2.2× more cost-effective than RAG.](assets/figures/F10_cost_effectiveness.pdf){#fig-cost-effectiveness width=4.5in}
 
 However, cost-effectiveness, measured as CQS improvement per marginal dollar spent relative to control, favored pragmatics at 2.2 times the cost-effectiveness of RAG (6.28 vs. 2.83 CQS points per marginal dollar). Pragmatics costs 38% more per query than RAG but delivers disproportionately more quality improvement.
 

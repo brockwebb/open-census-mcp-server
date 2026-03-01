@@ -1,0 +1,622 @@
+# Figure and Table Map — Pragmatics Paper
+# Single source of truth for all visual assets.
+# Used by: paper build, slide deck generation, asset audits.
+#
+# Schema version: 1.1
+# Last updated: 2026-03-01
+#
+# Renumbering log (v1.1):
+#   - F1: Promoted semiotic_triangle from parking lot (was not_started placeholder)
+#   - F3: Promoted ov1_architecture from parking lot (new insertion)
+#   - Old F3→F4, F4→F5, F5→F6, F6→F7, F7→F8, F8→F9, F9→F10
+#   - App-F1: Sidecar architecture (from parking lot)
+#   - App-F2: Deterministic vs stochastic (from parking lot)
+
+metadata:
+  paper_title: "Pragmatics as Point-of-Decision Expert Judgment for Federal Statistical Data"
+  repo_root: "census-mcp-server"
+  style_module: "assets/census_plot_style.py"  # symlink to central_library
+  default_paper_format: pdf
+  default_paper_dpi: 300
+  default_slide_format: png
+  default_slide_dpi: 150
+
+# ==========================================================================
+# FIGURES
+# ==========================================================================
+#
+# figure_type: plotnine | d2_diagram | mermaid | conceptual | external | paperbanana
+# status:      not_started | draft | final | applied
+# slides:      list of mappings — same figure can appear on multiple slides
+# variants:    keyed dict of alternate renders (e.g., slide_png, thumbnail)
+
+figures:
+
+  F1:
+    title: "The Semiotic Stack Applied to Federal Statistical Data"
+    description: >
+      Three-layer pyramid showing Morris (1938) semiotic triad applied to
+      federal data: Syntax (base, solved), Semantics (middle, solved),
+      Pragmatics (apex, the gap). Includes concrete Census examples per
+      layer and marks pragmatics as this paper's contribution.
+    section: "§1"
+    figure_type: paperbanana
+    generation:
+      tool: paperbanana
+      source_file: "paper/assets/diagrams/semiotic_triangle.drawio"
+      method_file: "paper/assets/diagrams/paperbanana/semiotic_triangle_method.txt"
+      build_command: >
+        cd paper/assets/diagrams/paperbanana &&
+        paperbanana generate --input semiotic_triangle_method.txt
+        --caption "The Semiotic Stack Applied to Federal Statistical Data"
+        --iterations 3
+      provenance: "run_20260301_082508_08924c"
+    output:
+      paper: "diagrams/fig_semiotic_stack.png"
+      paper_format: png
+      paper_dimensions:
+        width: 6.5
+        height: null
+    caption: "The semiotic stack applied to federal statistical data. Federal guidance covers syntax and semantics; pragmatics is the missing layer."
+    quarto_ref: "#fig-semiotic-stack"
+    registry_ids: []
+    status: final
+    notes: "Promoted from parking lot (v1.1). Rendered via PaperBanana + Nano Banana 2."
+    slides: []
+    variants: {}
+
+  F2a:
+    title: "Semantic Smearing — Mean Pairwise Similarity by Representation"
+    description: >
+      Grouped bar chart showing mean cosine similarity across Labels, Raw,
+      and Enriched representations for MiniLM-384 and RoBERTa-1024 models.
+      Demonstrates that adding methodology text increases similarity (smearing)
+      rather than improving retrieval discrimination.
+    section: "§2"
+    figure_type: plotnine
+    generation:
+      tool: plotnine
+      source_script: "paper/assets/generate_figures.py::make_F2a"
+      source_data:
+        - "talks/fcsm_2026/analysis/results/similarity_results_minilm.json"
+        - "talks/fcsm_2026/analysis/results/similarity_results_roberta.json"
+      build_command: "python paper/assets/generate_figures.py --figure F2a"
+    output:
+      paper: "figures/F2a_semantic_smearing_similarity.pdf"
+      paper_format: pdf
+      paper_dimensions:
+        width: 6.5
+        height: 3.5
+    caption: "Semantic smearing: mean pairwise similarity by representation."
+    quarto_ref: "#fig-smearing-similarity"
+    registry_ids: []
+    status: final
+    notes: "Paired with F2b as subfigures in §2."
+    slides: []
+    variants: {}
+
+  F2b:
+    title: "Semantic Smearing — Group Discrimination Collapse"
+    description: >
+      Within-group vs cross-group similarity for Raw and Enriched conditions,
+      faceted by model. Shows that enrichment collapses the discrimination gap
+      between groups, making retrieval less effective.
+    section: "§2"
+    figure_type: plotnine
+    generation:
+      tool: plotnine
+      source_script: "paper/assets/generate_figures.py::make_F2b"
+      source_data:
+        - "talks/fcsm_2026/analysis/results/similarity_results_minilm.json"
+        - "talks/fcsm_2026/analysis/results/similarity_results_roberta.json"
+      build_command: "python paper/assets/generate_figures.py --figure F2b"
+    output:
+      paper: "figures/F2b_semantic_smearing_discrimination.pdf"
+      paper_format: pdf
+      paper_dimensions:
+        width: 6.5
+        height: 3.5
+    caption: "Semantic smearing: group discrimination collapse — within vs. cross-group similarity."
+    quarto_ref: "#fig-smearing-discrimination"
+    registry_ids: []
+    status: final
+    notes: "Paired with F2a as subfigures in §2."
+    slides: []
+    variants: {}
+
+  F3:
+    title: "Pragmatics System Architecture: Authoring and Runtime Pipelines"
+    description: >
+      Two-panel swimlane architecture diagram. Left panel: Authoring Pipeline
+      (Source Documents + SME Interviews → Expert Extraction → Neo4j Knowledge
+      Graph → Staging JSON → compile → SQLite Pack). Right panel: Runtime
+      Pipeline (User Question → Caller LLM → Pragmatics MCP Server → SQLite
+      tag match + thread traversal + Census API → Bundle Context → LLM Reasons
+      → Expert-Quality Answer). Separated by Compile Boundary.
+    section: "§3"
+    figure_type: paperbanana
+    generation:
+      tool: paperbanana
+      source_file: "paper/assets/diagrams/pragmatics_ov1.drawio"
+      method_file: "paper/assets/diagrams/paperbanana/pragmatics_ov1_method.txt"
+      build_command: >
+        cd paper/assets/diagrams/paperbanana &&
+        paperbanana generate --input pragmatics_ov1_method.txt
+        --caption "Pragmatics System Architecture: Authoring and Runtime Pipelines"
+        --iterations 3
+      provenance: "run_20260301_082509_6e9458"
+    output:
+      paper: "diagrams/fig_ov1_architecture.png"
+      paper_format: png
+      paper_dimensions:
+        width: 6.5
+        height: null
+    caption: "Pragmatics system architecture. Left: human-time authoring pipeline. Right: query-time deterministic retrieval. The compile boundary separates curation from serving."
+    quarto_ref: "#fig-ov1-architecture"
+    registry_ids: []
+    status: final
+    notes: "Promoted from parking lot (v1.1). Was OV-1. Rendered via PaperBanana."
+    slides: []
+    variants: {}
+
+  F4:
+    title: "Anatomy of a Pragmatic Context Item"
+    description: >
+      Structural diagram showing the five components of a pragmatic item:
+      context text, latitude classification, trigger conditions, thread
+      edges, and provenance citation.
+    section: "§3"
+    figure_type: d2_diagram
+    generation:
+      tool: d2
+      source_script: "paper/assets/diagrams/F3_pragmatic_item_anatomy.d2"
+      source_data: null
+      build_command: "d2 --theme 200 --layout elk paper/assets/diagrams/F3_pragmatic_item_anatomy.d2 paper/assets/figures/F4_pragmatic_item_anatomy.pdf"
+    output:
+      paper: "figures/F4_pragmatic_item_anatomy.pdf"
+      paper_format: pdf
+      paper_dimensions:
+        width: null
+        height: null
+    caption: null
+    quarto_ref: "#fig-pragmatic-anatomy"
+    registry_ids: []
+    status: final
+    notes: "Was F3 (v1.0). D2 source file still named F3_*; output renamed to F4_*."
+    slides: []
+    variants: {}
+
+  F5:
+    title: "Latitude Model — None / Narrow / Wide / Full"
+    description: >
+      Four-level classification model showing how much interpretive freedom
+      a pragmatic item grants to the reasoning model: none (deterministic),
+      narrow (constrained), wide (guided), full (open-ended).
+    section: "§3"
+    figure_type: d2_diagram
+    generation:
+      tool: d2
+      source_script: "paper/assets/diagrams/F4_latitude_model.d2"
+      source_data: null
+      build_command: "d2 --theme 200 --layout elk paper/assets/diagrams/F4_latitude_model.d2 paper/assets/figures/F5_latitude_model.pdf"
+    output:
+      paper: "figures/F5_latitude_model.pdf"
+      paper_format: pdf
+      paper_dimensions:
+        width: null
+        height: null
+    caption: null
+    quarto_ref: "#fig-latitude-model"
+    registry_ids: []
+    status: final
+    notes: "Was F4 (v1.0). D2 source file still named F4_*; output renamed to F5_*."
+    slides: []
+    variants: {}
+
+  F6:
+    title: "Three-Condition Experimental Design"
+    description: >
+      Diagram of the three experimental conditions (Control, RAG, Pragmatics)
+      showing shared caller model, shared test battery, and condition-specific
+      tool access. Illustrates the knowledge representation comparison.
+    section: "§4"
+    figure_type: d2_diagram
+    generation:
+      tool: d2
+      source_script: "paper/assets/diagrams/F5_experimental_design.d2"
+      source_data: null
+      build_command: "d2 --theme 200 --layout elk paper/assets/diagrams/F5_experimental_design.d2 paper/assets/figures/F6_experimental_design.pdf"
+    output:
+      paper: "figures/F6_experimental_design.pdf"
+      paper_format: pdf
+      paper_dimensions:
+        width: null
+        height: null
+    caption: null
+    quarto_ref: "#fig-experimental-design"
+    registry_ids: ["SD-001", "SD-002", "SD-010"]
+    status: final
+    notes: "Was F5 (v1.0). D2 source file still named F5_*; output renamed to F6_*."
+    slides: []
+    variants: {}
+
+  F7:
+    title: "Evaluation Pipeline (3 Stages)"
+    description: >
+      Three-stage evaluation pipeline: Stage 1 (agent execution with grounding
+      gate verification), Stage 2 (multi-vendor LLM judge scoring with CQS rubric),
+      Stage 3 (automated fidelity auditing of cited statistics).
+    section: "§4"
+    figure_type: d2_diagram
+    generation:
+      tool: d2
+      source_script: "paper/assets/diagrams/F6_evaluation_pipeline.d2"
+      source_data: null
+      build_command: "d2 --theme 200 --layout elk paper/assets/diagrams/F6_evaluation_pipeline.d2 paper/assets/figures/F7_evaluation_pipeline.pdf"
+    output:
+      paper: "figures/F7_evaluation_pipeline.pdf"
+      paper_format: pdf
+      paper_dimensions:
+        width: null
+        height: null
+    caption: null
+    quarto_ref: "#fig-eval-pipeline"
+    registry_ids: ["SD-003", "SD-004", "SD-005", "SD-006"]
+    status: final
+    notes: "Was F6 (v1.0). D2 source file still named F6_*; output renamed to F7_*."
+    slides: []
+    variants: {}
+
+  F8:
+    title: "Cohen's d Effect Sizes Forest Plot"
+    description: >
+      Horizontal forest plot showing Cohen's d effect sizes for all three
+      pairwise comparisons across CQS composite and five individual dimensions.
+      Reference lines at d = 0.2, 0.5, 0.8.
+    section: "§5"
+    figure_type: plotnine
+    generation:
+      tool: plotnine
+      source_script: "paper/assets/generate_figures.py::make_F7"
+      source_data:
+        - "results/v2_redo/stage2/analysis/aggregate_statistics.json"
+      build_command: "python paper/assets/generate_figures.py --figure F7"
+    output:
+      paper: "figures/F7_effect_sizes_forest.pdf"
+      paper_format: pdf
+      paper_dimensions:
+        width: 6.5
+        height: 5.0
+    caption: >
+      Cohen's d effect sizes by dimension. Vertical lines: d = 0.2 (small),
+      0.5 (medium), 0.8 (large).
+    quarto_ref: "#fig-effect-sizes"
+    registry_ids: ["S2-020", "S2-021", "S2-022", "S2-023", "S2-024", "S2-025",
+                   "S2-026", "S2-027", "S2-028", "S2-029", "S2-030", "S2-031",
+                   "S2-032", "S2-033", "S2-034", "S2-035", "S2-036", "S2-037",
+                   "S2-038", "S2-039", "S2-040", "S2-041", "S2-042"]
+    status: final
+    notes: "Was F7 (v1.0). Generator function still named make_F7; output file still F7_*. Renaming deferred — no functional impact."
+    slides: []
+    variants: {}
+
+  F9:
+    title: "Stage 3 Pipeline Fidelity by Condition"
+    description: >
+      Bar chart showing fidelity percentage for each condition.
+      Caption references fidelity_summary.json for exact numbers.
+    section: "§5"
+    figure_type: plotnine
+    generation:
+      tool: plotnine
+      source_script: "paper/assets/generate_figures.py::make_F8"
+      source_data:
+        - "results/v2_redo/stage3/analysis/fidelity_summary.json"
+      build_command: "python paper/assets/generate_figures.py --figure F8"
+    output:
+      paper: "figures/F8_fidelity_bars.pdf"
+      paper_format: pdf
+      paper_dimensions:
+        width: 5.0
+        height: 4.0
+    caption: >
+      Stage 3 pipeline fidelity by condition. All values from
+      fidelity_summary.json (S3-001 through S3-012).
+    quarto_ref: "#fig-fidelity"
+    registry_ids: ["S3-001", "S3-002", "S3-003", "S3-004", "S3-005",
+                   "S3-006", "S3-007", "S3-008", "S3-009", "S3-010",
+                   "S3-011", "S3-012"]
+    status: final
+    notes: "Was F8 (v1.0). Generator function still named make_F8; output file still F8_*. Renaming deferred."
+    slides: []
+    variants: {}
+
+  F10:
+    title: "Cost-Effectiveness: CQS per Marginal Dollar"
+    description: >
+      Bar chart comparing RAG and Pragmatics on CQS improvement per marginal
+      dollar over control baseline.
+    section: "§6"
+    figure_type: plotnine
+    generation:
+      tool: plotnine
+      source_script: "paper/assets/generate_figures.py::make_F9"
+      source_data:
+        - "results/v2_redo/stage1/analysis/cost_analysis.json"
+      build_command: "python paper/assets/generate_figures.py --figure F9"
+    output:
+      paper: "figures/F9_cost_effectiveness.pdf"
+      paper_format: pdf
+      paper_dimensions:
+        width: 4.5
+        height: 4.5
+    caption: >
+      Cost-effectiveness at Sonnet 4.5 pricing. All values from
+      cost_analysis.json (COST-001 through COST-013).
+    quarto_ref: "#fig-cost-effectiveness"
+    registry_ids: ["COST-001", "COST-002", "COST-003", "COST-004", "COST-005",
+                   "COST-006", "COST-007", "COST-008", "COST-009", "COST-010",
+                   "COST-011", "COST-012", "COST-013"]
+    status: final
+    notes: "Was F9 (v1.0). Generator function still named make_F9; output file still F9_*. Renaming deferred."
+    slides: []
+    variants: {}
+
+
+# ==========================================================================
+# APPENDIX FIGURES
+# ==========================================================================
+
+appendix_figures:
+
+  App-F1:
+    title: "RAG vs Sidecar Architecture Comparison"
+    description: >
+      Side-by-side comparison of traditional RAG architecture (client-side
+      vector DB + embeddings) vs sidecar architecture (server-side expert
+      judgment via MCP). Shows that pragmatics eliminates client-side vector
+      infrastructure while moving curation to a hostable, scalable server.
+    section: "Appendix"
+    figure_type: drawio
+    generation:
+      tool: drawio
+      source_file: "paper/assets/diagrams/sidecar_architecture.drawio"
+      source_data: null
+      build_command: null
+    output:
+      current: "diagrams/sidecar_architecture_extracted.png"
+      paper_format: png
+      paper_dimensions:
+        width: 6.5
+        height: null
+    caption: "RAG vs sidecar architecture. The sidecar pattern eliminates client-side vector infrastructure."
+    quarto_ref: "#fig-sidecar"
+    registry_ids: []
+    status: draft
+    notes: "Needs label fix: 'Expert Judgment Server' → 'Pragmatics MCP Server'. Otherwise publication-quality."
+    slides: []
+    variants: {}
+
+  App-F2:
+    title: "Deterministic vs. Stochastic Retrieval"
+    description: >
+      Side-by-side swimlane comparison. Left: RAG pipeline with stochastic
+      steps and variance callouts. Right: Pragmatics pipeline with
+      deterministic tag match, thread traversal, and identical-output
+      guarantee. References DET-001 through DET-004.
+    section: "Appendix"
+    figure_type: paperbanana
+    generation:
+      tool: paperbanana
+      source_file: "paper/assets/diagrams/deterministic_retrieval.drawio"
+      method_file: "paper/assets/diagrams/paperbanana/deterministic_retrieval_method.txt"
+      build_command: >
+        cd paper/assets/diagrams/paperbanana &&
+        paperbanana generate --input deterministic_retrieval_method.txt
+        --caption "Deterministic vs. Stochastic Retrieval"
+        --iterations 3
+      provenance: "run_20260301_082511_f7f8b8"
+    output:
+      current: "diagrams/fig_deterministic_retrieval.png"
+      paper_format: png
+      paper_dimensions:
+        width: 6.5
+        height: null
+    caption: "Deterministic vs. stochastic retrieval. Pragmatics eliminates retrieval variance, isolating it to reasoning only."
+    quarto_ref: "#fig-deterministic"
+    registry_ids: ["DET-001", "DET-002", "DET-003", "DET-004"]
+    status: final
+    notes: "Rendered via PaperBanana. Better suited for slides; included in appendix for completeness."
+    slides: []
+    variants: {}
+
+
+# ==========================================================================
+# TABLES
+# ==========================================================================
+#
+# table_type: generated | manual | appendix
+# status:     not_started | draft | final | applied
+
+tables:
+
+  T1:
+    title: "CQS Composite Scores by Condition with Bootstrap CIs"
+    description: >
+      Mean CQS composite scores for Control, RAG, and Pragmatics conditions
+      with 95% bootstrap confidence intervals. Primary outcome measure.
+    section: "§5"
+    table_type: generated
+    generation:
+      source_script: "paper/assets/generate_tables.py"
+      source_data:
+        - "results/v2_redo/stage2/analysis/aggregate_statistics.json"
+      build_command: "python paper/assets/generate_tables.py --table T1"
+    output:
+      paper: null  # inline markdown
+      paper_format: markdown
+    registry_ids: ["S2-010", "S2-011", "S2-012", "S2-015", "S2-016", "S2-017"]
+    status: final
+    notes: null
+    slides: []
+
+  T2:
+    title: "Friedman Omnibus + Wilcoxon Post-Hoc with Holm Correction"
+    description: >
+      Nonparametric omnibus test (Friedman) confirming significant differences
+      across conditions, followed by pairwise Wilcoxon signed-rank tests with
+      Holm-Bonferroni correction for multiple comparisons.
+    section: "§5"
+    table_type: generated
+    generation:
+      source_script: "paper/assets/generate_tables.py"
+      source_data:
+        - "results/v2_redo/stage2/analysis/aggregate_statistics.json"
+      build_command: "python paper/assets/generate_tables.py --table T2"
+    output:
+      paper: null
+      paper_format: markdown
+    registry_ids: ["S2-001", "S2-002", "S2-003", "S2-004", "S2-005",
+                   "S2-006", "S2-007", "S2-008", "S2-009", "S2-010",
+                   "S2-011", "S2-012"]
+    status: final
+    notes: null
+    slides: []
+
+  T3:
+    title: "Per-Dimension Effect Sizes (Cohen's d)"
+    description: >
+      Cohen's d effect sizes for all five CQS dimensions across three
+      pairwise comparisons. Shows where Pragmatics gains are concentrated
+      (D3 Uncertainty, D5 Fitness-for-Use).
+    section: "§5"
+    table_type: generated
+    generation:
+      source_script: "paper/assets/generate_tables.py"
+      source_data:
+        - "results/v2_redo/stage2/analysis/aggregate_statistics.json"
+      build_command: "python paper/assets/generate_tables.py --table T3"
+    output:
+      paper: null
+      paper_format: markdown
+    registry_ids: ["S2-020", "S2-021", "S2-022", "S2-023", "S2-024", "S2-025",
+                   "S2-026", "S2-027", "S2-028", "S2-029", "S2-030", "S2-031",
+                   "S2-032", "S2-033", "S2-034", "S2-035", "S2-036", "S2-037",
+                   "S2-038", "S2-039", "S2-040", "S2-041", "S2-042"]
+    status: final
+    notes: "Companion to F8 forest plot."
+    slides: []
+
+  T4:
+    title: "Stratum Analysis: Normal vs Edge Effect Sizes"
+    description: >
+      Effect sizes broken down by query stratum (normal queries vs edge cases).
+      Tests whether Pragmatics advantage is concentrated in edge cases or
+      generalizes across query difficulty.
+    section: "§5"
+    table_type: generated
+    generation:
+      source_script: "paper/assets/generate_tables.py"
+      source_data:
+        - "results/v2_redo/stage2/analysis/stratum_analysis.json"
+      build_command: "python paper/assets/generate_tables.py --table T4"
+    output:
+      paper: null
+      paper_format: markdown
+    registry_ids: ["SA-001", "SA-002", "SA-003", "SA-004", "SA-005",
+                   "SA-006", "SA-007", "SA-008", "SA-009", "SA-010",
+                   "SA-011", "SA-012", "SA-013", "SA-014", "SA-015",
+                   "SA-016", "SA-017", "SA-018", "SA-019", "SA-020",
+                   "SA-021", "SA-022"]
+    status: final
+    notes: null
+    slides: []
+
+  T5:
+    title: "Pipeline Fidelity Summary"
+    description: >
+      Stage 3 automated fidelity audit results: total claims extracted,
+      claims matched to source data, fidelity percentage, substantive
+      fidelity, and error rate by condition.
+    section: "§5"
+    table_type: generated
+    generation:
+      source_script: "paper/assets/generate_tables.py"
+      source_data:
+        - "results/v2_redo/stage3/analysis/fidelity_summary.json"
+      build_command: "python paper/assets/generate_tables.py --table T5"
+    output:
+      paper: null
+      paper_format: markdown
+    registry_ids: ["S3-001", "S3-002", "S3-003", "S3-004", "S3-005",
+                   "S3-006", "S3-007", "S3-008", "S3-009", "S3-010",
+                   "S3-011", "S3-012"]
+    status: final
+    notes: "Companion to F9 fidelity bars."
+    slides: []
+
+  T6:
+    title: "Cost per Query by Condition and Model Tier"
+    description: >
+      API cost breakdown per query for each condition at two model tiers
+      (Sonnet 4.5, Opus). Includes marginal cost over control and
+      cost-effectiveness ratio.
+    section: "§6"
+    table_type: generated
+    generation:
+      source_script: "paper/assets/generate_tables.py"
+      source_data:
+        - "results/v2_redo/stage1/analysis/cost_analysis.json"
+      build_command: "python paper/assets/generate_tables.py --table T6"
+    output:
+      paper: null
+      paper_format: markdown
+    registry_ids: ["COST-001", "COST-002", "COST-003", "COST-004", "COST-005",
+                   "COST-006", "COST-007", "COST-008", "COST-009", "COST-010",
+                   "COST-011", "COST-012", "COST-013"]
+    status: final
+    notes: "Companion to F10 cost-effectiveness chart."
+    slides: []
+
+  T7:
+    title: "Test Battery Composition by Category"
+    description: >
+      Breakdown of the 39-query test battery by category (normal, geographic_edge,
+      small_area, temporal, ambiguity, product_mismatch, persona) with counts
+      and example queries.
+    section: "App A"
+    table_type: appendix
+    generation:
+      source_script: null
+      source_data:
+        - "src/eval/battery/queries.yaml"
+      build_command: null
+    output:
+      paper: null
+      paper_format: markdown
+    registry_ids: ["SD-001", "SD-009"]
+    status: final
+    notes: "Derived from queries.yaml. May be manually formatted."
+    slides: []
+
+  T8:
+    title: "Pragmatic Item Catalog Summary"
+    description: >
+      Summary of all 36 curated pragmatic items organized by statistical
+      category and latitude classification. Shows distribution across
+      domains (small_area, temporal, geography, margin_of_error, etc.).
+    section: "App D"
+    table_type: appendix
+    generation:
+      source_script: null
+      source_data:
+        - "staging/acs/*.json"
+        - "packs/acs.db"
+      build_command: null
+    output:
+      paper: null
+      paper_format: markdown
+    registry_ids: ["PL-001", "PL-002"]
+    status: final
+    notes: "36 items across 18 category files."
+    slides: []

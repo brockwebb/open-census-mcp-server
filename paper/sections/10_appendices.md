@@ -63,8 +63,7 @@ The CQS rubric specifies five quality dimensions (D1–D5), each scored 0–2. F
 | D5 | Reproducibility & Traceability | Another analyst can replicate the cited numbers | 0 / 1 / 2 |
 
 **Stage 3 verification metrics (pipeline behavior, not CQS dimensions):**
-- Fidelity: 91.2% (pragmatics), 74.6% (RAG), 78.3% (control)
-- Auditability: 72.8% (pragmatics), 8.1% (control)
+Fidelity and auditability metrics are reported in Table 5 (§5). See numbers_registry.md S3-001–S3-012.
 - Grounding compliance: 100%; all 39 pragmatics queries consulted methodology guidance before data interpretation
 
 ### Full Scoring Criteria
