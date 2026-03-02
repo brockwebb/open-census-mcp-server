@@ -1124,4 +1124,25 @@ The small-area fidelity breakdown (pragmatics 90.5% vs control 60.0%) may warran
 - **Non_claim exclusion (VR-054):** Auditability denominators exclude methodology explanations. Including them diluted pragmatics auditability from 72.8% to 46.0% in V1 — a measurement artifact, not a real finding.
 
 ---
+
+## 2026-02-26 — Reference Librarian Analogy + Library Science Methods
+
+Domain expert independently uses "reference librarian" to describe the judgment process pragmatics encode. Strong analogy worth preserving.
+
+Core mapping:
+- Catalog = semantics (the book exists)
+- Search engine = RAG (retrieve passages)
+- Reference librarian = pragmatics (judges fitness-for-purpose, redirects when the retrieved answer won't serve the patron's actual need)
+
+Library science term: **reference interview** — the negotiation between patron's stated question and actual information need. Directly analogous to pragmatics intervening between user query and raw data.
+
+ACTION: Investigate reference librarian methodology literature for system functionality parallels. Specifically:
+- How do reference librarians structure the judgment process? (triage, clarification, redirection, caveat-attachment)
+- Is there a formalized decision model for "this source won't answer your real question"?
+- Reference interview methodology — could map to pragmatics trigger/thread architecture
+- Look at: Ranganathan's reference service theory, Dervin's sense-making methodology, Kuhlthau's information search process, Taylor's question-negotiation model (1968)
+
+The interest is not in borrowing terminology but in capturing the **methods** as system functionality. If library science already formalized the judgment workflow, that's prior art worth citing and encoding.
+
+---
 *Add entries chronologically. Append corrections as new entries, don't edit old ones.*

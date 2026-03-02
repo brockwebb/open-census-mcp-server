@@ -32,6 +32,7 @@ v1/v2 archived to `/Users/brock/Documents/GitHub/archive-opencensusmcp/v2`.
 **TEVV crosswalk (earlier drafts, superseded):** `reports/tevv/pure_crosswalk_part1.md` + `part2.md`
 **TEVV methodology:** `reports/tevv/TEVV_methodology_document.md`
 **CQS rubric:** `docs/verification/cqs_rubric_specification.md`
+**Figure/table registry:** `paper/assets/figure_table_map.yaml` — single source of truth for all figures (F1–F9) and tables (T1–T8); update here first when adding or modifying assets
 **Deadline:** ~March 5, 2026 (slide deck). See checklist for daily targets.
 
 ## Repo Structure

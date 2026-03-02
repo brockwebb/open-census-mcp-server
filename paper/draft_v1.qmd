@@ -142,7 +142,7 @@ The semantic information is in the metadata. The pragmatic judgment is scattered
 
 A pragmatic is a structured unit of expert judgment about fitness for use. It is not an instruction, a rule, a constraint, or a lookup table. It is a factual statement of the kind a senior statistician would make to a colleague before they use a particular data product: the professional assessment that transforms a data retrieval into a statistical consultation. In library science terms, pragmatics serve the role a skilled reference librarian plays: not retrieving information, but advising whether the retrieved information is fit for the patron's purpose.
 
-![Anatomy of a pragmatic, showing the five structural components using ACS-MOE-002 (coefficient of variation threshold) as an example.](assets/figures/F3_pragmatic_item_anatomy.pdf){#fig-anatomy}
+![Anatomy of a pragmatic, showing the five structural components using ACS-MOE-002 (coefficient of variation threshold) as an example.](assets/figures/F4_pragmatic_item_anatomy.pdf){#fig-anatomy}
 
 Each pragmatic has five components.
 
@@ -152,7 +152,7 @@ Context text is the judgment itself, expressed in one to three sentences as fact
 
 ### Latitude
 
-![The latitude model: a four-level calibrated uncertainty scale for expert judgment.](assets/figures/F4_latitude_model.pdf){#fig-latitude}
+![The latitude model: a four-level calibrated uncertainty scale for expert judgment.](assets/figures/F5_latitude_model.pdf){#fig-latitude}
 
 Latitude encodes the calibrated uncertainty of the judgment itself, on a four-level scale. A pragmatic with latitude *none* represents hard consensus: no reasonable expert disagrees that the one-year American Community Survey requires a population of at least 65,000. A pragmatic with latitude *narrow* represents strong professional agreement with rare exceptions; the 40 percent coefficient of variation threshold is widely accepted but not universally applied. A pragmatic with latitude *wide* acknowledges genuine context-dependence: whether to use one-year or five-year estimates involves a tradeoff between recency and reliability that depends on the specific analytical purpose. A pragmatic with latitude *full* provides background context that informs but does not constrain; the American Community Survey replaced the decennial census long form beginning in 2005.
 
@@ -199,7 +199,7 @@ The practical significance is that pragmatics eliminates one source of compoundi
 
 We conducted a knowledge representation study comparing three experimental conditions with identical data tool access. The single independent variable was the form of methodology support provided to the language model during statistical consultation. All three conditions used the same caller model (Claude Sonnet 4.5), the same Census Bureau API tools, and the same 39-query test battery. The conditions differed only in how domain knowledge was represented and delivered:
 
-![Three-condition experimental design. All conditions share the same caller model, API tools, and query battery; they differ only in methodology support.](assets/figures/F5_experimental_design.pdf){#fig-design}
+![Three-condition experimental design. All conditions share the same caller model, API tools, and query battery; they differ only in methodology support.](assets/figures/F6_experimental_design.pdf){#fig-design}
 
 - **Control:** The model received Census API tools with no methodology support. This represents the baseline capability of a capable language model performing statistical consultation with data access but no expert guidance.
 
@@ -231,7 +231,7 @@ The authoring-to-runtime pipeline implements strict separation of concerns. Item
 
 Evaluation proceeded through three stages.
 
-![Three-stage evaluation pipeline: response generation, consultation quality scoring, and fidelity verification.](assets/figures/F6_evaluation_pipeline.pdf){#fig-pipeline}
+![Three-stage evaluation pipeline: response generation, consultation quality scoring, and fidelity verification.](assets/figures/F7_evaluation_pipeline.pdf){#fig-pipeline}
 
 **Stage 1 (Response Generation)** produced 117 responses: 39 queries across 3 conditions. Each query was processed by the caller model with the condition-specific tool configuration, producing a complete statistical consultation response.
 
@@ -287,7 +287,7 @@ The ordering was consistent: pragmatics outperformed RAG, which outperformed con
 
 ## Per-Dimension Effects
 
-![Cohen's *d* effect sizes by dimension. Vertical lines: *d* = 0.2 (small), 0.5 (medium), 0.8 (large).](assets/figures/F7_effect_sizes_forest.pdf){#fig-effect-sizes width=6.5in}
+![Cohen's *d* effect sizes by dimension. Vertical lines: *d* = 0.2 (small), 0.5 (medium), 0.8 (large).](assets/figures/F8_effect_sizes_forest.pdf){#fig-effect-sizes width=6.5in}
 
 | Dimension | Prag vs Ctrl *d* | Prag vs RAG *d* | RAG vs Ctrl *d* |
 |-----------|-----------------|-----------------|-----------------|
@@ -337,7 +337,7 @@ Stage 3 automated verification assessed whether responses accurately reported wh
 
 : Stage 3 fidelity verification. Fidelity = (matched + calculation_correct) / total_claims. Substantive fidelity excludes no_source claims. Error rate = (mismatched + calculation_incorrect) / total_claims. Auditable = fully auditable claims / substantive claims. {#tbl-fidelity}
 
-![Stage 3 pipeline fidelity by condition. Substantive fidelity (98.9–100.0%) and error rates (0.0–0.8%) annotated in caption.](assets/figures/F8_fidelity_bars.pdf){#fig-fidelity width=5.0in}
+![Stage 3 pipeline fidelity by condition. Substantive fidelity (98.9–100.0%) and error rates (0.0–0.8%) annotated in caption.](assets/figures/F9_fidelity_bars.pdf){#fig-fidelity width=5.0in}
 
 Pragmatics achieved 91.2% fidelity across 353 claims, compared to 74.6% for RAG (355 claims) and 78.3% for control (253 claims). Substantive fidelity (the rate among claims that could be fully verified) was 99.7% for pragmatics, 98.9% for RAG, and 100.0% for control.
 
@@ -368,7 +368,7 @@ Pragmatics incurred higher per-query token costs than RAG. Mean input tokens per
 
 : Cost analysis at two pricing tiers. Marginal cost = condition cost minus control baseline. CQS per marginal dollar = CQS improvement over control / marginal cost per query. Cost-effectiveness ratio is constant across pricing tiers. {#tbl-cost}
 
-![Cost-effectiveness: CQS improvement per marginal dollar. Pragmatics is 2.2× more cost-effective than RAG.](assets/figures/F9_cost_effectiveness.pdf){#fig-cost-effectiveness width=4.5in}
+![Cost-effectiveness: CQS improvement per marginal dollar. Pragmatics is 2.2× more cost-effective than RAG.](assets/figures/F10_cost_effectiveness.pdf){#fig-cost-effectiveness width=4.5in}
 
 However, cost-effectiveness, measured as CQS improvement per marginal dollar spent relative to control, favored pragmatics at 2.2 times the cost-effectiveness of RAG (6.28 vs. 2.83 CQS points per marginal dollar). Pragmatics costs 38% more per query than RAG but delivers disproportionately more quality improvement.
 
@@ -533,8 +533,7 @@ The CQS rubric specifies five quality dimensions (D1–D5), each scored 0–2. F
 | D5 | Reproducibility & Traceability | Another analyst can replicate the cited numbers | 0 / 1 / 2 |
 
 **Stage 3 verification metrics (pipeline behavior, not CQS dimensions):**
-- Fidelity: 91.2% (pragmatics), 74.6% (RAG), 78.3% (control)
-- Auditability: 72.8% (pragmatics), 8.1% (control)
+Fidelity and auditability metrics are reported in Table 5 (§5). See numbers_registry.md S3-001–S3-012.
 - Grounding compliance: 100%; all 39 pragmatics queries consulted methodology guidance before data interpretation
 
 ### Full Scoring Criteria

@@ -53,12 +53,50 @@ cd paper && python build.py --open    # assemble + render + open PDF
 | Number sections | yes | Academic standard |
 | TOC | no | Article, not report |
 
-## Figure Style
+## Figure and Table Assets
 
-Plot style is centralized in `central_library/style/census_plot_style.py`,
-symlinked to `paper/assets/census_plot_style.py`. Uses plotnine (Python ggplot2)
-with the U.S. Census Bureau xdgov Data Design Standards palette. All figure
-scripts import from this module. Do not define colors, fonts, or themes inline.
+**Style module:** `central_library/style/census_plot_style.py`, symlinked to:
+- `paper/assets/census_plot_style.py` (paper figures)
+- `talks/fcsm_2026/census_plot_style.py` (slide figures)
+
+Uses plotnine (Python ggplot2) with U.S. Census Bureau xdgov Data Design Standards palette. All figure scripts import from this module. Do not define colors, fonts, or themes inline.
+
+**Asset registry:** `paper/assets/figure_table_map.yaml` — single source of truth for all figures and tables. Contains:
+- Figure/table metadata (title, description, section, type)
+- Generation commands (source script, data files, build command)
+- Output paths and dimensions
+- Numbers registry cross-references
+- Slide mapping (empty until deck is built)
+- Variant tracking (paper PDF vs slide PNG)
+
+When adding or modifying figures/tables, update `figure_table_map.yaml` first.
+
+### Diagrams Are Built From Source
+
+All diagrams are built artifacts. The source spec is the editable file; the image is disposable output.
+
+| Tool | Source (edit this) | Output (disposable) |
+|------|-------------------|---------------------|
+| D2 | `*.d2` | `*.pdf` |
+| PaperBanana | `*_method.txt` | `*.png` |
+| draw.io | `*.drawio` | `*.png` (exported) |
+
+To modify a diagram, edit the source file and regenerate. Never edit the output image directly.
+
+Every entry in `figure_table_map.yaml` must include:
+- `source_file` or `source_script` — the editable source
+- `method_file` — the build spec (required for PaperBanana; the D2 file itself serves this role for D2 diagrams)
+- `build_command` — the exact command to reproduce the output
+- `provenance` — run ID or timestamp linking output to a specific generation
+
+If the source file's modification timestamp is newer than the output file, the output is stale and must be regenerated. A mismatch between source and output is a deviation.
+
+PaperBanana `*_method.txt` files are saved as companions alongside their outputs in `paper/assets/diagrams/paperbanana/`. These are the reproducible specs — the PNGs are regenerable from them.
+
+**Figure generation:**
+- Plotnine figures (F2a, F2b, F7, F8, F9): `python paper/assets/generate_figures.py --all`
+- D2 diagrams (F3, F4, F5, F6): `bash paper/assets/diagrams/build_diagrams.sh`
+- Tables (T1–T6): `python paper/assets/generate_tables.py --apply`
 
 ## Writing Conventions (Mandatory)
 
@@ -102,18 +140,13 @@ This should be cited in:
 - Section 6.4 (Implications) — for the crosswalk as coordination tool
 - Section 9 (References) — bibliography entry
 
-## Key Numbers (from `numbers_registry.md`)
+## Key Numbers
 
-Do not invent or round numbers. All statistics come from `paper/numbers_registry.md` or the evaluation pipeline outputs in `results/`. Key figures:
-- Pragmatics vs Control: d = 1.440
-- Pragmatics vs RAG: d = 0.922
-- D3 (uncertainty): d = 1.353 vs control, d = 1.040 vs RAG
-- Fidelity: 91.2% (pragmatics), 74.6% (RAG), 78.3% (control)
-- Pragmatic items: 36 (34 pipeline + 2 manual)
-- RAG chunks: 311
-- Source pages: 354
-- Determinism: 100% (39/39, 2 replications, 0 mismatches)
-- Cost: $0.09/query marginal (Sonnet), $0.14 (Opus)
+Do not invent or round numbers. Do not duplicate numbers in this file — they will drift.
+
+**Source of truth chain:** V&V scripts → `results/` JSON → `paper/numbers_registry.md` (registry IDs) → section prose (cites registry IDs in comments).
+
+This file is never authoritative for any statistic. Consult `numbers_registry.md` by registry ID.
 
 ## Prose Editing Process
 
@@ -135,3 +168,5 @@ See `../CLAUDE.md` for full project context (evaluation pipeline, vocabulary, ar
 4. Section 3.2 uses bold pseudo-headers — restructure to real subheadings or prose
 5. Sidecar files in sections/ should be moved to `arc/` or deleted after confirming content is merged
 6. `draft_v1.md` (non-qmd) is stale — may be an earlier concatenation; verify if still needed
+7. ~~F1 (Semiotic Framework) not yet created~~ — DONE (v1.1, PaperBanana)
+8. D2 source files still named F3_*, F4_*, etc. on disk despite v1.1 renumbering to F4-F7. yaml documents the mismatch. Cosmetic debt, no functional impact.

@@ -31,3 +31,4 @@ format:
         \hyphenpenalty=10000
         \exhyphenpenalty=10000
         \raggedbottom
+        \usepackage{pdflscape}
