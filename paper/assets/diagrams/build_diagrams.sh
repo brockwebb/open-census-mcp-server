@@ -14,7 +14,7 @@ mkdir -p "$FIG_DIR"
 for d2file in "$DIAG_DIR"/F*.d2; do
     base=$(basename "$d2file" .d2)
     echo "Building $base..."
-    d2 --theme "$THEME" --layout "$LAYOUT" "$d2file" "$FIG_DIR/${base}.pdf"
+    d2 --theme "$THEME" --layout "$LAYOUT" --pad 0 "$d2file" "$FIG_DIR/${base}.pdf"
 done
 
 echo "Done. Figures in $FIG_DIR/"

@@ -49,7 +49,7 @@ Nodes (top to bottom):
 
 7. SCORE BOX (rounded rectangle)
 - Fill: #ECEFF1, border #90A4AE (2px)
-- Label: "64.9% fidelity" (12px bold, grey #78909C) / "to authoritative sources" (9px, lighter grey)
+- Label: "74.6% fidelity" (12px bold, grey #78909C) / "to authoritative sources" (9px, lighter grey)
 
 All arrows in this panel: grey #B0BEC5, 1px, classic arrowhead
 
@@ -97,7 +97,7 @@ Nodes (top to bottom):
 
 7. SCORE BOX (rounded rectangle)
 - Fill: warm white #FFF3E0, border #E64A19 (2px)
-- Label: "91.6% fidelity" (12px bold, orange #E64A19) / "39/39 compliance • 0 mismatches across replications" (9px, muted)
+- Label: "91.2% fidelity" (12px bold, orange #E64A19) / "39/39 compliance • 0 mismatches across replications" (9px, muted)
 
 All arrows in this panel: orange #E64A19, 2px, classic arrowhead
 

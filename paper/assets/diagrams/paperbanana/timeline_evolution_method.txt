@@ -1,0 +1,78 @@
+DIAGRAM: 40-Year Federal Data Evolution Timeline
+ASPECT RATIO: 16:9 (1920w × 1080h logical units)
+STYLE: Minimalist presentation figure. Dark background, light elements. Serif font (Georgia). No decorative elements.
+
+=== LAYOUT ===
+
+Dark navy (#112E51) background fills the entire canvas.
+
+ONE single white line (#FFFFFF, 3px) curves gently from lower-left to upper-right across the canvas. The line is one continuous stroke that never lifts, never retraces, never touches itself. General movement is always lower-left toward upper-right. Gentle S-curves only.
+
+The line carries 10 milestones, then ends. After the final milestone, at least 25% of the canvas is empty navy.
+
+=== MILESTONES ===
+
+Each milestone sits on the path with:
+- A small geometric icon (~40px), colored per palette below
+- Year label (bold serif, white)
+- Name label (serif, milestone color)
+
+Milestones appear in EXACTLY this order along the path, from start to end. The chronological sequence must not be rearranged:
+
+1. 1986 — TIGER
+   Icon: Grid of thin lines. Color: #97BCE9
+
+2. 2001 — XML
+   Icon: Angle brackets < / >. Color: #97BCE9
+
+3. 2011 — Schema.org
+   Icon: Three circles connected by lines. Color: #97BCE9
+
+4. 2013 — Open Data Mandate
+   Icon: Document with seal. Color: #97BCE9
+
+5. 2017 — Transformers
+   Icon: Connected nodes pattern. Color: #0095A8
+
+6. 2022 — ChatGPT
+   Icon: Chat bubble. Color: #0095A8
+
+7. 2024 — MCP
+   Icon: Plug connector. Color: #0095A8
+
+8. 2025 — Diffusion LLMs
+   Icon: Dot-scatter pattern converging. Color: #FF7043
+
+9. 2026 — WebMCP
+   Icon: Globe. Color: #0095A8
+
+10. 2026 — ?
+    Character "?" only, large and bold. Color: #FF7043
+    Path ends here.
+
+=== COLOR PALETTE ===
+
+Background: #112E51
+Path: #FFFFFF
+Milestones 1-4: #97BCE9
+Milestones 5-7, 9: #0095A8
+Milestone 8: #FF7043
+Milestone 10: #FF7043
+Text: #FFFFFF
+
+=== DO NOT ===
+
+- No title, legend, or annotations
+- No gradients, shadows, 3D, or textures
+- No road markings or lane lines
+- No objects after the final "?" — empty canvas only
+- No enclosed areas in the path
+- Path never reverses direction
+- Icons are geometric shapes only
+- All text must be readable at presentation scale — no text smaller than the year labels
+- Do not render pixel size numbers (like "9px") as visible text
+- Do not change any year numbers — they are exact
+- Do not change any milestone names — spell them exactly as written above
+- Do not reorder milestones — the sequence is 1986, 2001, 2011, 2013, 2017, 2022, 2024, 2025, 2026, 2026
+- Do not add dots, circles, or nodes on the path at milestone positions
+

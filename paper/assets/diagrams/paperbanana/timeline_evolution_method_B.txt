@@ -1,0 +1,24 @@
+DIAGRAM: 40-Year Federal Data Evolution Timeline
+ASPECT RATIO: 16:9 (1920w × 1080h)
+STYLE: Minimalist. Dark navy background (#112E51). White path. Serif font.
+
+=== LAYOUT ===
+
+Dark navy (#112E51) background. One white line (#FFFFFF, 3px) curves from lower-left to upper-right. Gentle S-curves. Path ends after last milestone with 25% empty canvas remaining.
+
+=== MILESTONES (in this exact order) ===
+
+1. 1986 — TIGER. Icon: grid. Color: #97BCE9
+2. 2001 — XML. Icon: angle brackets. Color: #97BCE9
+3. 2011 — Schema.org. Icon: connected circles. Color: #97BCE9
+4. 2013 — Open Data Mandate. Icon: document with seal. Color: #97BCE9
+5. 2017 — Transformers. Icon: connected nodes. Color: #0095A8
+6. 2022 — ChatGPT. Icon: chat bubble. Color: #0095A8
+7. 2024 — MCP. Icon: plug connector. Color: #0095A8
+8. 2025 — Diffusion LLMs. Icon: converging dots. Color: #FF7043
+9. 2026 — WebMCP. Icon: globe. Color: #0095A8
+10. 2026 — ? (large, bold). Color: #FF7043. Path ends here.
+
+=== DO NOT ===
+
+No title. No legend. No gradients. No shadows. No textures.

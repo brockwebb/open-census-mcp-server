@@ -39,7 +39,7 @@ figures:
       federal data: Syntax (base, solved), Semantics (middle, solved),
       Pragmatics (apex, the gap). Includes concrete Census examples per
       layer and marks pragmatics as this paper's contribution.
-    section: "§1"
+    section: "§3"
     figure_type: paperbanana
     generation:
       tool: paperbanana
@@ -380,7 +380,7 @@ appendix_figures:
       client layer; Pragmatics Sidecar attaches at the server layer. No
       Response box — loop closes at User. Census API return arrow shown on
       both sides.
-    section: "Appendix"
+    section: "§6"
     figure_type: paperbanana
     generation:
       tool: paperbanana
@@ -499,7 +499,7 @@ tables:
     description: >
       Cohen's d effect sizes for all five CQS dimensions across three
       pairwise comparisons. Shows where Pragmatics gains are concentrated
-      (D3 Uncertainty, D5 Fitness-for-Use).
+      (D3 Uncertainty, D5 Reproducibility & Traceability).
     section: "§5"
     table_type: generated
     generation:

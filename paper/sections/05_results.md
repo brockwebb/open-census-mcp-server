@@ -14,23 +14,23 @@ The Friedman test revealed a significant omnibus difference across the three con
 
 : CQS composite scores by condition (D1–D5 mean of per-query medians). {#tbl-cqs-means}
 
-**Panel A: Omnibus**
+*Omnibus.*
 
 | Test | Statistic | *p* | *n* |
 |------|-----------|-----|-----|
 | Friedman χ²(2) | 42.01 | < .001 | 39 |
 
-**Panel B: Pairwise (Holm-corrected)**
+*Pairwise (Holm-corrected).*
 
-| Comparison | Δ CQS | Cohen’s *d* | 95% CI | *p* (Holm) | Eff. *n* |
-|------------|-------|-------------|--------|------------|----------|
-| Pragmatics vs Control | +0.538 | 1.440 | [0.421, 0.651] | < .001 | 36 |
-| Pragmatics vs RAG | +0.385 | 0.922 | [0.256, 0.513] | < .001 | 32 |
-| RAG vs Control | +0.154 | 0.546 | [0.072, 0.244] | .002 | 30 |
+| Comparison | Δ CQS | Cohen's *d* | *r* | 95% CI | *p* (Holm) | Eff. *n* |
+|------------|-------|-------------|-----|--------|------------|----------|
+| Pragmatics vs Control | +0.538 | 1.440 | 0.938 | [0.421, 0.651] | < .001 | 36 |
+| Pragmatics vs RAG | +0.385 | 0.922 | 0.754 | [0.256, 0.513] | < .001 | 32 |
+| RAG vs Control | +0.154 | 0.546 | 0.378 | [0.072, 0.244] | .002 | 30 |
 
-: Friedman omnibus and Wilcoxon signed-rank pairwise comparisons with Holm–Bonferroni correction. Bootstrap 95% CIs (10,000 iterations) on CQS deltas. {#tbl-pairwise}
+: Friedman omnibus and Wilcoxon signed-rank pairwise comparisons with Holm–Bonferroni correction. *r* = rank-biserial correlation from Wilcoxon statistic. Bootstrap 95% CIs (10,000 iterations) on CQS deltas. {#tbl-pairwise}
 
-Pragmatics produced a very large improvement over the control condition (Δ CQS = +0.539, Cohen's d = 1.440, 95% CI [0.421, 0.651], p < 0.001) and a large improvement over RAG (Δ CQS = +0.385, d = 0.922, 95% CI [0.256, 0.513], p < 0.001). RAG produced a medium improvement over control (Δ CQS = +0.154, d = 0.546, 95% CI [0.072, 0.244], p = 0.0017). Mean composite scores were 1.528 (pragmatics), 1.144 (RAG), and 0.990 (control).
+Pragmatics produced a very large improvement over the control condition (Δ CQS = +0.538, d = 1.440, r = 0.938, 95% CI [0.421, 0.651], p < 0.001) and a large improvement over RAG (Δ CQS = +0.385, d = 0.922, r = 0.754, 95% CI [0.256, 0.513], p < 0.001). RAG produced a medium improvement over control (Δ CQS = +0.154, d = 0.546, r = 0.378, 95% CI [0.072, 0.244], p = 0.0017). The rank-biserial r of 0.938 indicates that pragmatics outperformed control on 94% of query pairs. Mean composite scores were 1.528 (pragmatics), 1.144 (RAG), and 0.990 (control).
 
 The ordering was consistent: pragmatics outperformed RAG, which outperformed control, across every level of analysis.
 
@@ -44,17 +44,17 @@ The ordering was consistent: pragmatics outperformed RAG, which outperformed con
 | D2 (Completeness) | 0.537 | 0.297 | 0.246 |
 | D3 (Uncertainty Communication) | **1.353** | **1.040** | 0.417 |
 | D4 (Contextual Clarity) | **0.957** | 0.577 | 0.546 |
-| D5 (Fitness-for-Use Assessment) | 0.732 | 0.521 | 0.148 |
+| D5 (Reproducibility & Traceability) | 0.732 | 0.521 | 0.148 |
 
-: Per-dimension Cohen’s *d* effect sizes. Bold indicates *d* > 0.8 (large). {#tbl-dimension-effects}
+: Per-dimension Cohen's *d* effect sizes. Bold indicates *d* > 0.8 (large). {#tbl-dimension-effects}
 
 All five quality dimensions showed significant omnibus effects (p < 0.001 for each). The effect sizes for pragmatics versus control varied across dimensions, revealing where expert judgment matters most:
 
 Uncertainty communication (D3) showed the largest effect (d = 1.353 vs. control, d = 1.040 vs. RAG). This dimension captures whether responses appropriately communicate reliability limitations, margins of error, and data fitness: the core of what pragmatics are designed to deliver. The magnitude of this effect is consistent with the mechanism: pragmatics encode specific reliability thresholds, interpretation formulas, and informed-refusal criteria that the model cannot derive from training data or retrieved document chunks.
 
-Clarity of explanation (D4) showed the second-largest effect (d = 0.957 vs. control). Accuracy (D1, d = 0.541), completeness (D2, d = 0.537), and harm avoidance (D5, d = 0.732) showed medium to large effects. The consistency across all five dimensions indicates that pragmatics improve the overall quality of statistical consultation rather than optimizing a single aspect.
+Clarity of explanation (D4) showed the second-largest effect (d = 0.957 vs. control). Accuracy (D1, d = 0.541), completeness (D2, d = 0.537), and reproducibility (D5, d = 0.732) showed medium to large effects. The consistency across all five dimensions indicates that pragmatics improve the overall quality of statistical consultation rather than optimizing a single aspect.
 
-RAG showed its largest advantage over control on clarity (D4, d = 0.546) and uncertainty (D3, d = 0.417), with smaller effects on accuracy (D1, d = 0.190) and harm avoidance (D5, d = 0.148). The pattern suggests that retrieved document chunks provide some contextual value but lack the precision to substantially improve reliability assessment or harm prevention.
+RAG showed its largest advantage over control on clarity (D4, d = 0.546) and uncertainty (D3, d = 0.417), with smaller effects on accuracy (D1, d = 0.190) and reproducibility (D5, d = 0.148). The pattern suggests that retrieved document chunks provide some contextual value but lack the precision to substantially improve reliability assessment or harm prevention.
 
 ## Stratum Analysis: Normal vs. Edge Cases
 
@@ -70,9 +70,9 @@ The evaluation was stratified to test whether pragmatics disproportionately help
 
 The results contradicted the initial hypothesis. Pragmatics showed a *larger* effect on normal queries (d = 2.347 vs. control, d = 1.436 vs. RAG) than on edge cases (d = 1.135 vs. control, d = 0.683 vs. RAG). Permutation testing confirmed that the edge-greater hypothesis was not supported (p = 0.987 for pragmatics vs. control).
 
-This finding rules out overfitting to edge cases. Pragmatics do not merely catch exotic failure modes; they improve routine statistical consultation by providing the fitness-for-use context that even straightforward queries benefit from. A normal query about median household income in a large county still benefits from knowing that the five-year estimate is a 60-month average, that the margin of error defines a 90% confidence interval, and that direct comparison to decennial census figures requires methodological adjustment.
+This finding is inconsistent with an overfitting explanation. Pragmatics do not merely catch exotic failure modes; they improve routine statistical consultation by providing the fitness-for-use context that even straightforward queries benefit from. A normal query about median household income in a large county still benefits from knowing that the five-year estimate is a 60-month average and that the margin of error defines a 90% confidence interval. Direct comparison to decennial census figures requires methodological adjustment that the model cannot infer without guidance.
 
-The normal-stratum finding should be interpreted with a power caveat: at n = 15, the Wilcoxon test has approximately 0.56 power to detect a d = 0.5 effect. The observed effects (d = 2.347) are large enough to detect at this sample size, but RAG versus control on normal queries (d = 0.458, p = 0.137) was not significant, consistent with underpowering rather than a null effect.
+The normal-stratum finding should be interpreted with a power caveat: at n = 15, the Wilcoxon test has approximately 0.56 power to detect a d = 0.5 effect. The observed effects (d = 2.347) are large enough to detect at this sample size, but RAG versus control on normal queries (d = 0.458, p = 0.137) was not significant, consistent with underpowering rather than a null effect. The between-stratum comparison uses Mann-Whitney U rather than a paired test because the 15 normal and 24 edge-case queries are independent groups; the within-query pairing is exploited upstream when computing per-query deltas, and the between-stratum test compares these independently computed delta distributions.
 
 ## Pipeline Fidelity
 
@@ -93,6 +93,8 @@ Pragmatics achieved 91.2% fidelity across 353 claims, compared to 74.6% for RAG 
 The fidelity gap between pragmatics and RAG (16.6 percentage points) reflects a structural difference. Pragmatics provide specific criteria for interpreting data, leading the model to make more precise and verifiable claims. RAG-retrieved chunks provide general context that can lead the model to make claims that are plausible but difficult to verify or subtly misaligned with the specific data returned.
 
 The control condition's lower claim count (253 vs. 353) reflects a pattern where models without methodology support produce vaguer, less specific responses: responses that are harder to verify not because they are wrong but because they are not specific enough to check. This is itself a pragmatically significant finding: ungrounded responses evade accountability by avoiding specificity.
+
+Pragmatics' middling auditability (29.5%) despite its highest fidelity reflects a complementary pattern: structured expert judgment encourages conditional and interpretive claims (e.g., "unreliable if CV exceeds 40%") that are methodologically sound but cannot be traced to a specific API return value. High fidelity with moderate auditability indicates precise claims grounded in methodology rather than in raw data alone.
 
 ## Determinism
 
@@ -119,6 +121,6 @@ Pragmatics incurred higher per-query token costs than RAG. Mean input tokens per
 
 ![Cost-effectiveness: CQS improvement per marginal dollar. Pragmatics is 2.2× more cost-effective than RAG.](assets/figures/F10_cost_effectiveness.pdf){#fig-cost-effectiveness width=4.5in}
 
-However, cost-effectiveness, measured as CQS improvement per marginal dollar spent relative to control, favored pragmatics at 2.2 times the cost-effectiveness of RAG (6.28 vs. 2.83 CQS points per marginal dollar). Pragmatics costs 38% more per query than RAG but delivers disproportionately more quality improvement.
+However, cost-effectiveness, measured as CQS improvement per marginal dollar spent relative to control, favored pragmatics at 2.2 times the cost-effectiveness of RAG (6.28 vs. 2.83 CQS points per marginal dollar). Pragmatics costs 38% more per query than RAG but delivers disproportionately more quality improvement. This ratio assumes CQS points are linearly valued; in practice, moving a response from harmful to adequate likely has greater utility than moving from adequate to excellent, so the 2.2x figure should be read as a relative comparison rather than a precise welfare measure.
 
 The marginal cost of pragmatic guidance was $0.09 per query at Sonnet pricing and $0.14 at Opus pricing. The full 39-query evaluation battery cost $4.42 at production rates. These figures reflect token costs only; pragmatics requires no vector database, no embedding model, and no retrieval infrastructure at runtime; the pack is a SQLite file served via an API call. The total cost of ownership for pragmatics is dominated by the one-time authoring investment rather than ongoing infrastructure.

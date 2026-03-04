@@ -5,15 +5,19 @@
 
 ## The Semiotic Foundation
 
-Charles Morris's [-@morris1938] *Foundations of the Theory of Signs* introduced a tripartite framework for understanding how signs function: syntax concerns the formal relationships between signs, semantics concerns the relationship between signs and the objects they denote, and pragmatics concerns the relationship between signs and their interpreters, specifically the contextual conditions under which signs are appropriately used. This framework has been foundational in linguistics, philosophy of language, and information science for nearly nine decades.
+Charles Morris's [-@morris1938] *Foundations of the Theory of Signs* introduced a tripartite framework for understanding how signs function: syntax concerns the formal relationships between signs, semantics concerns the relationship between signs and the objects they denote, and pragmatics concerns the relationship between signs and their interpreters, specifically the contextual conditions under which signs are appropriately used.
 
-Applied to federal statistical data, the three layers map directly to the infrastructure that agencies have built and the gap that remains.
+Applied to federal statistical data, these three layers correspond to distinct infrastructure investments and distinct institutional responsibilities (@fig-semiotic-stack).
 
-*Syntax* encompasses the structural layer: APIs, machine-readable formats, data transmission protocols, table schemas, and the formal rules governing how data is organized and accessed. This layer is mature. The Census Bureau's API, standardized file formats, and programmatic access points represent decades of investment in making data structurally available to machines.
+![The semiotic stack applied to federal statistical data, after Morris [-@morris1938]. Syntax and semantics are mature; pragmatics is the missing layer.](assets/diagrams/fig_semiotic_stack.png){#fig-semiotic-stack width=6.5in}
 
-*Semantics* encompasses the meaning layer: variable descriptions, concept classifications, geographic hierarchies, survey documentation, and the metadata that allows a consumer to understand what a data element represents. This layer is well-developed and continues to improve through AI-ready data initiatives.
+*Syntax* encompasses the structural layer: APIs, machine-readable formats, data transmission protocols, and the formal rules governing how data is organized and accessed. This is the domain of open data mandates, format standards, and programmatic access. It is mature.
 
-*Pragmatics* encompasses the judgment layer: the expert assessment of whether a particular data element is appropriate for a particular use, given the specific context of the question being asked. This layer does not exist as a computationally deliverable resource in any federal statistical system.
+*Semantics* encompasses the meaning layer: variable descriptions, concept classifications, geographic hierarchies, and the metadata that allows a consumer to identify what a data element represents. This is the domain of documentation, catalogs, and AI-ready data initiatives. It is well-developed and continues to improve.
+
+*Pragmatics* encompasses the judgment layer: the expert assessment of whether a particular data element is appropriate for a particular use, given the specific context of the question being asked. This is the domain of experienced statisticians, methodology specialists, and data stewards. It does not exist as a computationally deliverable resource in any federal statistical system.
+
+The three layers are cumulative, not substitutable. An agency that has invested in syntax and semantics has completed two of three necessary steps for responsible AI-mediated data access. The third step, encoding the fitness-for-use judgments that practitioners apply but have never formalized for machine delivery, is the subject of this paper.
 
 The distinction between semantics and pragmatics is critical to understanding why metadata alone is insufficient for statistical consultation.
 
@@ -29,7 +33,7 @@ The semantic information is in the metadata. The pragmatic judgment is scattered
 
 ## What a Pragmatic Is
 
-A pragmatic is a structured unit of expert judgment about fitness for use. It is not an instruction, a rule, a constraint, or a lookup table. It is a factual statement of the kind a senior statistician would make to a colleague before they use a particular data product: the professional assessment that transforms a data retrieval into a statistical consultation. In library science terms, pragmatics serve the role a skilled reference librarian plays: not retrieving information, but advising whether the retrieved information is fit for the patron's purpose.
+A pragmatic is a structured unit of expert judgment about fitness for use. It is not an instruction, a rule, a constraint, or a lookup table. It is a factual statement of the kind a senior statistician would make to a colleague before they use a particular data product: the professional assessment that transforms a data retrieval into a statistical consultation.
 
 ![Anatomy of a pragmatic, showing the five structural components using ACS-MOE-002 (coefficient of variation threshold) as an example.](assets/figures/F4_pragmatic_item_anatomy.pdf){#fig-anatomy}
 
@@ -77,5 +81,5 @@ A defining property of the pragmatics retrieval mechanism is determinism. When a
 
 This property was verified empirically across two independent replications of the full 39-query test battery plus the original evaluation run. All 39 queries produced identical context retrievals across all three runs, with zero mismatches. The determinism is not a tuned property or a statistical regularity. It is a structural consequence of replacing similarity search with graph traversal.
 
-The practical significance is that pragmatics eliminates one source of compounding variance in the AI pipeline. Language model generation is inherently stochastic: the same input can produce different outputs. When retrieval is also stochastic, as in RAG and GraphRAG systems, variance compounds at both stages. Pragmatics reduces this tax by making the grounding deterministic while accepting that reasoning remains stochastic. The lighthouse is fixed. The ship still navigates, but toward a stable signal.
+The practical significance is architectural. RAG and GraphRAG systems incur retrieval overhead at every query: embedding lookups, similarity computations, or graph traversals that can return different results as indices are updated, models are versioned, or parameters change. This retrieval variance compounds with the inherent stochasticity of language model generation, producing variance at two stages of the pipeline. Pragmatics eliminates this compounding by paying the graph construction cost once, at development time, then serving compiled results from a static database at query time. The marginal query has zero retrieval variance and negligible retrieval overhead. In domains where the difference between a one-year and five-year estimate determines whether an answer is useful or harmful, this architectural property matters.
 

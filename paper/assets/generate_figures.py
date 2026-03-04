@@ -253,7 +253,7 @@ def make_F7(data: dict):
 
     # Y positions: CQS Composite at top (6.5), D5 at bottom (1), with extra gap
     y_base = {
-        "D5 (Fitness-for-Use)": 1,
+        "D5 (Reproducibility & Traceability)": 1,
         "D4 (Contextual Clarity)": 2,
         "D3 (Uncertainty)": 3,
         "D2 (Completeness)": 4,
@@ -278,7 +278,7 @@ def make_F7(data: dict):
         ("D2 (Completeness)", "D2"),
         ("D3 (Uncertainty)", "D3"),
         ("D4 (Contextual Clarity)", "D4"),
-        ("D5 (Fitness-for-Use)", "D5"),
+        ("D5 (Reproducibility & Traceability)", "D5"),
     ]
 
     rows = []

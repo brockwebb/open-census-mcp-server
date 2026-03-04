@@ -63,6 +63,30 @@ Font families and sizes per element type.
 Explicit prohibitions.
 ```
 
+### Spec Discipline: What Belongs in a method.txt
+
+A method.txt describes WHAT to draw. Every sentence must be falsifiable
+against the rendered output — you can point at the PNG and say "this
+sentence is satisfied" or "this sentence is violated." If you cannot
+do that, the sentence does not belong.
+
+Include:
+- Shapes, positions, colors (hex values), dimensions, labels, font sizes
+- Spatial relationships (above, inside, left-of, connected-to)
+- Explicit constraints and prohibitions
+
+Do not include:
+- Motivation or rationale ("this communicates the gap")
+- Emotional direction ("should feel empty", "conspicuously absent")
+- Metaphors or analogies ("like a river", "think of...")
+- Style commentary ("something Jobs would approve of")
+- Audience context ("they lived through this era")
+- Redundant restatement of constraints in different words
+
+Every extra word is a word the renderer can hallucinate from. Shorter
+specs with precise constraints produce better renders than verbose specs
+with editorial guidance.
+
 ### The Translation Step Is Where Errors Happen
 
 The critical skill is **faithful translation** from paper prose to method.txt.

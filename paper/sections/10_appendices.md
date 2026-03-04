@@ -4,6 +4,10 @@
 
 The full 39-query test battery. Source: `src/eval/battery/queries.yaml`. **Distribution:** 15 standard queries (category `normal`) and 24 edge-case queries across 7 edge categories.
 
+```{=latex}
+\begin{landscape}
+```
+
 | # | Query Text | Category | Difficulty |
 |---|-----------|----------|------------|
 | 1 | What is the total population of California according to the most recent Census data? | normal | normal |
@@ -45,6 +49,10 @@ The full 39-query test battery. Source: `src/eval/battery/queries.yaml`. **Distr
 | 37 | My 8th grade class is doing a project on our town. How many people live in Bozeman, Montana and is it growing? | persona_8th_grader | normal |
 | 38 | I'm analyzing population trends in Bozeman, MT for a comprehensive plan update. I need the most recent ACS estimates with margins of error, and guidance on comparing to the 2010 baseline. | persona_city_planner | tricky |
 | 39 | I'm writing a story about whether Bozeman is really 'booming' as people claim. What do the Census numbers actually show, and how confident should I be in those numbers? | persona_journalist | tricky |
+
+```{=latex}
+\end{landscape}
+```
 
 **Difficulty key:** `normal` = standard query with clear answer; `tricky` = requires methodological care; `trap` = contains a latent error, ambiguity, or fitness-for-use failure that an uninformed response would miss.
 
@@ -126,9 +134,7 @@ System prompts used for each experimental condition. Source: `src/eval/agent_loo
 
 ### Base System Prompt (shared across all conditions)
 
-```
-You are a statistical consultant helping users access and understand U.S. Census data. Use your available tools to answer the question.
-```
+> You are a statistical consultant helping users access and understand U.S. Census data. Use your available tools to answer the question.
 
 ### Control Condition
 
@@ -138,17 +144,15 @@ Identical to base system prompt. No augmentation. Receives data retrieval tools 
 
 Base system prompt augmented at runtime with retrieved methodology documentation chunks. The following template is applied before each query:
 
-```
-{base_prompt}
-
-## Reference Materials
-
-The following excerpts from Census methodology documentation may be relevant:
-
-{retrieved_chunks}
-
-Use these materials to inform your response where applicable.
-```
+> {base_prompt}
+>
+> \## Reference Materials
+>
+> The following excerpts from Census methodology documentation may be relevant:
+>
+> {retrieved_chunks}
+>
+> Use these materials to inform your response where applicable.
 
 Where `{retrieved_chunks}` is the top-5 chunks retrieved from a 311-chunk FAISS index of ACS methodology documentation, ranked by cosine similarity to the query. Receives the same data retrieval tools as control.
 
@@ -156,11 +160,9 @@ Where `{retrieved_chunks}` is the top-5 chunks retrieved from a 311-chunk FAISS 
 
 Extends the base prompt with a grounding gate instruction that forces consultation of methodology guidance before data retrieval:
 
-```
-You are a statistical consultant helping users access and understand U.S. Census data. Use your available tools to answer the question.
-
-You MUST call get_methodology_guidance FIRST before any other tool calls. This is required for every query; no exceptions. Select topics relevant to the query. After reviewing the methodology guidance, proceed with data retrieval.
-```
+> You are a statistical consultant helping users access and understand U.S. Census data. Use your available tools to answer the question.
+>
+> You MUST call get_methodology_guidance FIRST before any other tool calls. This is required for every query; no exceptions. Select topics relevant to the query. After reviewing the methodology guidance, proceed with data retrieval.
 
 Receives data retrieval tools plus `get_methodology_guidance` (excluded from control and RAG conditions). The `get_methodology_guidance` tool queries the compiled ACS pragmatics pack (SQLite) and returns structured expert judgment relevant to the query topics.
 
@@ -182,38 +184,38 @@ The 36 pragmatics in the ACS pack. Full content (context text, triggers, thread 
 
 | Item ID | Category | Latitude | Context (first 100 chars) | Triggers | Thread Edges |
 |---------|----------|----------|--------------------------|----------|-------------|
-| ACS-BRK-001 | break_in_series | narrow | The 2009-2010 transition marks a break in population controls due to shift from Census 2000... | 4 | 1 |
-| ACS-BRK-002 | break_in_series | narrow | The ACS transitioned from long-form decennial census to continuous monthly collection in 200... | 7 | 2 |
-| ACS-BRK-003 | break_in_series | narrow | Starting with 2024 data, ACS updated the Period of Military Service question to align with D... | 6 | 1 |
+| ACS-BRK-001 | break in series | narrow | The 2009-2010 transition marks a break in population controls due to shift from Census 2000... | 4 | 1 |
+| ACS-BRK-002 | break in series | narrow | The ACS transitioned from long-form decennial census to continuous monthly collection in 200... | 7 | 2 |
+| ACS-BRK-003 | break in series | narrow | Starting with 2024 data, ACS updated the Period of Military Service question to align with D... | 6 | 1 |
 | ACS-CMP-001 | comparison | none | Never directly compare ACS 1-year estimates with 5-year estimates. They represent different ... | 3 | 1 |
 | ACS-CMP-002 | comparison | narrow | Consecutive 5-year estimates share 4 out of 5 years of underlying data. This means they are... | 6 | 2 |
 | ACS-CMP-003 | comparison | none | Overlapping confidence intervals do NOT prove two estimates are statistically indistinguisha... | 5 | 1 |
-| ACS-DIS-001 | disclosure_avoidance | narrow | ACS applies data swapping and noise injection to protect respondent confidentiality. Small-a... | 5 | 2 |
-| ACS-DIS-002 | disclosure_avoidance | none | ACS does NOT use differential privacy. The 2020 Decennial Census used differential privacy,... | 4 | 0 |
-| ACS-DIS-003 | disclosure_avoidance | narrow | When ACS estimates show a margin of error equal to the estimate itself, or when the Census B... | 5 | 1 |
-| ACS-DOL-001 | dollar_values | narrow | When comparing dollar-denominated estimates (income, rent, home value) across different ACS ... | 5 | 1 |
-| ACS-EQV-001 | geographic_equivalence | narrow | Some census tracts contain an entire county's population, which occurs in very rural or spar... | 5 | 1 |
-| ACS-EQV-002 | geographic_equivalence | narrow | Census Designated Places (CDPs) are statistical entities, not legal jurisdictions. CDPs have... | 5 | 0 |
+| ACS-DIS-001 | disclosure avoidance | narrow | ACS applies data swapping and noise injection to protect respondent confidentiality. Small-a... | 5 | 2 |
+| ACS-DIS-002 | disclosure avoidance | none | ACS does NOT use differential privacy. The 2020 Decennial Census used differential privacy,... | 4 | 0 |
+| ACS-DIS-003 | disclosure avoidance | narrow | When ACS estimates show a margin of error equal to the estimate itself, or when the Census B... | 5 | 1 |
+| ACS-DOL-001 | dollar values | narrow | When comparing dollar-denominated estimates (income, rent, home value) across different ACS ... | 5 | 1 |
+| ACS-EQV-001 | geographic equivalence | narrow | Some census tracts contain an entire county's population, which occurs in very rural or spar... | 5 | 1 |
+| ACS-EQV-002 | geographic equivalence | narrow | Census Designated Places (CDPs) are statistical entities, not legal jurisdictions. CDPs have... | 5 | 0 |
 | ACS-GEO-001 | geography | none | Block group level data is only available in ACS 5-year estimates, not 1-year estimates. This... | 4 | 1 |
 | ACS-GEO-002 | geography | wide | Public Use Microdata Areas (PUMAs) have a minimum population of 100,000. PUMA boundaries do ... | 4 | 0 |
 | ACS-GEO-003 | geography | wide | Congressional district boundaries change after each decennial census reapportionment. ACS es... | 4 | 0 |
 | ACS-GEO-004 | geography | full | ACS geographic boundaries reflect boundaries as of January 1 of the final year in the survey... | 4 | 0 |
-| ACS-GQ-001 | group_quarters | narrow | ACS includes group quarters population (college dorms, military barracks, prisons). For comm... | 8 | 2 |
-| ACS-GQ-002 | group_quarters | wide | ACS group quarters imputation rates can be very high, up to 30-50% of GQ persons may have... | 6 | 2 |
-| ACS-IND-001 | independent_cities | none | Some US cities are county-equivalents (independent cities); they do NOT nest inside a count... | 5 | 0 |
-| ACS-MOE-001 | margin_of_error | narrow | To calculate standard error from ACS margin of error: SE = MOE / 1.645. ACS MOEs are report... | 3 | 1 |
-| ACS-MOE-002 | margin_of_error | narrow | Coefficient of variation (CV) = (SE / estimate) × 100. CV above 40% indicates the estimate ... | 3 | 1 |
-| ACS-MOE-003 | margin_of_error | wide | 5-year estimates have smaller margins of error than 1-year estimates for the same geography,... | 3 | 0 |
-| ACS-MOE-004 | margin_of_error | narrow | MOE approximation formulas for derived estimates (sums, differences, ratios) assume independ... | 5 | 2 |
+| ACS-GQ-001 | group quarters | narrow | ACS includes group quarters population (college dorms, military barracks, prisons). For comm... | 8 | 2 |
+| ACS-GQ-002 | group quarters | wide | ACS group quarters imputation rates can be very high, up to 30-50% of GQ persons may have... | 6 | 2 |
+| ACS-IND-001 | independent cities | none | Some US cities are county-equivalents (independent cities); they do NOT nest inside a count... | 5 | 0 |
+| ACS-MOE-001 | margin of error | narrow | To calculate standard error from ACS margin of error: SE = MOE / 1.645. ACS MOEs are report... | 3 | 1 |
+| ACS-MOE-002 | margin of error | narrow | Coefficient of variation (CV) = (SE / estimate) × 100. CV above 40% indicates the estimate ... | 3 | 1 |
+| ACS-MOE-003 | margin of error | wide | 5-year estimates have smaller margins of error than 1-year estimates for the same geography,... | 3 | 0 |
+| ACS-MOE-004 | margin of error | narrow | MOE approximation formulas for derived estimates (sums, differences, ratios) assume independ... | 5 | 2 |
 | ACS-NRS-001 | nonresponse | narrow | ACS publishes allocation rates (item imputation rates) for every characteristic. High alloca... | 6 | 2 |
 | ACS-NRS-002 | nonresponse | narrow | ACS uses hot-deck imputation, which assigns values from a statistically similar responding u... | 7 | 1 |
-| ACS-PER-001 | period_estimate | narrow | ACS produces period estimates, not point-in-time estimates. A 5-year estimate represents an ... | 3 | 0 |
-| ACS-PCL-001 | population_controls | narrow | ACS estimates at the tract and block group level are NOT controlled to independent populatio... | 5 | 2 |
-| ACS-POP-001 | population_threshold | none | ACS 1-year estimates are only published for geographic areas with population of 65,000 or mo... | 3 | 1 |
-| ACS-POP-002 | population_threshold | none | ACS 1-year Supplemental Estimates are available for areas with population of 20,000 or more,... | 3 | 0 |
-| ACS-POP-003 | population_threshold | none | ACS 5-year estimates are available for all geographic areas, including census tracts and bloc... | 3 | 0 |
-| ACS-REL-001 | release_schedule | narrow | As of December 2025, the most recent ACS releases are: ACS 1-year 2024 (released September ... | 4 | 0 |
-| ACS-RES-001 | residence_rules | narrow | ACS uses a 'current residence' rule: a person must have lived at an address for 2 months or... | 6 | 2 |
+| ACS-PER-001 | period estimate | narrow | ACS produces period estimates, not point-in-time estimates. A 5-year estimate represents an ... | 3 | 0 |
+| ACS-PCL-001 | population controls | narrow | ACS estimates at the tract and block group level are NOT controlled to independent populatio... | 5 | 2 |
+| ACS-POP-001 | population threshold | none | ACS 1-year estimates are only published for geographic areas with population of 65,000 or mo... | 3 | 1 |
+| ACS-POP-002 | population threshold | none | ACS 1-year Supplemental Estimates are available for areas with population of 20,000 or more,... | 3 | 0 |
+| ACS-POP-003 | population threshold | none | ACS 5-year estimates are available for all geographic areas, including census tracts and bloc... | 3 | 0 |
+| ACS-REL-001 | release schedule | narrow | As of December 2025, the most recent ACS releases are: ACS 1-year 2024 (released September ... | 4 | 0 |
+| ACS-RES-001 | residence rules | narrow | ACS uses a 'current residence' rule: a person must have lived at an address for 2 months or... | 6 | 2 |
 | ACS-SAM-001 | sampling | wide | ACS sampling rates are not uniform. Sparsely populated areas are sampled at rates up to 5x h... | 6 | 2 |
 | ACS-SUP-001 | suppression | wide | Some 1-year ACS tables may be suppressed if estimates are deemed too unreliable. Suppression... | 3 | 0 |
 | ACS-THR-001 | threshold | narrow | For geographies with total population under approximately 1,000, ACS 5-year estimates may st... | 5 | 2 |

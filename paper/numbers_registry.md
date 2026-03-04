@@ -214,6 +214,30 @@ SRS: VR-091–096 (aggregate), VR-097–100 (QC)
 
 ---
 
+## Section 4b: Judge Agreement & Nonparametric Effect Sizes
+
+Source: `results/v2_redo/stage2/analysis/judge_agreement.json`
+Script: `src/eval/judge_agreement_analysis.py`
+SRS: VR-110, VR-111, VR-112
+
+### 4b-a. Inter-Judge Agreement (Kendall's W)
+
+| ID | Condition/Comparison | Kendall's W | p | Status |
+|----|---------------------|-------------|---|--------|
+| JA-001 | Control CQS | 0.551 | significant | COMPUTED |
+| JA-002 | RAG CQS | 0.735 | significant | COMPUTED |
+| JA-003 | Pragmatics CQS | 0.618 | significant | COMPUTED |
+
+### 4b-b. Rank-Biserial r (CQS Pairwise)
+
+| ID | Comparison | r | Cohen's d | Eff. n | Interpretation | Status |
+|----|------------|---|-----------|--------|----------------|--------|
+| RB-001 | Pragmatics vs Control | 0.938 | 1.440 | 36 | large | COMPUTED |
+| RB-002 | Pragmatics vs RAG | 0.754 | 0.922 | 32 | large | COMPUTED |
+| RB-003 | RAG vs Control | 0.378 | 0.546 | 30 | medium | COMPUTED |
+
+---
+
 ## Section 5: V1 vs V2 Reconciliation
 
 These numbers are NOT cited in the paper. They document why V1 numbers differ from V2, per `talks/fcsm_2026/2026-02-21_v1_to_v2_redesign.md`.
