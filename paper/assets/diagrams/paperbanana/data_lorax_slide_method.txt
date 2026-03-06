@@ -1,0 +1,59 @@
+DIAGRAM: "I Speak for the Data" — The Data Lorax
+ASPECT RATIO: 4:3 (1100w × 825h logical units)
+STYLE: Whimsical illustrated character in the style of a children's book illustration. Warm, friendly, slightly cartoonish but not childish. Clean lines, flat color fills with subtle texture. Professional enough for a conference closing slide. NOT a technical diagram. This is an editorial illustration.
+
+=== CONCEPT ===
+A friendly robot character standing on a small pile of spreadsheets and data tables, one arm raised as if speaking to an audience. The robot evokes the Lorax (speaks for something that cannot speak for itself) but is clearly a robot/AI figure, not the actual Lorax character. The robot is delivering the data's message to the world.
+
+=== CENTRAL CHARACTER: THE DATA ROBOT ===
+Position: Center of canvas, standing on the data pile
+- A rounded, friendly robot figure (NOT menacing, NOT sleek/modern — warm and approachable)
+- Body: Barrel-shaped torso, Census navy #112E51, with a subtle circular emblem on the chest (a simple bar chart icon in white)
+- Head: Round, slightly oversized for the body (cartoonish proportions), lighter blue #205493
+- Eyes: Two warm oval eyes, white with small black pupils, friendly expression
+- Mouth: Simple curved line suggesting a gentle smile
+- Arms: Simple cylindrical arms, one raised upward in a speaking/proclamation gesture, the other resting at side
+- Legs: Short stubby legs, standing firmly
+- Height: Approximately 40% of canvas height
+- A small Census orange #FF7043 mustache (three curved tufts, like a tiny walrus mustache) — the Lorax nod
+- Optional: A tiny wisp of steam or glow from the top of the head (thinking/processing)
+
+=== THE DATA PILE ===
+Position: Below the robot, center-bottom of canvas
+- A small mound of overlapping spreadsheet pages, data tables, and chart printouts
+- Papers are slightly crumpled and scattered, suggesting volume and disorganization
+- Colors: White pages with faint grid lines in light grey #E0E0E0
+- Some pages have tiny colored bar charts or line graphs (too small to read, just suggesting data)
+- A few pages have visible column headers in tiny text (illegible, just texture)
+- The pile is modest (not enormous) — maybe 15-20 visible sheets
+- The robot stands ON TOP of this pile, slightly elevated
+
+=== BACKGROUND ===
+- Clean white or very light warm grey #FAFAFA
+- No other objects, no landscape, no other characters
+- Simple and uncluttered — the robot and data pile are the only elements
+
+=== DO NOT INCLUDE ANY TEXT IN THE IMAGE ===
+No words, no labels, no title, no caption, no speech bubble text. The text will be added separately on the presentation slide. The image is ONLY the illustration.
+
+=== COLOR PALETTE ===
+- Robot body: #112E51 (Census dark navy)
+- Robot head: #205493 (Census blue)
+- Mustache: #FF7043 (Census orange)
+- Eyes: white with black pupils
+- Chest emblem: white bar chart on navy
+- Papers: white with #E0E0E0 grid lines
+- Mini charts on papers: #205493, #FF7043, #2E7D32 (small accents)
+- Background: #FAFAFA or white
+
+=== MOOD ===
+Warm. Earnest. Slightly humorous but not silly. The robot genuinely cares about the data. Conference audience should smile, not cringe. Think: editorial illustration for The Economist or Nature, but with 10% more whimsy.
+
+=== DO NOT ===
+- No actual Lorax character (copyright)
+- No Dr. Seuss visual style (copyright) — this should feel original
+- No text anywhere in the image
+- No dark or threatening mood
+- No hyper-realistic rendering — keep it illustrative
+- No complex background or scenery
+- No other characters or figures
