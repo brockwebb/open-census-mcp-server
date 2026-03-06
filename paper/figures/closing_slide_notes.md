@@ -17,6 +17,28 @@ Things are moving fast. We need to stay engaged, test new approaches, and not be
 ### 3. Start capturing expert judgment.
 It's not about the numbers. It's the fitness-for-use judgment — when those numbers should and shouldn't be used, what the caveats are, what a senior statistician would tell you before you touch the data. That expertise lives in people's heads, and it walks out the door when they retire. Pragmatics is one approach to making it machine-deliverable. The data doesn't speak for itself. It never did.
 
+## Opening Image Prompt (for OpenAI / NanoBanana)
+
+> A whimsical, Seuss-inspired square illustration of a fork in a winding road. A small friendly robot stands at the fork, looking up at two paths. The left path is labeled "More Data" and leads into a foggy, cluttered landscape of towering stacks of documents and tangled wires disappearing into grey mist. The right path is labeled "Better Judgment" and leads upward toward a bright, clear sunrise over rolling hills with a few clean signposts along the way. The style is warm, hand-drawn, with soft watercolor-like flat fills, wobbly ink outlines, and a mid-century children's book illustration feel. Census color palette: navy blue (#112E51), warm orange (#FF7043), soft grey (#B0BEC5), light blue sky. The robot is small — the journey is bigger than the traveler. White or very light background. Square format. No other text besides the two path labels.
+
+---
+
+## Opening Slide: Table of Contents (Seussian)
+
+**A Brief History of Time**
+*where we built the data, line by line*
+
+**The Great RAG Adventure**
+*and other glorious failures of mine*
+
+**Pragmatics: The Missing Layer**
+*teaching machines to be a wiser data player*
+
+**Oh, the Places You'll Go!**
+*best practices for the road we don't yet know*
+
+---
+
 ## Slide Bullets (what goes ON the slide)
 
 1. **Keep experimenting.** The playbook isn't written yet.
