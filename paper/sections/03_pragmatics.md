@@ -5,9 +5,7 @@
 
 ## The Semiotic Foundation
 
-Charles Morris's [-@morris1938] *Foundations of the Theory of Signs* introduced a tripartite framework for understanding how signs function: syntax concerns the formal relationships between signs, semantics concerns the relationship between signs and the objects they denote, and pragmatics concerns the relationship between signs and their interpreters, specifically the contextual conditions under which signs are appropriately used.
-
-Applied to federal statistical data, these three layers correspond to distinct infrastructure investments and distinct institutional responsibilities (@fig-semiotic-stack).
+Charles Morris's [-@morris1938] *Foundations of the Theory of Signs* introduced a three-part framework for understanding how signs function: syntax concerns the formal relationships between signs, semantics concerns the relationship between signs and the objects they represent, and pragmatics concerns the relationship between signs and their interpreters, specifically the contextual conditions under which signs are appropriately used. Applied to federal statistical data, these three layers correspond to distinct infrastructure investments and distinct institutional responsibilities (@fig-semiotic-stack).
 
 ![The semiotic stack applied to federal statistical data, after Morris [-@morris1938]. Syntax and semantics are mature; pragmatics is the missing layer.](assets/diagrams/fig_semiotic_stack.png){#fig-semiotic-stack width=6.5in}
 
@@ -17,9 +15,7 @@ Applied to federal statistical data, these three layers correspond to distinct i
 
 *Pragmatics* encompasses the judgment layer: the expert assessment of whether a particular data element is appropriate for a particular use, given the specific context of the question being asked. This is the domain of experienced statisticians, methodology specialists, and data stewards. It does not exist as a computationally deliverable resource in any federal statistical system.
 
-The three layers are cumulative, not substitutable. An agency that has invested in syntax and semantics has completed two of three necessary steps for responsible AI-mediated data access. The third step, encoding the fitness-for-use judgments that practitioners apply but have never formalized for machine delivery, is the subject of this paper.
-
-The distinction between semantics and pragmatics is critical to understanding why metadata alone is insufficient for statistical consultation.
+The three layers are cumulative, not substitutable. An agency that has invested in syntax and semantics has completed two of three necessary steps for responsible AI-mediated data access. The third step, encoding the fitness-for-use judgments that practitioners apply but have never formalized for machine delivery, is the subject of this paper. The distinction between semantics and pragmatics is critical to understanding why metadata alone is insufficient for statistical consultation.
 
 | | Semantics | Pragmatics |
 |---|---|---|
@@ -33,11 +29,9 @@ The semantic information is in the metadata. The pragmatic judgment is scattered
 
 ## What a Pragmatic Is
 
-A pragmatic is a structured unit of expert judgment about fitness for use. It is not an instruction, a rule, a constraint, or a lookup table. It is a factual statement of the kind a senior statistician would make to a colleague before they use a particular data product: the professional assessment that transforms a data retrieval into a statistical consultation.
+A pragmatic is a structured unit of expert judgment about fitness for use. It is not an instruction, a rule, a constraint, or a lookup table. It is a factual statement of the kind a senior statistician would make to a colleague before they use a particular data product: the professional assessment that transforms a data retrieval into a statistical consultation. Each pragmatic has five structural components, illustrated in @fig-anatomy using ACS-MOE-002, the coefficient of variation reliability threshold.
 
-![Anatomy of a pragmatic, showing the five structural components using ACS-MOE-002 (coefficient of variation threshold) as an example.](assets/figures/F4_pragmatic_item_anatomy.pdf){#fig-anatomy}
-
-Each pragmatic has five components.
+![Anatomy of a pragmatic, showing the five structural components using ACS-MOE-002 (coefficient of variation threshold) as an example.](assets/figures/F4_pragmatic_item_anatomy.pdf){#fig-anatomy fig-pos="H" width=80% height=80%}
 
 ### Context Text
 
@@ -47,9 +41,7 @@ Context text is the judgment itself, expressed in one to three sentences as fact
 
 ![The latitude model: a four-level calibrated uncertainty scale for expert judgment.](assets/figures/F5_latitude_model.pdf){#fig-latitude}
 
-Latitude encodes the calibrated uncertainty of the judgment itself, on a four-level scale. A pragmatic with latitude *none* represents hard consensus: no reasonable expert disagrees that the one-year American Community Survey requires a population of at least 65,000. A pragmatic with latitude *narrow* represents strong professional agreement with rare exceptions; the 40 percent coefficient of variation threshold is widely accepted but not universally applied. A pragmatic with latitude *wide* acknowledges genuine context-dependence: whether to use one-year or five-year estimates involves a tradeoff between recency and reliability that depends on the specific analytical purpose. A pragmatic with latitude *full* provides background context that informs but does not constrain; the American Community Survey replaced the decennial census long form beginning in 2005.
-
-Latitude is not a metadata annotation. It is a calibrated uncertainty model over expert judgment, encoding not just what practitioners know but how confidently the field holds that knowledge and where reasonable experts disagree. This connects to the observation in @kahneman2021 that professional experts exhibit significant variance in judgments that are nominally deterministic. Latitude structures that variance explicitly rather than leaving it implicit.
+Latitude calibrates how much interpretive freedom the model has when applying a judgment. Some statistical rules carry no flexibility: delivering an estimate from a geography that violates the minimum population threshold is harmful regardless of context. Others involve genuine tradeoffs where the right answer depends on the analytical purpose, and constraining the model to a single answer would make it less useful. Latitude encodes this distinction explicitly, so that hard rules arrive as hard rules and context-dependent guidance arrives as context to reason over rather than a constraint to follow. This connects to the observation in @kahneman2021 that professional experts exhibit significant variance in judgments that are nominally deterministic: latitude structures that variance intentionally rather than leaving it implicit in the judgment text.
 
 ### Triggers
 
@@ -67,7 +59,7 @@ Provenance traces every judgment to its authoritative documentary source: the sp
 
 Pragmatics are deliberately distinct from several related concepts:
 
-They are not *retrieval-augmented generation*. RAG retrieves passages from a document corpus based on embedding similarity. Pragmatics delivers curated expert judgment through deterministic graph traversal. The retrieval mechanism, the content, and the failure modes are fundamentally different.
+They are not *retrieval-augmented generation*. RAG retrieves text passages from a document corpus by finding the nearest neighbors to a query embedding: a search over continuous similarity scores that returns different results depending on the embedding model, index state, and query phrasing. Pragmatics delivers structured expert judgment selected by exact topic match: the same query topic always returns the same items. More importantly, the content differs. RAG surfaces text that is semantically related to the query; pragmatics surfaces judgment that is specifically applicable to it. Related text and applicable judgment are not the same thing, and the gap between them is precisely what Section 2 describes.
 
 They are not *prompt engineering*. Pragmatic content is domain knowledge, not model instructions. The system does not tell the model to "always warn about margins of error"; instead, it provides the expert knowledge that margins of error exceeding the estimate indicate unreliability, and allows the model's reasoning to incorporate that knowledge as it would incorporate any factual context.
 
@@ -77,9 +69,9 @@ They are not *constraints or guardrails*. The latitude system explicitly encodes
 
 ## Deterministic Delivery
 
-A defining property of the pragmatics retrieval mechanism is determinism. When a query's topic is identified, the system maps it to a thread identifier, traverses defined edges in the graph structure, and collects the relevant context nodes. This is a lookup, not a search. The same topic always produces the same context set.
+A defining property of the pragmatics retrieval mechanism is determinism. When a query's topic is identified, the system maps it to a thread identifier, follows pre-compiled edges in a SQLite database, and returns the associated context items. This is a lookup, not a search. The same topic always produces the same context set.
 
-This property was verified empirically across two independent replications of the full 39-query test battery plus the original evaluation run. All 39 queries produced identical context retrievals across all three runs, with zero mismatches. The determinism is not a tuned property or a statistical regularity. It is a structural consequence of replacing similarity search with graph traversal.
+This property was verified empirically across two independent replications of the full 39-query test battery plus the original evaluation run. All 39 queries produced identical context retrievals across all three runs, with zero mismatches. The determinism is not a tuned property or a statistical regularity. This result is a structural consequence of replacing similarity search with a compiled lookup.
 
-The practical significance is architectural. RAG and GraphRAG systems incur retrieval overhead at every query: embedding lookups, similarity computations, or graph traversals that can return different results as indices are updated, models are versioned, or parameters change. This retrieval variance compounds with the inherent stochasticity of language model generation, producing variance at two stages of the pipeline. Pragmatics eliminates this compounding by paying the graph construction cost once, at development time, then serving compiled results from a static database at query time. The marginal query has zero retrieval variance and negligible retrieval overhead. In domains where the difference between a one-year and five-year estimate determines whether an answer is useful or harmful, this architectural property matters.
+The practical significance is architectural. RAG and GraphRAG systems incur retrieval overhead at every query: embedding lookups, similarity computations, or graph traversals that can return different results as indices are updated, models are versioned, or parameters change. This retrieval variance compounds with the inherent stochasticity of language model generation, producing variance at two stages of the pipeline. Pragmatics eliminates this compounding by paying the construction cost once, at development time, then serving compiled results from a static database at query time. Each query has zero retrieval variance and negligible retrieval overhead. In domains where the difference between a one-year and five-year estimate determines whether an answer is useful or harmful, this architectural property matters.
 

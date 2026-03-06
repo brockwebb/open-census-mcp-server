@@ -100,22 +100,15 @@ PaperBanana `*_method.txt` files are saved as companions alongside their outputs
 
 ## Writing Conventions (Mandatory)
 
-These rules are inherited from `/Users/brock/Documents/GitHub/central_library/crosswalks/fcsm_nist/WRITING_CONVENTIONS.md` and apply to all section files.
+Two convention files govern this paper. Both must be read before any prose editing.
 
-### Zero tolerance
-- **No em dashes.** Replace with commas, semicolons, colons, parenthetical rewrites, or sentence restructuring.
-- **No bold in running prose.** Bold is for headings, table headers, figure captions only. If emphasis is needed, use italics sparingly or rewrite the sentence to be stronger.
-- **No bullet points in prose sections.** Write in paragraphs. Lists are for appendices, tables, and enumerated reference content only.
-- **No "novel."** Say what makes it different instead.
-- **"Confabulation" not "hallucination."** Consistent with NIST AI 600-1.
+**General conventions** (apply to all Brock projects):
+`/Users/brock/Documents/GitHub/central_library/crosswalks/fcsm_nist/WRITING_CONVENTIONS.md`
 
-### Style
-- Lead with the point (exception: building a case for resistant audiences).
-- Italics for emphasis on key contrast words, sparingly.
-- No bold pseudo-headers in prose (e.g., `**The problem.**` followed by text). Use a real `###` subheading or write a strong topic sentence.
-- Specificity is kindness. Name the chapter, section, number.
-- "Fitness for use" is FCSM's core concern. Name it explicitly.
-- Vendor diversity ≠ statistical independence. Say what is actually shared and different.
+**Paper-specific conventions** (override or supplement general conventions for this paper):
+`/Users/brock/Documents/GitHub/census-mcp-server/paper/WRITING_CONVENTIONS_PAPER.md`
+
+Paper-specific rules take precedence over general rules when they conflict.
 
 ## Citation Infrastructure
 
@@ -147,6 +140,14 @@ Do not invent or round numbers. Do not duplicate numbers in this file — they w
 **Source of truth chain:** V&V scripts → `results/` JSON → `paper/numbers_registry.md` (registry IDs) → section prose (cites registry IDs in comments).
 
 This file is never authoritative for any statistic. Consult `numbers_registry.md` by registry ID.
+
+## CC Task Protocol
+
+**Never edit a CC task file that has already been handed off.** If a correction is needed after handoff, create a new task file with today's date and a descriptive suffix (e.g., `2026-03-05_rebuild_deterministic_diagram_v2.md`). Editing a running or completed task corrupts the audit trail and may interfere with an in-flight execution.
+
+Default is always a new CC task. Only modify an existing task file if explicitly asked to.
+
+Every CC task that involves figures must include an explicit line: **"DO NOT rebuild any figure not listed in this task."** CC has a documented tendency to rebuild all figures when given any figure-related task. This must be prevented by explicit scope restriction in every task file.
 
 ## Prose Editing Process
 

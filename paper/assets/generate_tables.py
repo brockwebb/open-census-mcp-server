@@ -107,55 +107,62 @@ def generate_T1(data: dict) -> str:
 
 
 def generate_T2(data: dict) -> str:
-    """T2: Friedman omnibus + Wilcoxon pairwise with Holm-Bonferroni correction.
+    """T2: Friedman omnibus + Wilcoxon pairwise — single merged table.
 
     Registry IDs consumed: S2-001, S2-002, S2-010, S2-011, S2-012
+    rank_biserial not in JSON; values from numbers registry (S2-023, S2-027, S2-031).
     """
     fr = data["agg"]["cqs_friedman"]
     pw = data["agg"]["cqs_pairwise"]
 
-    panel_a = [
-        "**Panel A: Omnibus**",
-        "",
-        "| Test | Statistic | *p* | *n* |",
-        "|------|-----------|-----|-----|",
-        f"| Friedman \u03c7\u00b2(2) | {fr['stat']:.2f} | {fmt_p(fr['p'])} | {fr['n']} |",
+    # rank_biserial from numbers registry (not in JSON)
+    rank_biserial = {
+        "pragmatics_vs_control": 0.938,
+        "pragmatics_vs_rag": 0.754,
+        "rag_vs_control": 0.378,
+    }
+
+    header = [
+        "| Comparison | Statistic | *r* | 95% CI | *p* | Eff. *n* |",
+        "|------------|-----------|-----|--------|-----|----------|",
     ]
 
-    panel_b_header = [
-        "",
-        "**Panel B: Pairwise (Holm-corrected)**",
-        "",
-        "| Comparison | \u0394 CQS | Cohen\u2019s *d* | 95% CI | *p* (Holm) | Eff. *n* |",
-        "|------------|-------|-------------|--------|------------|----------|",
-    ]
+    omnibus_row = (
+        f"| Friedman omnibus"
+        f" | \u03c7\u00b2(2) = {fr['stat']:.2f}"
+        f" | \u2014 | \u2014"
+        f" | {fmt_p(fr['p'])}"
+        f" | {fr['n']} |"
+    )
 
     comparisons = [
-        ("Pragmatics vs Control", pw["pragmatics_vs_control"]),
-        ("Pragmatics vs RAG", pw["pragmatics_vs_rag"]),
-        ("RAG vs Control", pw["rag_vs_control"]),
+        ("Pragmatics vs Control", pw["pragmatics_vs_control"], "pragmatics_vs_control"),
+        ("Pragmatics vs RAG", pw["pragmatics_vs_rag"], "pragmatics_vs_rag"),
+        ("RAG vs Control", pw["rag_vs_control"], "rag_vs_control"),
     ]
 
-    panel_b_rows = []
-    for label, comp in comparisons:
+    pairwise_rows = []
+    for label, comp, key in comparisons:
+        r = rank_biserial[key]
         row = (
             f"| {label}"
-            f" | +{comp['delta']:.3f}"
-            f" | {comp['cohens_d']:.3f}"
+            f" | \u0394 = +{comp['delta']:.3f}, d = {comp['cohens_d']:.3f}"
+            f" | {r:.3f}"
             f" | [{comp['ci_lo']:.3f}, {comp['ci_hi']:.3f}]"
             f" | {fmt_p(comp['p_holm'])}"
             f" | {comp['effective_n']} |"
         )
-        panel_b_rows.append(row)
+        pairwise_rows.append(row)
 
     caption = [
         "",
         ": Friedman omnibus and Wilcoxon signed-rank pairwise comparisons with"
-        " Holm\u2013Bonferroni correction. Bootstrap 95% CIs (10,000 iterations)"
-        " on CQS deltas. {#tbl-pairwise}",
+        " Holm\u2013Bonferroni correction. *r* = rank-biserial correlation from"
+        " Wilcoxon statistic. Bootstrap 95% CIs (10,000 iterations) on CQS deltas."
+        " {#tbl-pairwise}",
     ]
 
-    return "\n".join(panel_a + panel_b_header + panel_b_rows + caption)
+    return "\n".join(header + [omnibus_row] + pairwise_rows + caption)
 
 
 def generate_T3(data: dict) -> str:

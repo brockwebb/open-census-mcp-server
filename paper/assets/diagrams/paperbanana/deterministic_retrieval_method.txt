@@ -82,8 +82,8 @@ Nodes (top to bottom):
 
 4. THREAD TRAVERSAL (rounded rectangle)
 - Fill: #FF7043, border #E64A19, white text bold
-- Label: "Thread Traversal" / "Graph walk: RELATES_TO edges / Depth ≤ 2, fixed topology" (9px)
-- ✓ Determinism callout (right, dashed green): "✓ Fixed graph edges" (#2E7D32, 9px)
+- Label: "Thread Expansion" / "Pre-compiled RELATES_TO edges / Fixed at pack build time" (9px)
+- ✓ Determinism callout (right, dashed green): "✓ Pre-compiled edges, no live graph" (#2E7D32, 9px)
 - Mini graph inset (left side of panel): three small orange ellipses labeled "small area", "pop threshold", "MOE" connected by undirected lines, labeled "RELATES_TO" in italic orange 8px
 
 5. RELATED ITEMS (rounded rectangle)
@@ -103,7 +103,7 @@ All arrows in this panel: orange #E64A19, 2px, classic arrowhead
 
 === BOTTOM INSIGHT ANNOTATION ===
 - Centered, spanning full width below both panels
-- Text: "Same topics → same WHERE clause → same items → same graph edges → identical output"
+- Text: "Same topics → same WHERE clause → same items → same pre-compiled edges → identical output"
 - Second line: "No cosine thresholds. No top-k variance. No embedding model drift."
 - Font: 11px serif, muted #4B636E. "identical output" in bold.
 

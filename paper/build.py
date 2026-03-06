@@ -19,6 +19,8 @@ Usage:
 
 import sys
 import subprocess
+import tempfile
+import shutil
 from pathlib import Path
 
 # --- Configuration ---
@@ -104,6 +106,50 @@ def render():
     print(f"Done: {OUTPUT_FILE.stem}.pdf")
 
 
+def clean_numbered_copies():
+    """Remove numbered copies (e.g., draft_v1 2.pdf) left by xelatex multi-pass."""
+    import glob
+    patterns = [
+        str(PROJECT_DIR / "draft_v1 *.pdf"),
+        str(PROJECT_DIR / "draft_v1 *.log"),
+        str(PROJECT_DIR / "draft_v1 *.aux"),
+        str(PROJECT_DIR / "draft_v1 *.tex"),
+    ]
+    removed = 0
+    for pattern in patterns:
+        for f in glob.glob(pattern):
+            Path(f).unlink()
+            removed += 1
+    if removed:
+        print(f"Cleaned {removed} numbered build artifacts")
+
+
+def crop_figures():
+    """Crop whitespace from all figure PDFs using pdfCropMargins."""
+    figures_dir = PROJECT_DIR / "assets" / "figures"
+    pdfs = sorted(figures_dir.glob("*.pdf"))
+    if not pdfs:
+        print("No figure PDFs found to crop.")
+        return
+
+    cropped = 0
+    for pdf in pdfs:
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
+            tmp_path = tmp.name
+        result = subprocess.run(
+            ["pdf-crop-margins", "-p", "0", "-a", "-2", str(pdf), "-o", tmp_path],
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode == 0:
+            shutil.move(tmp_path, str(pdf))
+            cropped += 1
+        else:
+            print(f"  WARNING: crop failed on {pdf.name}: {result.stderr.strip()}")
+
+    print(f"Cropped {cropped}/{len(pdfs)} figure PDFs")
+
+
 def open_pdf():
     """Open the rendered PDF."""
     pdf_path = PROJECT_DIR / f"{OUTPUT_FILE.stem}.pdf"
@@ -119,6 +165,8 @@ if __name__ == "__main__":
 
     if "--render" in sys.argv or "--open" in sys.argv:
         render()
+        crop_figures()  # Always crop after render
+        clean_numbered_copies()  # Remove xelatex multi-pass debris
 
     if "--open" in sys.argv:
         open_pdf()

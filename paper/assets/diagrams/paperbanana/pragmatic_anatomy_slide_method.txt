@@ -1,0 +1,101 @@
+DIAGRAM: What's in a Pragmatic?
+ASPECT RATIO: 16:9 (1600w × 900h logical units)
+STYLE: Publication-quality slide diagram. Clean serif font (Georgia or similar). Horizontal layout optimized for widescreen presentation. Five component cards arranged left to right in a single row, each with a distinct color accent. White background. Minimal, clean, no chartjunk.
+
+=== LAYOUT OVERVIEW ===
+Title at top. Five equal-width cards arranged horizontally in a single row across the full width. Each card shows the component name, a one-line definition, and a concrete example drawn from ACS-MOE-002 (coefficient of variation threshold). A thin colored top border distinguishes each card. Below the five cards, a single full-width footer annotation.
+
+=== TITLE ===
+- "What's in a Pragmatic?" — 22px serif bold, dark #1A2744, left-aligned with slight left margin
+- Subtitle: "Five structural components of a curated expert judgment item  ·  Example: ACS-MOE-002" — 13px serif, muted #4B636E, left-aligned below title
+
+=== FIVE COMPONENT CARDS (horizontal row) ===
+All cards: white fill #FFFFFF, light grey border #E0E0E0 (1px), rounded corners 6px, equal width (~290 logical units each with small gaps between), full height of card zone (~580 logical units). Slight drop shadow: 0 2px 4px rgba(0,0,0,0.08).
+
+Card top accent bar: 6px tall, full card width, solid color (unique per card, see below).
+Card internal padding: 18px all sides.
+
+--- CARD 1: CONTEXT TEXT ---
+Accent color: Census orange #E64A19
+Header: "Context Text" — 14px serif bold, dark #1A2744
+Subheader tag: "The judgment itself" — 11px serif italic, muted #4B636E
+Divider line: 1px #E0E0E0, full card width
+Example label: "ACS-MOE-002:" — 10px serif bold, orange #E64A19
+Example text: "When CV exceeds 40%, the ACS estimate is considered unreliable for most analytical purposes." — 11px serif, dark #2C3E50, line height 1.5
+Footer note: "1–3 sentences · Factual · Not an instruction" — 10px serif, muted #9E9E9E, italic
+
+--- CARD 2: LATITUDE ---
+Accent color: Census teal #00695C
+Header: "Latitude" — 14px serif bold, dark #1A2744
+Subheader tag: "Calibrated uncertainty" — 11px serif italic, muted #4B636E
+Divider line: 1px #E0E0E0
+Example label: "ACS-MOE-002:" — 10px serif bold, teal #00695C
+Four-level scale displayed as a small horizontal bar with four segments labeled left to right: "NONE · NARROW · WIDE · FULL". The NARROW segment is highlighted in teal #00695C; others are light grey #CFD8DC. Scale sits below the label. Below scale: "NARROW — strong professional agreement, rare exceptions" — 11px serif, dark #2C3E50
+Footer note: "Encodes how firmly the field holds this judgment" — 10px serif, muted #9E9E9E, italic
+
+--- CARD 3: TRIGGERS ---
+Accent color: Census blue #1565C0
+Header: "Triggers" — 14px serif bold, dark #1A2744
+Subheader tag: "Retrieval keywords" — 11px serif italic, muted #4B636E
+Divider line: 1px #E0E0E0
+Example label: "ACS-MOE-002:" — 10px serif bold, blue #1565C0
+Three pill/badge elements displayed horizontally (small rounded rectangles, blue fill #E3F2FD, blue text #1565C0, 10px serif bold):
+  "margin_of_error"   "reliability"   "coefficient_of_variation"
+Below badges: "Authored for how practitioners describe problems, not how documents index topics." — 11px serif, dark #2C3E50, line height 1.5
+Footer note: "3–6 keywords · Practitioner vocabulary" — 10px serif, muted #9E9E9E, italic
+
+--- CARD 4: THREAD EDGES ---
+Accent color: Census purple #6A1B9A
+Header: "Thread Edges" — 14px serif bold, dark #1A2744
+Subheader tag: "Related item links" — 11px serif italic, muted #4B636E
+Divider line: 1px #E0E0E0
+Example label: "ACS-MOE-002:" — 10px serif bold, purple #6A1B9A
+Small inline graph: three small ellipses labeled "ACS-MOE-001", "ACS-MOE-002" (slightly larger, highlighted purple border), "ACS-MOE-003". Connected by undirected lines labeled "RELATES_TO" in 8px italic purple. ACS-MOE-002 is the center node.
+Below graph: "Ensures the full set of related judgments arrives together — not in isolation." — 11px serif, dark #2C3E50, line height 1.5
+Footer note: "Coherent bundles · Not isolated facts" — 10px serif, muted #9E9E9E, italic
+
+--- CARD 5: PROVENANCE ---
+Accent color: Census green #2E7D32
+Header: "Provenance" — 14px serif bold, dark #1A2744
+Subheader tag: "Authoritative source" — 11px serif italic, muted #4B636E
+Divider line: 1px #E0E0E0
+Example label: "ACS-MOE-002:" — 10px serif bold, green #2E7D32
+Example text: "ACS General Handbook 2020, Ch. 7 · Validated against ACS Design & Methodology Report 2024" — 11px serif, dark #2C3E50, line height 1.5
+Small "✓ Grounded" badge: green fill #E8F5E9, green text #2E7D32, 10px bold, rounded pill
+Footer note: "Every item traceable to a specific Census Bureau publication" — 10px serif, muted #9E9E9E, italic
+
+=== FOOTER ANNOTATION (full width, below cards) ===
+Background: light warm grey #F5F5F5, rounded corners 4px, horizontal padding 24px, vertical padding 10px
+Text: "A pragmatic is not a document chunk. It is a curated expert judgment — authored, calibrated, linked, and traceable."
+Font: 12px serif, muted #4B636E. "curated expert judgment" in bold #1A2744.
+
+=== COLOR PALETTE ===
+Background: white #FFFFFF
+Card fill: white #FFFFFF, border #E0E0E0
+Title dark: #1A2744
+Muted text: #4B636E, #9E9E9E
+Card accents (one per card):
+  Context Text:  #E64A19  (Census orange)
+  Latitude:      #00695C  (Census teal)
+  Triggers:      #1565C0  (Census blue)
+  Thread Edges:  #6A1B9A  (Census purple)
+  Provenance:    #2E7D32  (Census green)
+
+=== TYPOGRAPHY ===
+All text: serif (Georgia preferred)
+Title: 22px bold
+Subtitle: 13px
+Card headers: 14px bold
+Component tags: 11px italic
+Example text: 11px, line height 1.5
+Footer notes: 10px italic
+Footer annotation: 12px
+
+=== DO NOT ===
+- No gradients
+- No drop shadows beyond the subtle card shadow specified
+- No clip art or icons beyond the thread graph inset and badge elements
+- Do not use bullet points inside cards — use the layout elements specified
+- Do not stack cards vertically — all five must be in a single horizontal row
+- Do not crowd the layout — maintain generous internal card padding
+- Minimum font size 10px — nothing smaller

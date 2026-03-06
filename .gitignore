@@ -20,6 +20,9 @@ tmp/
 # Private notes (unredacted, strategic, not for public)
 notes/
 
+# Talks and presentations (not for public repo)
+talks/
+
 # Reference PDFs (large files, optional to track)
 docs/references/**/*.pdf
 

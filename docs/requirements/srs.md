@@ -200,7 +200,7 @@ census-mcp-server/
 | FR-EP-005 | Export script SHALL be idempotent — running it twice produces identical output | Must |
 | FR-EP-006 | Import script SHALL support incremental updates — new items added, existing items updated, no items deleted without explicit flag | Should |
 | FR-EP-007 | System SHALL support LLM-assisted bulk extraction from source documents (PDFs) via section-aware chunking and structured JSON prompting | Must |
-| FR-EP-008 | System SHALL use Docling for PDF parsing with structure-aware chunking (section boundaries, table preservation, reading order) | Must |
+| FR-EP-008 | System SHALL use Docling for PDF parsing with structure-aware chunking (section boundaries, table preservation, reading order) at a 2,000-token maximum. No fixed overlap percentage is applied; the `HierarchicalChunker` respects section hierarchy rather than sliding-window boundaries. | Must |
 | FR-EP-009 | Export and import scripts SHALL live in `scripts/` and be documented in CLAUDE.md | Must |
 | FR-EP-010 | Compiled SQLite packs SHALL include a `provenance_catalog` table that indexes each source citation per context item, enabling redundancy detection and extraction coverage tracking | Must |
 
@@ -218,7 +218,7 @@ Source docs → (LLM extraction, in-session or automated) → Neo4j pragmatics D
 | ID | Requirement | Priority |
 |----|------------|----------|
 | FR-QE-001 | Quarry extraction toolkit SHALL live in `scripts/quarry/` and ship as a project component | Must |
-| FR-QE-002 | Extraction pipeline SHALL use Docling `HierarchicalChunker` for section-aware chunking (not page-based) | Must |
+| FR-QE-002 | Extraction pipeline SHALL use Docling `HierarchicalChunker` for section-aware chunking (not page-based) at a 2,000-token maximum (`MAX_CHUNK_TOKENS = 2000` in `scripts/quarry/config.py`). No fixed overlap is applied; chunk boundaries follow section structure. | Must |
 | FR-QE-003 | Extraction SHALL produce structured JSON conforming to raw KG schema v3.1 with controlled vocabulary enforcement | Must |
 | FR-QE-004 | All writes to quarry SHALL use MERGE for entity resolution at write time | Must |
 | FR-QE-005 | Each source PDF SHALL produce exactly one SourceDocument node (canonical name from config) | Must |

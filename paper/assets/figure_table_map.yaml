@@ -50,7 +50,7 @@ figures:
         paperbanana generate --input semiotic_triangle_method.txt
         --caption "The Semiotic Stack Applied to Federal Statistical Data"
         --iterations 3
-      provenance: "run_20260301_082508_08924c"
+      provenance: "run_20260305_184238_cc71be"
     output:
       paper: "diagrams/fig_semiotic_stack.png"
       paper_format: png
@@ -144,7 +144,7 @@ figures:
         paperbanana generate --input pragmatics_ov1_method.txt
         --caption "Pragmatics System Architecture: Authoring and Runtime Pipelines"
         --iterations 3
-      provenance: "run_20260301_082509_6e9458"
+      provenance: "run_20260305_184240_4a2899"
     output:
       paper: "diagrams/fig_ov1_architecture.png"
       paper_format: png
@@ -393,7 +393,7 @@ appendix_figures:
         --vlm-model gemini-3.1-pro-preview
         --image-model gemini-3.1-flash-image-preview
         --iterations 3
-      provenance: "run_20260301_141340_b38b2c"
+      provenance: "run_20260305_184242_ff26e9"
     output:
       paper: "diagrams/fig_sidecar_architecture.png"
       paper_format: png
@@ -413,7 +413,7 @@ appendix_figures:
     description: >
       Side-by-side swimlane comparison. Left: RAG pipeline with stochastic
       steps and variance callouts. Right: Pragmatics pipeline with
-      deterministic tag match, thread traversal, and identical-output
+      deterministic tag match, pre-compiled thread expansion, and identical-output
       guarantee. References DET-001 through DET-004.
     section: "Appendix"
     figure_type: paperbanana
@@ -424,9 +424,10 @@ appendix_figures:
       build_command: >
         cd paper/assets/diagrams/paperbanana &&
         paperbanana generate --input deterministic_retrieval_method.txt
-        --caption "Deterministic vs. Stochastic Retrieval"
+        --caption "Deterministic vs. Stochastic Retrieval: Why pragmatics achieve identical context delivery across runs"
+        --vlm-model gemini-3.1-pro-preview --image-model gemini-3.1-flash-image-preview
         --iterations 3
-      provenance: "run_20260301_082511_f7f8b8"
+      provenance: "run_20260305_184242_9797ca"
     output:
       current: "diagrams/fig_deterministic_retrieval.png"
       paper_format: png

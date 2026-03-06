@@ -4,7 +4,7 @@
 
 ## Overall Consultation Quality
 
-The Friedman test revealed a significant omnibus difference across the three conditions (χ²(2, N = 39) = 42.01, p < 0.001). All three pairwise comparisons were significant after Holm-Bonferroni correction.
+The Friedman test revealed a significant difference across the three conditions (χ²(2, N = 39) = 42.01, p < 0.001). All three pairwise comparisons were significant after Holm-Bonferroni correction.
 
 | Condition | Mean CQS | *n* |
 |-----------|----------|-----|
@@ -14,25 +14,16 @@ The Friedman test revealed a significant omnibus difference across the three con
 
 : CQS composite scores by condition (D1–D5 mean of per-query medians). {#tbl-cqs-means}
 
-*Omnibus.*
-
-| Test | Statistic | *p* | *n* |
-|------|-----------|-----|-----|
-| Friedman χ²(2) | 42.01 | < .001 | 39 |
-
-*Pairwise (Holm-corrected).*
-
-| Comparison | Δ CQS | Cohen's *d* | *r* | 95% CI | *p* (Holm) | Eff. *n* |
-|------------|-------|-------------|-----|--------|------------|----------|
-| Pragmatics vs Control | +0.538 | 1.440 | 0.938 | [0.421, 0.651] | < .001 | 36 |
-| Pragmatics vs RAG | +0.385 | 0.922 | 0.754 | [0.256, 0.513] | < .001 | 32 |
-| RAG vs Control | +0.154 | 0.546 | 0.378 | [0.072, 0.244] | .002 | 30 |
+| Comparison | Statistic | *r* | 95% CI | *p* | Eff. *n* |
+|------------|-----------|-----|--------|-----|----------|
+| Friedman omnibus | χ²(2) = 42.01 | — | — | < .001 | 39 |
+| Pragmatics vs Control | Δ = +0.538, d = 1.440 | 0.938 | [0.421, 0.651] | < .001 | 36 |
+| Pragmatics vs RAG | Δ = +0.385, d = 0.922 | 0.754 | [0.256, 0.513] | < .001 | 32 |
+| RAG vs Control | Δ = +0.154, d = 0.546 | 0.378 | [0.072, 0.244] | .002 | 30 |
 
 : Friedman omnibus and Wilcoxon signed-rank pairwise comparisons with Holm–Bonferroni correction. *r* = rank-biserial correlation from Wilcoxon statistic. Bootstrap 95% CIs (10,000 iterations) on CQS deltas. {#tbl-pairwise}
 
-Pragmatics produced a very large improvement over the control condition (Δ CQS = +0.538, d = 1.440, r = 0.938, 95% CI [0.421, 0.651], p < 0.001) and a large improvement over RAG (Δ CQS = +0.385, d = 0.922, r = 0.754, 95% CI [0.256, 0.513], p < 0.001). RAG produced a medium improvement over control (Δ CQS = +0.154, d = 0.546, r = 0.378, 95% CI [0.072, 0.244], p = 0.0017). The rank-biserial r of 0.938 indicates that pragmatics outperformed control on 94% of query pairs. Mean composite scores were 1.528 (pragmatics), 1.144 (RAG), and 0.990 (control).
-
-The ordering was consistent: pragmatics outperformed RAG, which outperformed control, across every level of analysis.
+Pragmatics produced a very large improvement over the control condition (Δ CQS = +0.538, d = 1.440, r = 0.938, 95% CI [0.421, 0.651], p < 0.001) and a large improvement over RAG (Δ CQS = +0.385, d = 0.922, r = 0.754, 95% CI [0.256, 0.513], p < 0.001). RAG produced a medium improvement over control (Δ CQS = +0.154, d = 0.546, r = 0.378, 95% CI [0.072, 0.244], p = 0.0017). The rank-biserial r of 0.938 indicates that pragmatics outperformed control on 94% of query pairs. Mean composite scores were 1.528 (pragmatics), 1.144 (RAG), and 0.990 (control). The ordering was consistent: pragmatics outperformed RAG, which outperformed control, across every level of analysis.
 
 ## Per-Dimension Effects
 
@@ -98,7 +89,7 @@ Pragmatics' middling auditability (29.5%) despite its highest fidelity reflects 
 
 ## Determinism
 
-Pragmatic context retrieval was 100% deterministic across all 39 queries, verified through two independent replications producing zero mismatches with the original evaluation run. Given identical topic parameters, the graph traversal returns identical context sets every time. This determinism is a structural property of the retrieval mechanism (graph lookup rather than similarity search), not a statistical regularity of the evaluation.
+Pragmatic context retrieval was 100% deterministic across all 39 queries, verified through two independent replications producing zero mismatches with the original evaluation run. Given identical topic parameters, the SQLite lookup returns identical context sets every time. This determinism is a structural property of the retrieval mechanism (SQLite lookup rather than similarity search), not a statistical regularity of the evaluation.
 
 ## Cost and Efficiency
 
