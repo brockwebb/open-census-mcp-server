@@ -1,0 +1,94 @@
+DIAGRAM: Semantic Smearing — How Enrichment Destroys Retrieval Discrimination
+ASPECT RATIO: 16:9 (1200w × 675h logical units)
+STYLE: Publication-quality academic slide diagram. Clean serif font (Georgia or similar). White background. No drop shadows. Minimal decorative elements. Presentation-optimized (minimum 18px body text).
+
+=== LAYOUT OVERVIEW ===
+Two panels side by side (LEFT and RIGHT), each showing a 2D scatter plot of dots representing Census variables in embedding space. An arrow between them shows the transformation. Below, a single-line takeaway.
+
+=== LEFT PANEL: "Raw Metadata" ===
+Position: Left half of canvas, centered vertically
+Border: Light grey #E0E0E0 rounded rectangle (4px radius), subtle 1px stroke
+
+Title (above panel): "Raw Census Metadata" (20px serif bold, #222C31)
+Subtitle: "Label + Concept (~166 chars)" (14px serif, muted #4B636E)
+
+Content: Scatter of ~40 dots in a loose 2D field. Dots form THREE VISUALLY DISTINCT CLUSTERS with clear separation between them:
+
+- Cluster A (top-left region): 12-14 dots, Census navy #205493
+  Label nearby: "Income" (14px serif, #205493)
+- Cluster B (center-right region): 12-14 dots, Census orange #FF7043
+  Label nearby: "Housing" (14px serif, #E64A19)
+- Cluster C (bottom region): 12-14 dots, Census green #2E7D32
+  Label nearby: "Education" (14px serif, #2E7D32)
+
+Dots are 8px diameter circles with no stroke. Clusters have visible gaps between them (at least 40px separation between nearest dots of different clusters). Within each cluster, dots are loosely grouped (10-20px apart) with slight random scatter.
+
+Annotation below cluster field: "Discrimination: 58.4%" (16px serif bold, #2E7D32)
+Small text: "Groups distinguishable" (12px serif, #4B636E)
+
+=== CENTER ARROW ===
+Large rightward arrow between panels
+Shape: Thick arrow (30px shaft width), tapered to point
+Fill: #78909C (Census grey)
+Label above arrow: "LLM Enrichment" (16px serif bold, #222C31)
+Label below arrow: "+6,000 chars boilerplate per variable" (12px serif italic, #4B636E)
+
+=== RIGHT PANEL: "Enriched Metadata" ===
+Position: Right half of canvas, centered vertically
+Border: Light grey #E0E0E0 rounded rectangle (4px radius), subtle 1px stroke
+
+Title (above panel): "LLM-Enriched Metadata" (20px serif bold, #222C31)
+Subtitle: "Full domain analysis (~6,358 chars)" (14px serif, muted #4B636E)
+
+Content: Scatter of ~40 dots in a 2D field. Same three colors as LEFT, but now ALL DOTS ARE COMPRESSED INTO A SINGLE DENSE BLOB with no discernible cluster boundaries:
+
+- Same 12-14 navy dots (#205493)
+- Same 12-14 orange dots (#FF7043)
+- Same 12-14 green dots (#2E7D32)
+
+All dots are intermingled in a tight circular region (radius ~60px from center). Colors are mixed — navy, orange, green dots overlap and intersperse. No cluster structure is visible. Some dots partially overlap.
+
+Annotation below blob: "Discrimination: 7.9%" (16px serif bold, #D32F2F)
+Small text: "Groups indistinguishable" (12px serif, #4B636E)
+
+=== BOTTOM ANNOTATION ===
+Centered below both panels, spanning full width
+Text: "Shared methodology language dominates the embedding space. Cross-group similarity increased 90%; within-group only 30%."
+Font: 14px serif, muted #4B636E
+"90%" and "30%" in bold within the sentence
+
+=== TITLE ===
+Top center: "Semantic Smearing in Federal Statistical Data" (24px serif bold, #222C31)
+Subtitle: "Why retrieval-augmented generation fails in semantically homogeneous domains" (14px serif, muted #4B636E)
+
+=== COLOR PALETTE (Census xdgov) ===
+- Navy: #205493
+- Dark navy: #112E51
+- Orange: #FF7043
+- Dark orange: #E64A19
+- Green: #2E7D32
+- Grey: #B0BEC5
+- Dark grey: #78909C
+- Red (warning): #D32F2F
+- Muted text: #4B636E
+- Background: white #FFFFFF
+- Panel border: #E0E0E0
+
+=== TYPOGRAPHY ===
+- All text: serif (Georgia preferred)
+- Main title: 24px bold
+- Panel titles: 20px bold
+- Cluster labels: 14px regular
+- Discrimination values: 16px bold
+- Body annotations: 14px regular
+- Small text: 12px regular/italic
+- MINIMUM body text: 18px (presentation standard) — exception for small annotations at 12-14px
+
+=== DO NOT ===
+- No gradients on dots
+- No drop shadows
+- No grid lines or axes in the scatter panels (this is conceptual, not a real plot)
+- No decorative icons or clip art
+- No 3D effects
+- No connecting lines between dots
+- Do not make this look like a real scatterplot with axis labels — it is a conceptual illustration
