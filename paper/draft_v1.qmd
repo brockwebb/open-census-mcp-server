@@ -273,6 +273,8 @@ Pragmatics produced a very large improvement over the control condition (Δ CQS 
 
 ## Per-Dimension Effects
 
+Effect sizes varied substantially across the five quality dimensions (@fig-effect-sizes).
+
 ![Cohen's *d* effect sizes by dimension. Vertical lines: *d* = 0.2 (small), 0.5 (medium), 0.8 (large).](assets/figures/F8_effect_sizes_forest.pdf){#fig-effect-sizes width=6.5in}
 
 | Dimension | Prag vs Ctrl *d* | Prag vs RAG *d* | RAG vs Ctrl *d* |
@@ -285,13 +287,13 @@ Pragmatics produced a very large improvement over the control condition (Δ CQS 
 
 : Per-dimension Cohen's *d* effect sizes. Bold indicates *d* > 0.8 (large). {#tbl-dimension-effects}
 
-All five quality dimensions showed significant omnibus effects (p < 0.001 for each). The effect sizes for pragmatics versus control varied across dimensions, revealing where expert judgment matters most:
+All five quality dimensions showed significant effects (p < 0.001 for each). The effect sizes for pragmatics versus control varied across dimensions, revealing where expert judgment matters most:
 
 Uncertainty communication (D3) showed the largest effect (d = 1.353 vs. control, d = 1.040 vs. RAG). This dimension captures whether responses appropriately communicate reliability limitations, margins of error, and data fitness: the core of what pragmatics are designed to deliver. The magnitude of this effect is consistent with the mechanism: pragmatics encode specific reliability thresholds, interpretation formulas, and informed-refusal criteria that the model cannot derive from training data or retrieved document chunks.
 
 Clarity of explanation (D4) showed the second-largest effect (d = 0.957 vs. control). Accuracy (D1, d = 0.541), completeness (D2, d = 0.537), and reproducibility (D5, d = 0.732) showed medium to large effects. The consistency across all five dimensions indicates that pragmatics improve the overall quality of statistical consultation rather than optimizing a single aspect.
 
-RAG showed its largest advantage over control on clarity (D4, d = 0.546) and uncertainty (D3, d = 0.417), with smaller effects on accuracy (D1, d = 0.190) and reproducibility (D5, d = 0.148). The pattern suggests that retrieved document chunks provide some contextual value but lack the precision to substantially improve reliability assessment or harm prevention.
+RAG showed its largest advantage over control on clarity (D4, d = 0.546) and uncertainty (D3, d = 0.417), with smaller effects on accuracy (D1, d = 0.190) and reproducibility (D5, d = 0.148). The pattern suggests that retrieved document chunks provide some contextual value but lack the expert guidance to substantially improve reliability assessment or harm prevention.
 
 ## Stratum Analysis: Normal vs. Edge Cases
 
@@ -305,11 +307,11 @@ The evaluation was stratified to test whether pragmatics disproportionately help
 
 : Stratum analysis comparing normal (*n*=15) and edge-case (*n*=24) queries. Δ*d* is the delta-of-deltas (edge minus normal mean CQS delta). Mann-Whitney *p* tests whether edge deltas exceed normal deltas. {#tbl-stratum}
 
-The results contradicted the initial hypothesis. Pragmatics showed a *larger* effect on normal queries (d = 2.347 vs. control, d = 1.436 vs. RAG) than on edge cases (d = 1.135 vs. control, d = 0.683 vs. RAG). Permutation testing confirmed that the edge-greater hypothesis was not supported (p = 0.987 for pragmatics vs. control).
+Pragmatics showed a *larger* effect on normal queries (d = 2.347 vs. control, d = 1.436 vs. RAG) than on edge cases (d = 1.135 vs. control, d = 0.683 vs. RAG). Permutation testing confirmed that edge cases did not benefit disproportionately (p = 0.987 for pragmatics vs. control).
 
 This finding is inconsistent with an overfitting explanation. Pragmatics do not merely catch exotic failure modes; they improve routine statistical consultation by providing the fitness-for-use context that even straightforward queries benefit from. A normal query about median household income in a large county still benefits from knowing that the five-year estimate is a 60-month average and that the margin of error defines a 90% confidence interval. Direct comparison to decennial census figures requires methodological adjustment that the model cannot infer without guidance.
 
-The normal-stratum finding should be interpreted with a power caveat: at n = 15, the Wilcoxon test has approximately 0.56 power to detect a d = 0.5 effect. The observed effects (d = 2.347) are large enough to detect at this sample size, but RAG versus control on normal queries (d = 0.458, p = 0.137) was not significant, consistent with underpowering rather than a null effect. The between-stratum comparison uses Mann-Whitney U rather than a paired test because the 15 normal and 24 edge-case queries are independent groups; the within-query pairing is exploited upstream when computing per-query deltas, and the between-stratum test compares these independently computed delta distributions.
+The normal-stratum finding should be interpreted with a power caveat: at n = 15, the Wilcoxon test has approximately 0.56 power to detect a d = 0.5 effect. The observed effects (d = 2.347) are large enough to detect at this sample size, but RAG versus control on normal queries (d = 0.458, p = 0.137) was not significant, consistent with underpowering rather than a null effect. The between-group comparison uses Mann-Whitney U because the 15 normal and 24 edge-case queries are independent groups. Within each group, per-query deltas are computed from paired conditions (the same query tested under each treatment). The comparison across groups treats those deltas as independent samples.
 
 ## Pipeline Fidelity
 
@@ -325,7 +327,7 @@ Stage 3 automated verification assessed whether responses accurately reported wh
 
 ![Stage 3 pipeline fidelity by condition. Substantive fidelity (98.9–100.0%) and error rates (0.0–0.8%) annotated in caption.](assets/figures/F9_fidelity_bars.pdf){#fig-fidelity width=5.0in}
 
-Pragmatics achieved 91.2% fidelity across 353 claims, compared to 74.6% for RAG (355 claims) and 78.3% for control (253 claims). Substantive fidelity (the rate among claims that could be fully verified) was 99.7% for pragmatics, 98.9% for RAG, and 100.0% for control.
+Pragmatics achieved 91.2% fidelity across 353 claims, compared to 74.6% for RAG (355 claims) and 78.3% for control (253 claims). Substantive fidelity (the rate among claims that could be fully verified) was high across all conditions: 99.7% for pragmatics, 98.9% for RAG, and 100.0% for control. Control's perfect rate reflects a smaller denominator, not greater accuracy. With the fewest total claims and the lowest auditability (21.8%), control responses avoided errors by avoiding specificity. Pragmatics made more claims than control, with higher auditability, and still achieved near-perfect substantive fidelity: more specific, more verifiable, and comparably accurate.
 
 The fidelity gap between pragmatics and RAG (16.6 percentage points) reflects a structural difference. Pragmatics provide specific criteria for interpreting data, leading the model to make more precise and verifiable claims. RAG-retrieved chunks provide general context that can lead the model to make claims that are plausible but difficult to verify or subtly misaligned with the specific data returned.
 
