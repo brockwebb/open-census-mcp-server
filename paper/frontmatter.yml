@@ -1,6 +1,7 @@
 title: "Pragmatics as Point-of-Decision Expert Judgment for Federal Statistical Data"
 author: "Brock Webb"
-date: "February 2026"
+date: "March 8, 2026"
+thanks: "The views expressed are the author's own and do not necessarily represent the views of the U.S. Census Bureau or the U.S. Department of Commerce."
 bibliography: references.bib
 csl: apa.csl
 link-citations: true
@@ -35,3 +36,6 @@ format:
         \usepackage{pdflscape}
         \usepackage{float}
         \floatplacement{figure}{htbp}
+        \renewcommand{\floatpagefraction}{0.85}
+        \renewcommand{\topfraction}{0.85}
+        \renewcommand{\textfraction}{0.1}

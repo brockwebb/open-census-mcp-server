@@ -157,6 +157,16 @@ Supporting tools in `editing_tools/`:
 - `readability_scores.py` — Flesch-Kincaid grade per section
 - `editing_tools_srs.md` — tool documentation and current FK baseline
 
+## Edit Approval Protocol
+
+**All prose edits must be proposed in chat and explicitly approved by the author before any file is modified.** No exceptions. The workflow is:
+
+1. Show the exact `oldText` and proposed `newText` in chat
+2. Wait for explicit author approval
+3. Only then apply the edit via Filesystem tools
+
+This applies to all section files, frontmatter, and any content the author will read. The only exception is CLAUDE.md itself when adding process rules at the author's direction.
+
 ## Shared Module Discipline
 
 **Never directly edit shared modules (census_plot_style.py, build.py, generate_figures.py, generate_tables.py) in-session.** Always write a CC task for changes to code that affects multiple figures or build outputs. A direct edit to a shared module will be picked up by any subsequent CC task that triggers a rebuild, causing unintended side effects across figures.

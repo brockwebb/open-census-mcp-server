@@ -31,7 +31,7 @@ The semantic information is in the metadata. The pragmatic judgment is scattered
 
 A pragmatic is a structured unit of expert judgment about fitness for use. It is not an instruction, a rule, a constraint, or a lookup table. It is a factual statement of the kind a senior statistician would make to a colleague before they use a particular data product: the professional assessment that transforms a data retrieval into a statistical consultation. Each pragmatic has five structural components, illustrated in @fig-anatomy using ACS-MOE-002, the coefficient of variation reliability threshold.
 
-![Anatomy of a pragmatic, showing the five structural components using ACS-MOE-002 (coefficient of variation threshold) as an example.](assets/figures/F4_pragmatic_item_anatomy.pdf){#fig-anatomy fig-pos="H" width=80% height=80%}
+![Anatomy of a pragmatic, showing the five structural components using ACS-MOE-002 (coefficient of variation threshold) as an example.](assets/figures/F4_pragmatic_item_anatomy.pdf){#fig-anatomy fig-pos="H" width=60% height=60%}
 
 ### Context Text
 
@@ -53,7 +53,7 @@ Thread edges connect related items into coherent retrieval bundles. When a user 
 
 ### Provenance
 
-Provenance traces every judgment to its authoritative documentary source: the specific document, section, and page from which the expert knowledge was derived or against which it was validated. This enables audit of every claim in the system back to Census Bureau publications.
+Provenance traces every judgment to its authoritative documentary source: the specific document, section, and page from which the expert knowledge was derived or against which it was validated. This enables audit of every claim in the system back to authoritative sources.
 
 ## What Pragmatics Are Not
 

@@ -6,9 +6,11 @@ Large language models (LLMs) arrive well-informed about federal statistics, but 
 
 We introduced pragmatics as a named, defined, and implementable concept for addressing this gap. Drawing on Morris's [-@morris1938] semiotic framework, we define pragmatics as structured expert judgment about fitness for use: the assessment that experienced statisticians provide reflexively but that no existing system delivers at the point of decision.
 
-We have provided empirical evidence that pragmatics works. A knowledge representation study comparing three conditions with identical data access demonstrated that 36 curated expert judgment items produce very large improvements in statistical consultation quality (Cohen's d = 1.440 vs. control, d = 0.922 vs. RAG), with the strongest effects on uncertainty communication (d = 1.353), the dimension most directly tied to fitness-for-use assessment. Pragmatic context achieves 91.2% fidelity to authoritative data sources and delivers methodology context through deterministic lookup on every query. For every marginal dollar spent, pragmatics delivers 2.2 times the quality improvement of RAG without incurring the ongoing overhead of maintaining vector databases, embedding models, or index infrastructure.
+We have provided empirical evidence that pragmatics works. A knowledge representation study comparing three conditions with identical data access demonstrated that 36 curated expert judgment items produce very large improvements in statistical consultation quality (Cohen's d = 1.440 vs. control, d = 0.922 vs. RAG), with the strongest effects on uncertainty communication (d = 1.353), the dimension most directly tied to fitness-for-use assessment. Pragmatic context achieves 91.2% fidelity to authoritative data sources and delivers methodology context through deterministic lookup on every query. For every marginal dollar spent, pragmatics delivers 2.2 times the quality improvement of RAG without the additional complexity and overhead.
 
 The architecture is domain-agnostic; the content is domain-specific. Just as curating training data reduces variance in what a model learns, curating expert judgment reduces variance in what a model concludes. The federal statistical community has the expertise. The task is to capture it, structure it, and deliver it at the point where decisions are being made, transforming data retrieval into statistical consultation.
+
+\newpage
 
 ## Use of AI in This Work {.unnumbered}
 
