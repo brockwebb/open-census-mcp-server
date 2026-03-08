@@ -65,62 +65,40 @@ figures:
     slides: []
     variants: {}
 
-  F2a:
-    title: "Semantic Smearing — Mean Pairwise Similarity by Representation"
+  F2:
+    title: "Semantic Smearing — Combined Two-Panel Figure"
     description: >
-      Grouped bar chart showing mean cosine similarity across Labels, Raw,
-      and Enriched representations for MiniLM-384 and RoBERTa-1024 models.
-      Demonstrates that adding methodology text increases similarity (smearing)
-      rather than improving retrieval discrimination.
+      Two-panel stacked figure. Panel A: grouped bar chart showing mean cosine
+      similarity across Labels, Raw, and Enriched representations for MiniLM-384
+      and RoBERTa-1024. Panel B: within-group vs cross-group similarity for Raw
+      and Enriched conditions, faceted by model. Together they demonstrate that
+      enrichment increases overall similarity (smearing) while collapsing the
+      discrimination gap between groups.
     section: "§2"
-    figure_type: plotnine
+    figure_type: plotnine+matplotlib
     generation:
-      tool: plotnine
-      source_script: "paper/assets/generate_figures.py::make_F2a"
+      tool: plotnine (panels) + matplotlib (composition)
+      source_script: "paper/assets/generate_figures.py::make_F2"
       source_data:
         - "talks/fcsm_2026/analysis/results/similarity_results_minilm.json"
         - "talks/fcsm_2026/analysis/results/similarity_results_roberta.json"
-      build_command: "python paper/assets/generate_figures.py --figure F2a"
+      build_command: "python paper/assets/generate_figures.py --figure F2"
     output:
-      paper: "figures/F2a_semantic_smearing_similarity.pdf"
+      paper: "figures/F2_semantic_smearing.pdf"
       paper_format: pdf
       paper_dimensions:
         width: 6.5
-        height: 3.5
-    caption: "Semantic smearing: mean pairwise similarity by representation."
-    quarto_ref: "#fig-smearing-similarity"
+        height: 7.0
+    caption: >
+      Semantic smearing in federal statistical metadata. Panel A: mean pairwise
+      similarity increases with enrichment. Panel B: group discrimination collapses
+      as within-group and cross-group similarity converge.
+    quarto_ref: "#fig-smearing"
     registry_ids: []
     status: final
-    notes: "Paired with F2b as subfigures in §2."
-    slides: []
-    variants: {}
-
-  F2b:
-    title: "Semantic Smearing — Group Discrimination Collapse"
-    description: >
-      Within-group vs cross-group similarity for Raw and Enriched conditions,
-      faceted by model. Shows that enrichment collapses the discrimination gap
-      between groups, making retrieval less effective.
-    section: "§2"
-    figure_type: plotnine
-    generation:
-      tool: plotnine
-      source_script: "paper/assets/generate_figures.py::make_F2b"
-      source_data:
-        - "talks/fcsm_2026/analysis/results/similarity_results_minilm.json"
-        - "talks/fcsm_2026/analysis/results/similarity_results_roberta.json"
-      build_command: "python paper/assets/generate_figures.py --figure F2b"
-    output:
-      paper: "figures/F2b_semantic_smearing_discrimination.pdf"
-      paper_format: pdf
-      paper_dimensions:
-        width: 6.5
-        height: 3.5
-    caption: "Semantic smearing: group discrimination collapse — within vs. cross-group similarity."
-    quarto_ref: "#fig-smearing-discrimination"
-    registry_ids: []
-    status: final
-    notes: "Paired with F2a as subfigures in §2."
+    notes: >
+      Single two-panel figure replacing former F2a (similarity) and F2b (discrimination)
+      subfigures. Panels rendered at 300 DPI PNG then composited into single PDF via matplotlib.
     slides: []
     variants: {}
 

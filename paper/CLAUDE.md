@@ -157,6 +157,14 @@ Supporting tools in `editing_tools/`:
 - `readability_scores.py` — Flesch-Kincaid grade per section
 - `editing_tools_srs.md` — tool documentation and current FK baseline
 
+## Shared Module Discipline
+
+**Never directly edit shared modules (census_plot_style.py, build.py, generate_figures.py, generate_tables.py) in-session.** Always write a CC task for changes to code that affects multiple figures or build outputs. A direct edit to a shared module will be picked up by any subsequent CC task that triggers a rebuild, causing unintended side effects across figures.
+
+## Filesystem Tool Discipline
+
+**Always use Filesystem MCP tools (read_file, list_directory, edit_file, write_file, etc.) for any discovery or operations on the user's machine.** The `bash_tool` runs on Claude's container, not the user's computer. Using `bash_tool` with `find`, `grep`, or `ls` to search the user's repo will return empty results and waste context. If a file appears not to exist, try `Filesystem:list_directory` or `Filesystem:read_text_file` before concluding it is missing.
+
 ## Repo-Level Context
 
 See `../CLAUDE.md` for full project context (evaluation pipeline, vocabulary, architecture, conventions). This file covers paper-specific concerns only.

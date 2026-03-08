@@ -7,7 +7,7 @@
 
 Charles Morris's [-@morris1938] *Foundations of the Theory of Signs* introduced a three-part framework for understanding how signs function: syntax concerns the formal relationships between signs, semantics concerns the relationship between signs and the objects they represent, and pragmatics concerns the relationship between signs and their interpreters, specifically the contextual conditions under which signs are appropriately used. Applied to federal statistical data, these three layers correspond to distinct infrastructure investments and distinct institutional responsibilities (@fig-semiotic-stack).
 
-![The semiotic stack applied to federal statistical data, after Morris [-@morris1938]. Syntax and semantics are mature; pragmatics is the missing layer.](assets/diagrams/fig_semiotic_stack.png){#fig-semiotic-stack width=6.5in}
+![The semiotic stack applied to federal statistical data, after Morris [-@morris1938]. Syntax and semantics are mature; pragmatics is the missing layer.](assets/diagrams/fig_semiotic_stack.png){#fig-semiotic-stack width=80%}
 
 *Syntax* encompasses the structural layer: APIs, machine-readable formats, data transmission protocols, and the formal rules governing how data is organized and accessed. This is the domain of open data mandates, format standards, and programmatic access. It is mature.
 
@@ -71,7 +71,7 @@ They are not *constraints or guardrails*. The latitude system explicitly encodes
 
 A defining property of the pragmatics retrieval mechanism is determinism. When a query's topic is identified, the system maps it to a thread identifier, follows pre-compiled edges in a SQLite database, and returns the associated context items. This is a lookup, not a search. The same topic always produces the same context set.
 
-This property was verified empirically across two independent replications of the full 39-query test battery plus the original evaluation run. All 39 queries produced identical context retrievals across all three runs, with zero mismatches. The determinism is not a tuned property or a statistical regularity. This result is a structural consequence of replacing similarity search with a compiled lookup.
+This property was verified empirically across two independent replications of the full 39-query test battery plus the original evaluation run. All 39 queries produced identical context retrievals across all three runs, with zero mismatches. The determinism is not a tuned property or a statistical regularity but a structural consequence of replacing similarity search with a compiled lookup.
 
 The practical significance is architectural. RAG and GraphRAG systems incur retrieval overhead at every query: embedding lookups, similarity computations, or graph traversals that can return different results as indices are updated, models are versioned, or parameters change. This retrieval variance compounds with the inherent stochasticity of language model generation, producing variance at two stages of the pipeline. Pragmatics eliminates this compounding by paying the construction cost once, at development time, then serving compiled results from a static database at query time. Each query has zero retrieval variance and negligible retrieval overhead. In domains where the difference between a one-year and five-year estimate determines whether an answer is useful or harmful, this architectural property matters.
 

@@ -33,3 +33,5 @@ format:
         \exhyphenpenalty=10000
         \raggedbottom
         \usepackage{pdflscape}
+        \usepackage{float}
+        \floatplacement{figure}{htbp}

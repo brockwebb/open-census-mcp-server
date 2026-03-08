@@ -1,0 +1,3228 @@
+1
+00:00:00,160 --> 00:00:04,640
+AI harnesses are the thing shaping your
+
+2
+00:00:02,639 --> 00:00:06,960
+working life that none of us are talking
+
+3
+00:00:04,640 --> 00:00:09,120
+about enough. When you use an AI coding
+
+4
+00:00:06,960 --> 00:00:11,519
+agent like Claude code, like codeex,
+
+5
+00:00:09,120 --> 00:00:14,639
+like cursor, or when you use a chat
+
+6
+00:00:11,519 --> 00:00:16,640
+window like chat GPT, you're interacting
+
+7
+00:00:14,639 --> 00:00:18,800
+with two things at once. There's the
+
+8
+00:00:16,640 --> 00:00:20,560
+model, which is the intelligence, the
+
+9
+00:00:18,800 --> 00:00:22,640
+part that understands your request, the
+
+10
+00:00:20,560 --> 00:00:24,240
+part that generates the response, and
+
+11
+00:00:22,640 --> 00:00:25,600
+that's the part that everyone tends to
+
+12
+00:00:24,240 --> 00:00:27,519
+compare, right? That's what the
+
+13
+00:00:25,600 --> 00:00:29,679
+headlines are fighting about. Then
+
+14
+00:00:27,519 --> 00:00:31,920
+there's everything else. Where does the
+
+15
+00:00:29,679 --> 00:00:34,160
+AI actually do its work? Does it do its
+
+16
+00:00:31,920 --> 00:00:36,239
+work on your computer? Does it do its
+
+17
+00:00:34,160 --> 00:00:37,760
+work on a server somewhere? When you
+
+18
+00:00:36,239 --> 00:00:39,680
+close your laptop and come back
+
+19
+00:00:37,760 --> 00:00:40,879
+tomorrow, does the AI remember what you
+
+20
+00:00:39,680 --> 00:00:42,559
+were building, or does it start over
+
+21
+00:00:40,879 --> 00:00:44,079
+like you've never met? Can it reach into
+
+22
+00:00:42,559 --> 00:00:46,160
+your project management tools, your
+
+23
+00:00:44,079 --> 00:00:48,320
+design files, your test systems, or is
+
+24
+00:00:46,160 --> 00:00:50,079
+it all sealed off? When you needed to do
+
+25
+00:00:48,320 --> 00:00:52,160
+five things at once, does the AI
+
+26
+00:00:50,079 --> 00:00:54,079
+coordinate those tasks like a team, or
+
+27
+00:00:52,160 --> 00:00:55,840
+run each one in a separate room with no
+
+28
+00:00:54,079 --> 00:00:58,000
+communication? All of what I've just
+
+29
+00:00:55,840 --> 00:01:00,640
+described, the everything else, that's
+
+30
+00:00:58,000 --> 00:01:02,320
+the harness. And it matters much, much
+
+31
+00:01:00,640 --> 00:01:05,360
+more than the model these days because
+
+32
+00:01:02,320 --> 00:01:07,520
+the model determines how smart your AI
+
+33
+00:01:05,360 --> 00:01:09,840
+is, but the harness determines how it
+
+34
+00:01:07,520 --> 00:01:11,600
+fits into your work. And it matters
+
+35
+00:01:09,840 --> 00:01:14,720
+much, much more than the model because
+
+36
+00:01:11,600 --> 00:01:17,439
+the model only determines how good your
+
+37
+00:01:14,720 --> 00:01:19,439
+AI is at predicting the next token. The
+
+38
+00:01:17,439 --> 00:01:21,680
+harness determines how usefully it fits
+
+39
+00:01:19,439 --> 00:01:23,520
+into your work, how it collaborates with
+
+40
+00:01:21,680 --> 00:01:25,520
+you, what it can touch, what it
+
+41
+00:01:23,520 --> 00:01:27,200
+remembers, how it fails, what happens
+
+42
+00:01:25,520 --> 00:01:30,159
+when you want to switch to a different
+
+43
+00:01:27,200 --> 00:01:31,920
+tool in 6 months. The harness is what
+
+44
+00:01:30,159 --> 00:01:33,920
+you have a relationship with, whether
+
+45
+00:01:31,920 --> 00:01:35,920
+it's a personal relationship, which some
+
+46
+00:01:33,920 --> 00:01:38,799
+people have, or a working relationship.
+
+47
+00:01:35,920 --> 00:01:40,240
+The model is like a brain in a jar, and
+
+48
+00:01:38,799 --> 00:01:42,560
+it's not getting a lot done without the
+
+49
+00:01:40,240 --> 00:01:44,479
+harness. Nobody compares harnesses.
+
+50
+00:01:42,560 --> 00:01:46,320
+Every comparison you've read this month,
+
+51
+00:01:44,479 --> 00:01:49,680
+I'm willing to bet, whether it's about
+
+52
+00:01:46,320 --> 00:01:51,680
+Claude versus Chat GPT or Gemini 3.1 Pro
+
+53
+00:01:49,680 --> 00:01:53,840
+versus the previous version of Gemini,
+
+54
+00:01:51,680 --> 00:01:56,320
+they're all just comparing sort of those
+
+55
+00:01:53,840 --> 00:01:58,799
+brains in a jar. And that's because it's
+
+56
+00:01:56,320 --> 00:02:00,719
+really hard to test harnesses. It's rare
+
+57
+00:01:58,799 --> 00:02:02,719
+to test them. It's rare to talk about
+
+58
+00:02:00,719 --> 00:02:06,079
+them. And it's easier to talk about the
+
+59
+00:02:02,719 --> 00:02:08,319
+total package and to attribute all of
+
+60
+00:02:06,079 --> 00:02:11,200
+the value and the work product that you
+
+61
+00:02:08,319 --> 00:02:12,879
+get as if that little brain in a jar is
+
+62
+00:02:11,200 --> 00:02:14,800
+doing the work. Now, this would be a
+
+63
+00:02:12,879 --> 00:02:17,120
+really minor blind spot if all of the
+
+64
+00:02:14,800 --> 00:02:18,879
+harnesses in AI were roughly the same.
+
+65
+00:02:17,120 --> 00:02:20,720
+And a lot of people assume that's
+
+66
+00:02:18,879 --> 00:02:22,400
+basically what happens. I think that
+
+67
+00:02:20,720 --> 00:02:24,319
+people have this mental image that it's
+
+68
+00:02:22,400 --> 00:02:27,280
+like this special brain crafted by
+
+69
+00:02:24,319 --> 00:02:28,480
+OpenAI or Clawude and then the the body
+
+70
+00:02:27,280 --> 00:02:30,080
+quote unquote is just like a
+
+71
+00:02:28,480 --> 00:02:32,160
+Frankenstein and it doesn't matter.
+
+72
+00:02:30,080 --> 00:02:34,400
+That's not how harnesses actually work.
+
+73
+00:02:32,160 --> 00:02:36,480
+Harnesses are diverging really fast and
+
+74
+00:02:34,400 --> 00:02:38,640
+they're diverging on purpose. Claude
+
+75
+00:02:36,480 --> 00:02:40,239
+Code and Codeex, for example, are not
+
+76
+00:02:38,640 --> 00:02:42,239
+two flavors of the same thing. And
+
+77
+00:02:40,239 --> 00:02:44,080
+that's not just because of the models.
+
+78
+00:02:42,239 --> 00:02:46,239
+They actually embody fundamentally
+
+79
+00:02:44,080 --> 00:02:47,920
+different ideas about how humans and AI
+
+80
+00:02:46,239 --> 00:02:49,760
+work together. One will sit in your
+
+81
+00:02:47,920 --> 00:02:51,680
+actual workspace with access to
+
+82
+00:02:49,760 --> 00:02:54,160
+everything on your machine and build up
+
+83
+00:02:51,680 --> 00:02:56,400
+memory of your project over time and the
+
+84
+00:02:54,160 --> 00:02:59,120
+other will work in a sealed room with a
+
+85
+00:02:56,400 --> 00:03:00,879
+copy of your code. Think privately and
+
+86
+00:02:59,120 --> 00:03:02,800
+slide finished results under the door.
+
+87
+00:03:00,879 --> 00:03:04,560
+One is a collaborator at the desk next
+
+88
+00:03:02,800 --> 00:03:06,239
+to yours and the other is a contractor
+
+89
+00:03:04,560 --> 00:03:07,920
+in a clean room. Those aren't really
+
+90
+00:03:06,239 --> 00:03:10,080
+about your preferences. is those are
+
+91
+00:03:07,920 --> 00:03:11,840
+architectures for what the model makers
+
+92
+00:03:10,080 --> 00:03:14,000
+think is an effective solution long
+
+93
+00:03:11,840 --> 00:03:16,080
+term. And the thing about architectures
+
+94
+00:03:14,000 --> 00:03:18,560
+is that your team consciously or
+
+95
+00:03:16,080 --> 00:03:21,120
+unconsciously builds around them. The
+
+96
+00:03:18,560 --> 00:03:23,360
+habits, the processes, the verification
+
+97
+00:03:21,120 --> 00:03:25,680
+steps, the integration, plumbing, all of
+
+98
+00:03:23,360 --> 00:03:28,000
+it accumulates around whichever harness
+
+99
+00:03:25,680 --> 00:03:30,799
+you choose and it gains value every
+
+100
+00:03:28,000 --> 00:03:33,040
+month. If you switch harnesses, it's not
+
+101
+00:03:30,799 --> 00:03:35,120
+just your team learning a new model,
+
+102
+00:03:33,040 --> 00:03:37,680
+it's your team rejigging their entire
+
+103
+00:03:35,120 --> 00:03:39,519
+process. everything resets to zero.
+
+104
+00:03:37,680 --> 00:03:41,519
+That's the lock in nobody is pricing
+
+105
+00:03:39,519 --> 00:03:43,840
+into their decisions today. It's not
+
+106
+00:03:41,519 --> 00:03:46,319
+really vendor subscription lockin. It's
+
+107
+00:03:43,840 --> 00:03:48,480
+lockin to a model makaker's philosophy
+
+108
+00:03:46,319 --> 00:03:50,400
+of how work should happen as expressed
+
+109
+00:03:48,480 --> 00:03:53,200
+through a harness. On February 5th,
+
+110
+00:03:50,400 --> 00:03:55,440
+Enthropic and OpenAI both released new
+
+111
+00:03:53,200 --> 00:03:58,239
+flagship coding models on the same day.
+
+112
+00:03:55,440 --> 00:04:00,879
+Claude Opus 4.6 for Anthropic and GPT
+
+113
+00:03:58,239 --> 00:04:02,319
+5.3 codecs for OpenAI. I've been
+
+114
+00:04:00,879 --> 00:04:04,080
+tracking the developer community's
+
+115
+00:04:02,319 --> 00:04:06,879
+response for the last few weeks and the
+
+116
+00:04:04,080 --> 00:04:08,799
+models are converging on capability. The
+
+117
+00:04:06,879 --> 00:04:10,720
+problem is the harnesses are not the
+
+118
+00:04:08,799 --> 00:04:12,959
+harnesses are diverging and that
+
+119
+00:04:10,720 --> 00:04:15,280
+matters. The divergence is the real
+
+120
+00:04:12,959 --> 00:04:17,600
+story in this comparison and everyone's
+
+121
+00:04:15,280 --> 00:04:19,919
+talking about the model. So what does
+
+122
+00:04:17,600 --> 00:04:22,160
+harness diversion actually look like?
+
+123
+00:04:19,919 --> 00:04:23,919
+What does it cost when you see it? And
+
+124
+00:04:22,160 --> 00:04:25,520
+why is this one of the more interesting
+
+125
+00:04:23,919 --> 00:04:27,600
+tool decisions that we're not talking
+
+126
+00:04:25,520 --> 00:04:29,600
+about? Before we go any further, one
+
+127
+00:04:27,600 --> 00:04:30,960
+number makes this thesis really pop out
+
+128
+00:04:29,600 --> 00:04:32,479
+because you might think, "Oh, Nate's
+
+129
+00:04:30,960 --> 00:04:34,560
+just talking, right? Like the brain in a
+
+130
+00:04:32,479 --> 00:04:36,720
+jar is what matters. This isn't really a
+
+131
+00:04:34,560 --> 00:04:39,440
+thing." But at the AI Engineer Summit
+
+132
+00:04:36,720 --> 00:04:41,040
+just this January in 2026, Enthropic
+
+133
+00:04:39,440 --> 00:04:43,199
+presented results from the core
+
+134
+00:04:41,040 --> 00:04:45,759
+benchmark, which tests agents ability to
+
+135
+00:04:43,199 --> 00:04:48,400
+reproduce published scientific results.
+
+136
+00:04:45,759 --> 00:04:51,919
+The same Clawude model, identical
+
+137
+00:04:48,400 --> 00:04:54,479
+weights, identical training, scored 78%
+
+138
+00:04:51,919 --> 00:04:59,120
+on that benchmark when running inside
+
+139
+00:04:54,479 --> 00:05:01,919
+Claude codes harness, but it scored 42%
+
+140
+00:04:59,120 --> 00:05:03,759
+when running inside small agents, which
+
+141
+00:05:01,919 --> 00:05:06,080
+is a different harness built by another
+
+142
+00:05:03,759 --> 00:05:08,080
+startup. Same brain, different body,
+
+143
+00:05:06,080 --> 00:05:10,000
+nearly double the performance. That's
+
+144
+00:05:08,080 --> 00:05:12,240
+not a marginal difference explained by
+
+145
+00:05:10,000 --> 00:05:14,160
+prompt engineering. It's a structural
+
+146
+00:05:12,240 --> 00:05:16,240
+difference explained by everything that
+
+147
+00:05:14,160 --> 00:05:18,639
+the harness does. how it manages
+
+148
+00:05:16,240 --> 00:05:20,720
+context, how it hands off state between
+
+149
+00:05:18,639 --> 00:05:23,840
+sessions, how it connects tools, how it
+
+150
+00:05:20,720 --> 00:05:26,560
+verifies results. The harness is not an
+
+151
+00:05:23,840 --> 00:05:28,880
+optimization layer on top of a model.
+
+152
+00:05:26,560 --> 00:05:30,320
+It's a performance multiplier that
+
+153
+00:05:28,880 --> 00:05:32,800
+determines whether the model's
+
+154
+00:05:30,320 --> 00:05:35,199
+intelligence actually translates into
+
+155
+00:05:32,800 --> 00:05:37,600
+useful work. Now, the two harnesses that
+
+156
+00:05:35,199 --> 00:05:40,479
+matter most right now are making very,
+
+157
+00:05:37,600 --> 00:05:42,400
+very different bets about what that body
+
+158
+00:05:40,479 --> 00:05:44,160
+should look like. First, Anthropics
+
+159
+00:05:42,400 --> 00:05:46,000
+engineering team published a detailed
+
+160
+00:05:44,160 --> 00:05:47,759
+account of the problem their harness was
+
+161
+00:05:46,000 --> 00:05:49,919
+built to solve. They framed it really
+
+162
+00:05:47,759 --> 00:05:52,240
+vividly. Imagine a software project
+
+163
+00:05:49,919 --> 00:05:54,560
+staffed by engineers working in shifts
+
+164
+00:05:52,240 --> 00:05:56,639
+where each new engineer arrives with
+
+165
+00:05:54,560 --> 00:05:58,960
+zero memory of what happened on the last
+
+166
+00:05:56,639 --> 00:06:01,039
+shift. That's what happens when an AI
+
+167
+00:05:58,960 --> 00:06:03,280
+agent works across multiple context
+
+168
+00:06:01,039 --> 00:06:05,440
+windows. The model is smart, but it
+
+169
+00:06:03,280 --> 00:06:07,759
+starts each session really truly from a
+
+170
+00:06:05,440 --> 00:06:10,000
+blank page. Enthropic solution was
+
+171
+00:06:07,759 --> 00:06:12,080
+structural, not just prompting. Claude
+
+172
+00:06:10,000 --> 00:06:14,400
+codes harness uses a two-part pattern.
+
+173
+00:06:12,080 --> 00:06:16,639
+An initializer agent that runs first to
+
+174
+00:06:14,400 --> 00:06:19,120
+set up the project which it creates a
+
+175
+00:06:16,639 --> 00:06:21,120
+structured feature list, an initiation
+
+176
+00:06:19,120 --> 00:06:23,840
+script, a progress log, and a clean
+
+177
+00:06:21,120 --> 00:06:25,759
+commit. And then in addition, a coding
+
+178
+00:06:23,840 --> 00:06:28,479
+agent that runs in every subsequent
+
+179
+00:06:25,759 --> 00:06:30,240
+session, making incremental progress on
+
+180
+00:06:28,479 --> 00:06:31,600
+one feature at a time and leaving
+
+181
+00:06:30,240 --> 00:06:33,520
+structured artifacts for the next
+
+182
+00:06:31,600 --> 00:06:35,600
+session. If you're wondering as a
+
+183
+00:06:33,520 --> 00:06:37,600
+non-coder why you should care, this is
+
+184
+00:06:35,600 --> 00:06:39,680
+basically what's inside co-work from
+
+185
+00:06:37,600 --> 00:06:42,319
+Anthropic today. Same thing. The
+
+186
+00:06:39,680 --> 00:06:44,800
+progress file and git history become the
+
+187
+00:06:42,319 --> 00:06:46,560
+agent's institutional memory. Every
+
+188
+00:06:44,800 --> 00:06:48,400
+session begins the same way. You read
+
+189
+00:06:46,560 --> 00:06:50,319
+the progress log. You check the git
+
+190
+00:06:48,400 --> 00:06:51,919
+history. You run the basic test to
+
+191
+00:06:50,319 --> 00:06:54,639
+confirm nothing is broken. And then you
+
+192
+00:06:51,919 --> 00:06:57,680
+pick the next feature and start. The key
+
+193
+00:06:54,639 --> 00:07:00,000
+design choice is that the harness forces
+
+194
+00:06:57,680 --> 00:07:01,759
+incrementalism. If left to its own
+
+195
+00:07:00,000 --> 00:07:03,680
+devices, the model tries to build
+
+196
+00:07:01,759 --> 00:07:05,599
+everything at once. Enthropic calls this
+
+197
+00:07:03,680 --> 00:07:07,520
+oneshotting and runs out of context
+
+198
+00:07:05,599 --> 00:07:09,919
+mid-implementation, leaving the next
+
+199
+00:07:07,520 --> 00:07:11,919
+session to guess at half-finished work.
+
+200
+00:07:09,919 --> 00:07:14,720
+The harness prevents this by structuring
+
+201
+00:07:11,919 --> 00:07:16,560
+the task list into a single JSON.
+
+202
+00:07:14,720 --> 00:07:18,479
+Ironically, not markdown because
+
+203
+00:07:16,560 --> 00:07:20,639
+apparently the model is less likely to
+
+204
+00:07:18,479 --> 00:07:23,280
+corrupt a structured data format like
+
+205
+00:07:20,639 --> 00:07:25,919
+JSON as a task list and then prompting
+
+206
+00:07:23,280 --> 00:07:28,319
+the agent to work on exactly one feature
+
+207
+00:07:25,919 --> 00:07:30,560
+per session. The harness also forces
+
+208
+00:07:28,319 --> 00:07:33,199
+verification. The agent uses browser
+
+209
+00:07:30,560 --> 00:07:35,680
+automation tools like the Puppeteer MCP
+
+210
+00:07:33,199 --> 00:07:37,680
+server to test features end to end the
+
+211
+00:07:35,680 --> 00:07:40,160
+way a human would catching bugs that
+
+212
+00:07:37,680 --> 00:07:42,560
+unit tests miss. If you're not a coder,
+
+213
+00:07:40,160 --> 00:07:46,080
+you can see this obsession with planning
+
+214
+00:07:42,560 --> 00:07:48,560
+in co-work publishes a sequential series
+
+215
+00:07:46,080 --> 00:07:50,400
+of tasks and then goes after those tasks
+
+216
+00:07:48,560 --> 00:07:51,919
+with sub aents. So this is the
+
+217
+00:07:50,400 --> 00:07:54,160
+architecture beneath the surface of
+
+218
+00:07:51,919 --> 00:07:56,639
+cloud code. It runs in your actual
+
+219
+00:07:54,160 --> 00:07:59,280
+terminal in your shell, your environment
+
+220
+00:07:56,639 --> 00:08:01,759
+variables, your SSH keys. Anthropics
+
+221
+00:07:59,280 --> 00:08:03,360
+engineers describe this philosophy as
+
+222
+00:08:01,759 --> 00:08:04,960
+bash is all you need. If you're an
+
+223
+00:08:03,360 --> 00:08:06,720
+engineer, you'll chuckle here. Rather
+
+224
+00:08:04,960 --> 00:08:09,840
+than building dozens of specialized
+
+225
+00:08:06,720 --> 00:08:12,479
+tools, the agent uses composable Unix
+
+226
+00:08:09,840 --> 00:08:15,280
+primitives like GP and get and npm and
+
+227
+00:08:12,479 --> 00:08:17,599
+chains them together to make netnet very
+
+228
+00:08:15,280 --> 00:08:19,520
+useful tools on the fly. This keeps the
+
+229
+00:08:17,599 --> 00:08:21,199
+context window super lean because tool
+
+230
+00:08:19,520 --> 00:08:23,360
+descriptions are expensive and it gives
+
+231
+00:08:21,199 --> 00:08:25,520
+the agent access to everything a human
+
+232
+00:08:23,360 --> 00:08:28,800
+engineer would have. The tradeoff is
+
+233
+00:08:25,520 --> 00:08:30,400
+that the trust boundary is your entire
+
+234
+00:08:28,800 --> 00:08:32,320
+workstation. You have to trust it with
+
+235
+00:08:30,400 --> 00:08:33,919
+your computer. Now, OpenAI's harness
+
+236
+00:08:32,320 --> 00:08:35,599
+engineering team arrived at a different
+
+237
+00:08:33,919 --> 00:08:37,919
+architecture from a different starting
+
+238
+00:08:35,599 --> 00:08:40,159
+point. They published a detailed account
+
+239
+00:08:37,919 --> 00:08:42,719
+of building a million line internal
+
+240
+00:08:40,159 --> 00:08:45,279
+product over five months using only
+
+241
+00:08:42,719 --> 00:08:47,839
+codeex agents. zero lines of manually
+
+242
+00:08:45,279 --> 00:08:50,000
+written code, roughly 1,500 pull
+
+243
+00:08:47,839 --> 00:08:52,160
+requests, initially driven by just three
+
+244
+00:08:50,000 --> 00:08:54,240
+engineers. Their central insight was
+
+245
+00:08:52,160 --> 00:08:56,399
+almost the opposite of what you'd
+
+246
+00:08:54,240 --> 00:08:58,480
+expect. Early progress was slower than
+
+247
+00:08:56,399 --> 00:08:59,760
+anticipated, not because Codeex couldn't
+
+248
+00:08:58,480 --> 00:09:01,680
+write the code, but because the
+
+249
+00:08:59,760 --> 00:09:03,760
+environment was underspecified. The
+
+250
+00:09:01,680 --> 00:09:05,440
+agent lacked the structure, the tools,
+
+251
+00:09:03,760 --> 00:09:07,920
+and the feedback mechanisms to make
+
+252
+00:09:05,440 --> 00:09:10,240
+progress toward highle goals. OpenAI's
+
+253
+00:09:07,920 --> 00:09:12,720
+response was to make the repository the
+
+254
+00:09:10,240 --> 00:09:14,399
+system of record for everything.
+
+255
+00:09:12,720 --> 00:09:16,480
+Architecture decisions live there.
+
+256
+00:09:14,399 --> 00:09:18,720
+Alignment threads live there. Product
+
+257
+00:09:16,480 --> 00:09:21,440
+principles live there. Anything not in
+
+258
+00:09:18,720 --> 00:09:24,320
+the repo was illeible to the agent and
+
+259
+00:09:21,440 --> 00:09:26,880
+therefore did not exist. They tried the
+
+260
+00:09:24,320 --> 00:09:28,720
+one big agents.mmarkdown approach and it
+
+261
+00:09:26,880 --> 00:09:31,120
+really failed when everything is marked
+
+262
+00:09:28,720 --> 00:09:33,440
+as important. Really nothing is. And the
+
+263
+00:09:31,120 --> 00:09:35,760
+file rots immediately in a graveyard of
+
+264
+00:09:33,440 --> 00:09:37,839
+rules. Instead, OpenAI decided to build
+
+265
+00:09:35,760 --> 00:09:40,560
+a progressive disclosure system of
+
+266
+00:09:37,839 --> 00:09:42,800
+focused cross-lin documentation that the
+
+267
+00:09:40,560 --> 00:09:45,440
+agent could navigate. They enforced a
+
+268
+00:09:42,800 --> 00:09:47,760
+rigid layered architecture with a lot of
+
+269
+00:09:45,440 --> 00:09:50,000
+validated dependency directions and
+
+270
+00:09:47,760 --> 00:09:51,360
+limited permissible edges and checked
+
+271
+00:09:50,000 --> 00:09:53,279
+everything with a bunch of llinters
+
+272
+00:09:51,360 --> 00:09:55,920
+which were themselves written by codecs.
+
+273
+00:09:53,279 --> 00:09:58,480
+The llinter error messages handily
+
+274
+00:09:55,920 --> 00:10:00,959
+doubled as remediation instructions. So
+
+275
+00:09:58,480 --> 00:10:03,920
+when the agent violated an architectural
+
+276
+00:10:00,959 --> 00:10:06,160
+rule, the error told it how to fix the
+
+277
+00:10:03,920 --> 00:10:08,959
+violation. So this is the structure
+
+278
+00:10:06,160 --> 00:10:10,080
+that's underneath the surface of codec.
+
+279
+00:10:08,959 --> 00:10:11,760
+And we know this because they've told
+
+280
+00:10:10,080 --> 00:10:14,800
+us, right? I'm not telling you something
+
+281
+00:10:11,760 --> 00:10:17,519
+secret. It's out there. It runs tasks in
+
+282
+00:10:14,800 --> 00:10:19,600
+isolated cloud containers. Your code is
+
+283
+00:10:17,519 --> 00:10:21,839
+cloned into that container. Internet
+
+284
+00:10:19,600 --> 00:10:24,399
+access is disabled by default. And the
+
+285
+00:10:21,839 --> 00:10:26,560
+agent works independently. Where cloud
+
+286
+00:10:24,399 --> 00:10:28,959
+code gives the agent full access to your
+
+287
+00:10:26,560 --> 00:10:31,040
+environment and manages the risk through
+
+288
+00:10:28,959 --> 00:10:33,839
+incrementalism and human oversight.
+
+289
+00:10:31,040 --> 00:10:36,240
+Codeex constrains the agents environment
+
+290
+00:10:33,839 --> 00:10:38,640
+and manages the risk through isolation
+
+291
+00:10:36,240 --> 00:10:40,320
+and really mechanical enforcement. Where
+
+292
+00:10:38,640 --> 00:10:42,399
+anthropics harness makes the agent
+
+293
+00:10:40,320 --> 00:10:44,240
+remember, open AIS makes the codebase
+
+294
+00:10:42,399 --> 00:10:45,920
+remember. Both are interested in solving
+
+295
+00:10:44,240 --> 00:10:48,240
+the same problem. How do you get
+
+296
+00:10:45,920 --> 00:10:50,720
+reliable work from an AI across many
+
+297
+00:10:48,240 --> 00:10:52,880
+sessions, but they solve this problem
+
+298
+00:10:50,720 --> 00:10:54,880
+through genuinely different theories of
+
+299
+00:10:52,880 --> 00:10:57,040
+where institutional knowledge ought to
+
+300
+00:10:54,880 --> 00:10:58,959
+live? Calvin French Owen, who helped
+
+301
+00:10:57,040 --> 00:11:01,519
+launch the Codeex web product and now
+
+302
+00:10:58,959 --> 00:11:03,680
+uses both tools extensively, describes
+
+303
+00:11:01,519 --> 00:11:05,920
+the practical result. He picks his
+
+304
+00:11:03,680 --> 00:11:08,240
+coding agent as a function of how much
+
+305
+00:11:05,920 --> 00:11:10,880
+time he has and how long he wants it to
+
+306
+00:11:08,240 --> 00:11:12,720
+run autonomously. He uses claude code
+
+307
+00:11:10,880 --> 00:11:14,480
+for planning, orchestrating his
+
+308
+00:11:12,720 --> 00:11:16,959
+terminal, and explaining how parts of
+
+309
+00:11:14,480 --> 00:11:18,959
+the codebase work. Opus will spin up sub
+
+310
+00:11:16,959 --> 00:11:20,880
+aents simultaneously, delegate
+
+311
+00:11:18,959 --> 00:11:23,440
+exploration to very fast haiku
+
+312
+00:11:20,880 --> 00:11:25,279
+instances, and in Calvin's words is more
+
+313
+00:11:23,440 --> 00:11:27,519
+creative in terms of suggesting things
+
+314
+00:11:25,279 --> 00:11:30,079
+the developer forgot to mention. Codeex
+
+315
+00:11:27,519 --> 00:11:31,680
+is for the actual code because according
+
+316
+00:11:30,079 --> 00:11:33,760
+to Calvin, the Codeex code just straight
+
+317
+00:11:31,680 --> 00:11:35,680
+up has fewer bugs. So he starts with
+
+318
+00:11:33,760 --> 00:11:37,279
+Claude code and keeps it open and then
+
+319
+00:11:35,680 --> 00:11:39,519
+flips to Codeex when he's ready to
+
+320
+00:11:37,279 --> 00:11:41,200
+implement. Every so often he has Codex
+
+321
+00:11:39,519 --> 00:11:43,600
+review Claude's work and it catches
+
+322
+00:11:41,200 --> 00:11:45,200
+mistakes that Claude missed. So Calvin
+
+323
+00:11:43,600 --> 00:11:48,079
+doesn't view these as interchangeable
+
+324
+00:11:45,200 --> 00:11:50,240
+tools at all. Instead, he views these as
+
+325
+00:11:48,079 --> 00:11:52,560
+complimentary architectures that reward
+
+326
+00:11:50,240 --> 00:11:54,800
+different kinds of investment. The
+
+327
+00:11:52,560 --> 00:11:57,519
+harnesses shape how he can use these
+
+328
+00:11:54,800 --> 00:12:00,800
+products. So, what is inside these
+
+329
+00:11:57,519 --> 00:12:03,120
+harnesses that diverges that makes them
+
+330
+00:12:00,800 --> 00:12:05,360
+so different for work? I have not found
+
+331
+00:12:03,120 --> 00:12:06,959
+anyone talking about this simply and
+
+332
+00:12:05,360 --> 00:12:09,600
+plainly. And so, I'm just going to say
+
+333
+00:12:06,959 --> 00:12:12,800
+it. The architectural gap between these
+
+334
+00:12:09,600 --> 00:12:15,360
+platforms isn't just one thing. It's at
+
+335
+00:12:12,800 --> 00:12:17,360
+least five things, all compounding
+
+336
+00:12:15,360 --> 00:12:19,440
+simultaneously in different directions.
+
+337
+00:12:17,360 --> 00:12:21,920
+And the primary sources from both
+
+338
+00:12:19,440 --> 00:12:24,160
+companies reveal how deliberate and
+
+339
+00:12:21,920 --> 00:12:25,760
+differently motivated these choices are.
+
+340
+00:12:24,160 --> 00:12:28,160
+First, we're going to talk about how
+
+341
+00:12:25,760 --> 00:12:29,600
+execution philosophy is diverging.
+
+342
+00:12:28,160 --> 00:12:32,160
+Enthropic's position is very
+
+343
+00:12:29,600 --> 00:12:34,240
+deliberately bashes all you need. Then
+
+344
+00:12:32,160 --> 00:12:36,560
+building a lot of specialized tools with
+
+345
+00:12:34,240 --> 00:12:39,200
+long descriptions. Claude code gives the
+
+346
+00:12:36,560 --> 00:12:41,839
+agent access to just Unix primitives
+
+347
+00:12:39,200 --> 00:12:44,160
+like GP and get and lets it chain them
+
+348
+00:12:41,839 --> 00:12:46,480
+together with pipes. So a single line of
+
+349
+00:12:44,160 --> 00:12:48,880
+bash can query a database or filter
+
+350
+00:12:46,480 --> 00:12:50,720
+results or write them to a file. This is
+
+351
+00:12:48,880 --> 00:12:52,560
+much cheaper in tokens than writing
+
+352
+00:12:50,720 --> 00:12:55,040
+three separate tools and much more
+
+353
+00:12:52,560 --> 00:12:57,839
+flexible. The ML6 team's analysis showed
+
+354
+00:12:55,040 --> 00:13:01,040
+that the GitHub MCP servers 38 tools
+
+355
+00:12:57,839 --> 00:13:02,959
+consume 15,000 tokens worth of tool
+
+356
+00:13:01,040 --> 00:13:04,399
+descriptions. The GitHub command line
+
+357
+00:13:02,959 --> 00:13:06,480
+interface achieves the same
+
+358
+00:13:04,399 --> 00:13:08,079
+functionality with far fewer tokens in
+
+359
+00:13:06,480 --> 00:13:11,760
+the context window. In other words, the
+
+360
+00:13:08,079 --> 00:13:15,360
+GitHub command line enables a creative
+
+361
+00:13:11,760 --> 00:13:18,160
+tool using agent to get so much done
+
+362
+00:13:15,360 --> 00:13:21,360
+with just the Unix primitives that it
+
+363
+00:13:18,160 --> 00:13:24,480
+can work around many of the specialized
+
+364
+00:13:21,360 --> 00:13:27,839
+tools that enterprises and even other
+
+365
+00:13:24,480 --> 00:13:30,079
+hyperscalers tend to think an AI needs.
+
+366
+00:13:27,839 --> 00:13:31,839
+And that's just the execution philosophy
+
+367
+00:13:30,079 --> 00:13:34,320
+anthropic brings to the table. On the
+
+368
+00:13:31,839 --> 00:13:36,720
+other hand, OpenAI wired Chrome DevTools
+
+369
+00:13:34,320 --> 00:13:39,360
+protocol directly into the codeex agent.
+
+370
+00:13:36,720 --> 00:13:41,760
+at runtime which gives it access to DOM
+
+371
+00:13:39,360 --> 00:13:44,320
+snapshots to screenshots to navigation
+
+372
+00:13:41,760 --> 00:13:46,560
+capabilities so it can reproduce UI bugs
+
+373
+00:13:44,320 --> 00:13:48,720
+and validate fixes by actually driving
+
+374
+00:13:46,560 --> 00:13:50,800
+the application. They also gave every
+
+375
+00:13:48,720 --> 00:13:53,279
+codeex agent its own ephemeral
+
+376
+00:13:50,800 --> 00:13:55,760
+observability stack. Victoria logs and
+
+377
+00:13:53,279 --> 00:13:57,760
+Victoria metrics spin up per Git work
+
+378
+00:13:55,760 --> 00:14:00,240
+tree and disappear when the work is
+
+379
+00:13:57,760 --> 00:14:03,040
+done, letting the agent query logs and
+
+380
+00:14:00,240 --> 00:14:05,920
+metrics right in session. A prompt like
+
+381
+00:14:03,040 --> 00:14:08,000
+make the service start in under 800
+
+382
+00:14:05,920 --> 00:14:10,399
+milliseconds becomes a testable
+
+383
+00:14:08,000 --> 00:14:13,120
+acceptance criterion because the agent
+
+384
+00:14:10,399 --> 00:14:14,720
+can actually measure startup time. And
+
+385
+00:14:13,120 --> 00:14:17,120
+if the agent can't measure it, it can't
+
+386
+00:14:14,720 --> 00:14:20,320
+improve it. Both of these philosophies
+
+387
+00:14:17,120 --> 00:14:22,800
+give the agent hands, but one gives it
+
+388
+00:14:20,320 --> 00:14:24,880
+your hands full access to your actual
+
+389
+00:14:22,800 --> 00:14:27,360
+environment, composable, powerful, and
+
+390
+00:14:24,880 --> 00:14:29,680
+exactly as dangerous as that sounds. and
+
+391
+00:14:27,360 --> 00:14:31,839
+the other builds it custom hands in a
+
+392
+00:14:29,680 --> 00:14:33,920
+controlled room which is safer by
+
+393
+00:14:31,839 --> 00:14:37,360
+default but less able to reach the tools
+
+394
+00:14:33,920 --> 00:14:40,000
+you already use. This is part of why I
+
+395
+00:14:37,360 --> 00:14:42,480
+think codeex has to have more tools
+
+396
+00:14:40,000 --> 00:14:44,639
+built by default because codeex doesn't
+
+397
+00:14:42,480 --> 00:14:46,720
+have access to your local system. What
+
+398
+00:14:44,639 --> 00:14:49,040
+about state and memory? How does that
+
+399
+00:14:46,720 --> 00:14:51,040
+diverge? The enthropic harness solves
+
+400
+00:14:49,040 --> 00:14:52,880
+the cross- session memory problem with
+
+401
+00:14:51,040 --> 00:14:54,959
+structured artifacts. So their
+
+402
+00:14:52,880 --> 00:14:57,519
+engineering report describes a progress
+
+403
+00:14:54,959 --> 00:14:59,760
+file like cloudprogress.ext text that
+
+404
+00:14:57,519 --> 00:15:02,399
+every coding agent reads at the start of
+
+405
+00:14:59,760 --> 00:15:04,880
+a session and updates at the end, plus a
+
+406
+00:15:02,399 --> 00:15:07,360
+feature list stored as JSON. These files
+
+407
+00:15:04,880 --> 00:15:10,000
+combined with respective git commits
+
+408
+00:15:07,360 --> 00:15:12,399
+create a trail that any new agent
+
+409
+00:15:10,000 --> 00:15:14,399
+instance can follow to figure out where
+
+410
+00:15:12,399 --> 00:15:16,720
+the project stands and what's next to
+
+411
+00:15:14,399 --> 00:15:20,000
+do. Developers who invest in artifacts
+
+412
+00:15:16,720 --> 00:15:22,880
+like claw.md files end up building a
+
+413
+00:15:20,000 --> 00:15:25,279
+compounding asset. The more context
+
+414
+00:15:22,880 --> 00:15:27,839
+accumulates, the better every subsequent
+
+415
+00:15:25,279 --> 00:15:29,839
+cloud session works. OpenAI's approach
+
+416
+00:15:27,839 --> 00:15:32,079
+pushes institutional memory into the
+
+417
+00:15:29,839 --> 00:15:34,000
+repo. Anything not in the repo is
+
+418
+00:15:32,079 --> 00:15:35,839
+illeible and doesn't exist because
+
+419
+00:15:34,000 --> 00:15:38,320
+remember the agent is operating in the
+
+420
+00:15:35,839 --> 00:15:40,880
+sandbox. So architectural decisions, bug
+
+421
+00:15:38,320 --> 00:15:43,120
+principles, all of it gets encoded as
+
+422
+00:15:40,880 --> 00:15:45,360
+documentation. Interestingly enough,
+
+423
+00:15:43,120 --> 00:15:47,839
+OpenAI discovered an entropy problem
+
+424
+00:15:45,360 --> 00:15:50,399
+unique to agent generated code. Codeex
+
+425
+00:15:47,839 --> 00:15:53,120
+replicates whatever patterns exist in
+
+426
+00:15:50,399 --> 00:15:55,120
+the repo, including uneven or suboptimal
+
+427
+00:15:53,120 --> 00:15:57,519
+ones, and this inevitably leads to
+
+428
+00:15:55,120 --> 00:15:59,680
+drift. Their initial response was
+
+429
+00:15:57,519 --> 00:16:01,600
+spending every Friday manually cleaning
+
+430
+00:15:59,680 --> 00:16:04,000
+up what they called AI slop that didn't
+
+431
+00:16:01,600 --> 00:16:06,240
+scale. To address this more scalably,
+
+432
+00:16:04,000 --> 00:16:08,320
+they encoded golden principles into the
+
+433
+00:16:06,240 --> 00:16:10,800
+repo and built automated cleanup
+
+434
+00:16:08,320 --> 00:16:13,279
+processes where background codeex tasks
+
+435
+00:16:10,800 --> 00:16:16,000
+scan for deviations and open targeted
+
+436
+00:16:13,279 --> 00:16:18,560
+refactoring PRs. This enables the repo
+
+437
+00:16:16,000 --> 00:16:20,720
+eventually to police itself. So, one
+
+438
+00:16:18,560 --> 00:16:23,120
+harness makes the agent remember, the
+
+439
+00:16:20,720 --> 00:16:25,839
+other makes the codebase remember. Both
+
+440
+00:16:23,120 --> 00:16:27,920
+can work, but neither one transfers very
+
+441
+00:16:25,839 --> 00:16:29,440
+cleanly to the other because all the
+
+442
+00:16:27,920 --> 00:16:32,160
+investment your team made in a
+
+443
+00:16:29,440 --> 00:16:34,880
+claw.markdown file is not very helpful
+
+444
+00:16:32,160 --> 00:16:36,800
+to codeex, which was trained to look at
+
+445
+00:16:34,880 --> 00:16:38,959
+the repo. Context management, that's
+
+446
+00:16:36,800 --> 00:16:41,040
+another place these harnesses diverge.
+
+447
+00:16:38,959 --> 00:16:44,320
+Both companies learned the same lesson
+
+448
+00:16:41,040 --> 00:16:47,360
+about context. More isn't better if it's
+
+449
+00:16:44,320 --> 00:16:50,160
+not curated. Open AAI tried the one big
+
+450
+00:16:47,360 --> 00:16:52,160
+agents.mmarkdown approach and it failed.
+
+451
+00:16:50,160 --> 00:16:53,839
+Anthropic arrived at a similar principle
+
+452
+00:16:52,160 --> 00:16:56,000
+from a different direction. Rather than
+
+453
+00:16:53,839 --> 00:16:57,759
+loading all available tool descriptions
+
+454
+00:16:56,000 --> 00:17:00,480
+into the system prompt at the start,
+
+455
+00:16:57,759 --> 00:17:02,560
+Claude stores tools and skills as files
+
+456
+00:17:00,480 --> 00:17:04,559
+on the file system because it has access
+
+457
+00:17:02,560 --> 00:17:07,439
+to your local computer and it lets the
+
+458
+00:17:04,559 --> 00:17:09,600
+agents retrieve them just in time. And
+
+459
+00:17:07,439 --> 00:17:11,120
+so a tool search tool lets the agent
+
+460
+00:17:09,600 --> 00:17:13,199
+semantically search available
+
+461
+00:17:11,120 --> 00:17:15,439
+capabilities instead of having them
+
+462
+00:17:13,199 --> 00:17:17,199
+preloaded. The practical difference here
+
+463
+00:17:15,439 --> 00:17:19,199
+is that cloud code tends to manage
+
+464
+00:17:17,199 --> 00:17:21,280
+context through compacting the context
+
+465
+00:17:19,199 --> 00:17:22,959
+window and through delegating to sub
+
+466
+00:17:21,280 --> 00:17:24,799
+aents. So that means it will
+
+467
+00:17:22,959 --> 00:17:26,959
+automatically summarize older contexts
+
+468
+00:17:24,799 --> 00:17:29,280
+and it will spin up parallel agents that
+
+469
+00:17:26,959 --> 00:17:32,880
+each get their own window to keep things
+
+470
+00:17:29,280 --> 00:17:35,679
+clean. Codeex has more isolation. So
+
+471
+00:17:32,880 --> 00:17:38,320
+each task runs in a nice clean sandbox
+
+472
+00:17:35,679 --> 00:17:40,720
+and tasks don't compete for space. This
+
+473
+00:17:38,320 --> 00:17:43,360
+implies that cloud is often better when
+
+474
+00:17:40,720 --> 00:17:45,840
+one task needs deep understanding of a
+
+475
+00:17:43,360 --> 00:17:48,799
+codebase and codeex is better when
+
+476
+00:17:45,840 --> 00:17:51,360
+you're running very independent tasks in
+
+477
+00:17:48,799 --> 00:17:53,440
+parallel and you want to be able to burn
+
+478
+00:17:51,360 --> 00:17:55,600
+tokens against those tasks without
+
+479
+00:17:53,440 --> 00:17:58,160
+polluting a central context window. What
+
+480
+00:17:55,600 --> 00:17:59,919
+about tool integration? Anthropic
+
+481
+00:17:58,160 --> 00:18:03,280
+created the model context protocol or
+
+482
+00:17:59,919 --> 00:18:05,200
+MCP which is the fundamental open
+
+483
+00:18:03,280 --> 00:18:07,200
+standard for connecting AI agents to
+
+484
+00:18:05,200 --> 00:18:09,840
+external tools. It's backed now by
+
+485
+00:18:07,200 --> 00:18:11,280
+OpenAI, by Google, by Microsoft, by by
+
+486
+00:18:09,840 --> 00:18:13,840
+everybody. It's governed by the Linux
+
+487
+00:18:11,280 --> 00:18:16,400
+Foundation. Claude Code was built around
+
+488
+00:18:13,840 --> 00:18:18,480
+MCP from the get-go. But the more
+
+489
+00:18:16,400 --> 00:18:20,400
+interesting harness insight is how both
+
+490
+00:18:18,480 --> 00:18:22,799
+companies handle the cost of tool
+
+491
+00:18:20,400 --> 00:18:24,720
+integration inside the context window.
+
+492
+00:18:22,799 --> 00:18:26,640
+Enthropic introduced skills, which are
+
+493
+00:18:24,720 --> 00:18:28,880
+really just markdown files and scripts
+
+494
+00:18:26,640 --> 00:18:30,559
+stored on the file system. The agent
+
+495
+00:18:28,880 --> 00:18:32,160
+only sees the short names and
+
+496
+00:18:30,559 --> 00:18:34,559
+descriptions of the skill, basically the
+
+497
+00:18:32,160 --> 00:18:36,240
+first 50 or 100 tokens, not the full
+
+498
+00:18:34,559 --> 00:18:38,080
+instructions, which can stretch into the
+
+499
+00:18:36,240 --> 00:18:40,080
+thousands of tokens. That means the
+
+500
+00:18:38,080 --> 00:18:42,720
+agent reads the full skill definition
+
+501
+00:18:40,080 --> 00:18:45,280
+only when it decides to use one. This is
+
+502
+00:18:42,720 --> 00:18:46,720
+context management as harness design.
+
+503
+00:18:45,280 --> 00:18:48,720
+The tool integration layer is
+
+504
+00:18:46,720 --> 00:18:51,520
+deliberately architected to be stingy
+
+505
+00:18:48,720 --> 00:18:53,200
+about tokens. OpenAI's Codeex app server
+
+506
+00:18:51,520 --> 00:18:56,160
+takes a very different approach. It's a
+
+507
+00:18:53,200 --> 00:18:59,440
+birectional JSON RPC harness that runs
+
+508
+00:18:56,160 --> 00:19:02,320
+alongside your stack and exposes tools
+
+509
+00:18:59,440 --> 00:19:05,440
+like get or testr runners or Chrome dev
+
+510
+00:19:02,320 --> 00:19:07,919
+tools or app logs or metrics as RPC
+
+511
+00:19:05,440 --> 00:19:09,600
+endpoints. The agent then calls into
+
+512
+00:19:07,919 --> 00:19:11,440
+those tools programmatically. The
+
+513
+00:19:09,600 --> 00:19:13,600
+harness can spin up per workree
+
+514
+00:19:11,440 --> 00:19:16,640
+instances and capture screenshots and
+
+515
+00:19:13,600 --> 00:19:20,000
+DOM snapshots and use those signals to
+
+516
+00:19:16,640 --> 00:19:22,400
+validate fixes. The integration is deep
+
+517
+00:19:20,000 --> 00:19:24,480
+but the architecture assumes the agent
+
+518
+00:19:22,400 --> 00:19:26,160
+is working in that server mediated
+
+519
+00:19:24,480 --> 00:19:29,679
+environment in the cloud not on your
+
+520
+00:19:26,160 --> 00:19:32,000
+machine. So both tools speak MCP but the
+
+521
+00:19:29,679 --> 00:19:33,919
+integration philosophies are super
+
+522
+00:19:32,000 --> 00:19:36,160
+different. In fact they're so different
+
+523
+00:19:33,919 --> 00:19:38,640
+that Composio's testing team had to
+
+524
+00:19:36,160 --> 00:19:41,520
+build a custom proxy adapter to get
+
+525
+00:19:38,640 --> 00:19:43,679
+codecs working with Figma and Jira MCPs.
+
+526
+00:19:41,520 --> 00:19:45,520
+When you're integrating AI coding agents
+
+527
+00:19:43,679 --> 00:19:47,440
+into enterprise tool chains where the
+
+528
+00:19:45,520 --> 00:19:49,520
+agent needs to read from Jira and push
+
+529
+00:19:47,440 --> 00:19:51,840
+to GitHub and update Slack, the
+
+530
+00:19:49,520 --> 00:19:54,559
+implementation depth beneath the
+
+531
+00:19:51,840 --> 00:19:56,480
+protocol matters as much as the protocol
+
+532
+00:19:54,559 --> 00:19:58,559
+itself. Finally, I want to talk about
+
+533
+00:19:56,480 --> 00:20:00,799
+multi-agent architecture. Claude Code's
+
+534
+00:19:58,559 --> 00:20:04,240
+agent teams spawn multiple sub aents
+
+535
+00:20:00,799 --> 00:20:06,640
+that each get a dedicated context window
+
+536
+00:20:04,240 --> 00:20:09,360
+with shared task lists and dependency
+
+537
+00:20:06,640 --> 00:20:10,799
+tracking. One sub agent builds the API
+
+538
+00:20:09,360 --> 00:20:12,880
+while another one builds the front end
+
+539
+00:20:10,799 --> 00:20:14,640
+while a third one writes tests and they
+
+540
+00:20:12,880 --> 00:20:17,200
+can message each other along the way.
+
+541
+00:20:14,640 --> 00:20:19,919
+The explore subtool uses a very fast
+
+542
+00:20:17,200 --> 00:20:21,840
+cheap model haiku to process large
+
+543
+00:20:19,919 --> 00:20:24,480
+volumes of code and hand that all back
+
+544
+00:20:21,840 --> 00:20:26,640
+to opus for decision-making. This is
+
+545
+00:20:24,480 --> 00:20:28,559
+very much an orchestrated collaboration
+
+546
+00:20:26,640 --> 00:20:30,240
+model. A coordinator manages the
+
+547
+00:20:28,559 --> 00:20:31,840
+workflow and the system is designed to
+
+548
+00:20:30,240 --> 00:20:34,640
+keep a human in the loop as the
+
+549
+00:20:31,840 --> 00:20:37,200
+strategic overseer. Codeex's multi-agent
+
+550
+00:20:34,640 --> 00:20:39,280
+approach runs each task in its own
+
+551
+00:20:37,200 --> 00:20:41,039
+isolated sandbox. So coordination
+
+552
+00:20:39,280 --> 00:20:42,799
+happens through the codebase itself,
+
+553
+00:20:41,039 --> 00:20:45,360
+typically via get branches that get
+
+554
+00:20:42,799 --> 00:20:47,280
+merged. OpenAI's experimental sub aent
+
+555
+00:20:45,360 --> 00:20:49,360
+support is getting better, but Calvin
+
+556
+00:20:47,280 --> 00:20:51,280
+French Owen notes that parallelism still
+
+557
+00:20:49,360 --> 00:20:53,360
+isn't quite there yet compared to how
+
+558
+00:20:51,280 --> 00:20:55,600
+Claude Code handles delegation. The
+
+559
+00:20:53,360 --> 00:20:58,080
+trade-off is that Codeex's isolation
+
+560
+00:20:55,600 --> 00:21:00,400
+model is inherently much much safer for
+
+561
+00:20:58,080 --> 00:21:02,159
+autonomous operation. agents can't
+
+562
+00:21:00,400 --> 00:21:04,000
+interfere with each other and they can't
+
+563
+00:21:02,159 --> 00:21:06,320
+access each other's state and they
+
+564
+00:21:04,000 --> 00:21:08,320
+cannot cascade failures. The one-year
+
+565
+00:21:06,320 --> 00:21:09,760
+retrospective from Emergent Minds, one
+
+566
+00:21:08,320 --> 00:21:11,840
+of the most detailed practitioner
+
+567
+00:21:09,760 --> 00:21:14,159
+accounts of Claude Code's evolution,
+
+568
+00:21:11,840 --> 00:21:16,559
+documents this divergence in real time.
+
+569
+00:21:14,159 --> 00:21:18,640
+The author describes five distinct eras
+
+570
+00:21:16,559 --> 00:21:20,320
+of the tool over the last year, each
+
+571
+00:21:18,640 --> 00:21:22,799
+making the previous approach look
+
+572
+00:21:20,320 --> 00:21:25,039
+primitive. Community workarounds like
+
+573
+00:21:22,799 --> 00:21:27,760
+roadmap.mmarkdown or ultrathink or
+
+574
+00:21:25,039 --> 00:21:30,559
+scratchpad were systematically absorbed
+
+575
+00:21:27,760 --> 00:21:32,720
+into native harness features in cloud
+
+576
+00:21:30,559 --> 00:21:34,960
+code over the course of the year or
+
+577
+00:21:32,720 --> 00:21:37,280
+making cloud code better guys. His meta
+
+578
+00:21:34,960 --> 00:21:39,840
+observation is that quote the CLI
+
+579
+00:21:37,280 --> 00:21:41,600
+tooling layer doesn't have a moat. Any
+
+580
+00:21:39,840 --> 00:21:44,240
+good pattern gets absorbed into the
+
+581
+00:21:41,600 --> 00:21:46,240
+product. So the harness is evolving fast
+
+582
+00:21:44,240 --> 00:21:48,000
+and on all sides. The question isn't
+
+583
+00:21:46,240 --> 00:21:50,640
+which harness is better today. It's
+
+584
+00:21:48,000 --> 00:21:52,880
+which harness's evolution trajectory
+
+585
+00:21:50,640 --> 00:21:54,799
+matches where your team is headed.
+
+586
+00:21:52,880 --> 00:21:57,200
+Here's where this stops being just like
+
+587
+00:21:54,799 --> 00:21:59,600
+a tool comparison and now this becomes a
+
+588
+00:21:57,200 --> 00:22:01,760
+strategy problem. Calvin French Owen
+
+589
+00:21:59,600 --> 00:22:04,000
+skill evolution tells you a lot about
+
+590
+00:22:01,760 --> 00:22:06,080
+how harness lockin actually compounds
+
+591
+00:22:04,000 --> 00:22:08,480
+and affects teams. He started by just
+
+592
+00:22:06,080 --> 00:22:10,240
+adding a slash commit skill just telling
+
+593
+00:22:08,480 --> 00:22:12,080
+the model to commit and push in a
+
+594
+00:22:10,240 --> 00:22:13,840
+consistent way. But then he needed
+
+595
+00:22:12,080 --> 00:22:15,679
+agents working in separate work trees.
+
+596
+00:22:13,840 --> 00:22:17,679
+So he added slashworkree. And then he
+
+597
+00:22:15,679 --> 00:22:20,000
+noticed he always planned first. So he
+
+598
+00:22:17,679 --> 00:22:21,360
+added /implement when he wanted to get
+
+599
+00:22:20,000 --> 00:22:23,600
+started. Then he started chaining
+
+600
+00:22:21,360 --> 00:22:25,200
+implement calls. And eventually he added
+
+601
+00:22:23,600 --> 00:22:26,559
+implement all to make implementation
+
+602
+00:22:25,200 --> 00:22:28,720
+easier. You can see he's just building
+
+603
+00:22:26,559 --> 00:22:30,640
+out his environment. He had multiple
+
+604
+00:22:28,720 --> 00:22:33,039
+layers of workflow automation, at least
+
+605
+00:22:30,640 --> 00:22:34,960
+six. Each one built on the previous one.
+
+606
+00:22:33,039 --> 00:22:37,280
+Each one specific to Claude Code's
+
+607
+00:22:34,960 --> 00:22:39,360
+harness architecture, its skill system,
+
+608
+00:22:37,280 --> 00:22:41,760
+its context forking, its sub agent
+
+609
+00:22:39,360 --> 00:22:43,760
+model. Moving to a different harness
+
+610
+00:22:41,760 --> 00:22:47,039
+then didn't just mean learning new
+
+611
+00:22:43,760 --> 00:22:49,520
+commands. It meant rebuilding the entire
+
+612
+00:22:47,039 --> 00:22:52,159
+compounding chain of automation from
+
+613
+00:22:49,520 --> 00:22:54,480
+scratch in an architecture that may not
+
+614
+00:22:52,159 --> 00:22:56,799
+even support the same abstractions. Now
+
+615
+00:22:54,480 --> 00:22:58,559
+multiply that small challenge times
+
+616
+00:22:56,799 --> 00:23:00,799
+every engineer on the team, every
+
+617
+00:22:58,559 --> 00:23:03,120
+project they touch, all of the markdown
+
+618
+00:23:00,799 --> 00:23:05,200
+files they've accumulated, all the MCP
+
+619
+00:23:03,120 --> 00:23:07,919
+connectors they've deployed. That's the
+
+620
+00:23:05,200 --> 00:23:09,600
+lock in that people aren't pricing when
+
+621
+00:23:07,919 --> 00:23:11,039
+they talk about models. And that's why
+
+622
+00:23:09,600 --> 00:23:13,280
+it's so important to understand
+
+623
+00:23:11,039 --> 00:23:15,280
+harnesses. The organization's building
+
+624
+00:23:13,280 --> 00:23:17,120
+workflows around these tools. They're
+
+625
+00:23:15,280 --> 00:23:19,039
+not just adopting a subscription, right?
+
+626
+00:23:17,120 --> 00:23:20,960
+They're building institutional knowledge
+
+627
+00:23:19,039 --> 00:23:23,280
+and process documentation and
+
+628
+00:23:20,960 --> 00:23:25,280
+verification protocols around a specific
+
+629
+00:23:23,280 --> 00:23:27,280
+agent architecture. This is somewhat
+
+630
+00:23:25,280 --> 00:23:29,200
+analogous to the early cloud wars. In
+
+631
+00:23:27,280 --> 00:23:31,600
+2010, you could have told an enterprise
+
+632
+00:23:29,200 --> 00:23:33,760
+that AWS and Azure were basically the
+
+633
+00:23:31,600 --> 00:23:36,080
+same because they both offered virtual
+
+634
+00:23:33,760 --> 00:23:38,080
+machines and object storage. You would
+
+635
+00:23:36,080 --> 00:23:39,919
+have been technically correct and
+
+636
+00:23:38,080 --> 00:23:41,840
+strategically incorrect. the
+
+637
+00:23:39,919 --> 00:23:44,240
+organizations that understood the
+
+638
+00:23:41,840 --> 00:23:46,880
+differences between those architectures
+
+639
+00:23:44,240 --> 00:23:48,799
+that grasped how AWS Lambda would
+
+640
+00:23:46,880 --> 00:23:50,640
+reshape application design differently
+
+641
+00:23:48,799 --> 00:23:54,080
+than Azure functions. Those
+
+642
+00:23:50,640 --> 00:23:56,400
+organizations understood enough to make
+
+643
+00:23:54,080 --> 00:23:58,080
+the correct decisions and that is why
+
+644
+00:23:56,400 --> 00:24:00,080
+I'm talking about harnesses today
+
+645
+00:23:58,080 --> 00:24:02,880
+because we need the same level of
+
+646
+00:24:00,080 --> 00:24:05,280
+fluency around AI. We are in the 2010
+
+647
+00:24:02,880 --> 00:24:07,760
+era of AI coding tools. The models look
+
+648
+00:24:05,280 --> 00:24:10,320
+similar in benchmarks. The architectures
+
+649
+00:24:07,760 --> 00:24:12,240
+are separating and diverging along lines
+
+650
+00:24:10,320 --> 00:24:15,600
+that will determine what's possible with
+
+651
+00:24:12,240 --> 00:24:18,080
+a given architecture in 2 years in 2028
+
+652
+00:24:15,600 --> 00:24:19,919
+and procurement decisions are being made
+
+653
+00:24:18,080 --> 00:24:21,679
+by people who are looking at benchmark
+
+654
+00:24:19,919 --> 00:24:23,440
+scores or think that the models are all
+
+655
+00:24:21,679 --> 00:24:26,000
+it takes. So what does this mean for
+
+656
+00:24:23,440 --> 00:24:29,600
+you? If you write code for a living, the
+
+657
+00:24:26,000 --> 00:24:31,840
+era of picking one tool is ending. The
+
+658
+00:24:29,600 --> 00:24:34,799
+developers who are extracting the most
+
+659
+00:24:31,840 --> 00:24:36,640
+value today are using both platforms and
+
+660
+00:24:34,799 --> 00:24:38,080
+routing work based on what the task
+
+661
+00:24:36,640 --> 00:24:39,520
+needs and how much time you have. I
+
+662
+00:24:38,080 --> 00:24:40,960
+talked about Calvin French Owen's
+
+663
+00:24:39,520 --> 00:24:42,799
+workflow. There's lots of other
+
+664
+00:24:40,960 --> 00:24:45,679
+workflows that include both codeex and
+
+665
+00:24:42,799 --> 00:24:47,840
+claude code. The skill isn't in using
+
+666
+00:24:45,679 --> 00:24:51,120
+either one of those tools. It's actually
+
+667
+00:24:47,840 --> 00:24:53,200
+knowing which harness's disposition
+
+668
+00:24:51,120 --> 00:24:55,200
+matches the kind of work you're doing
+
+669
+00:24:53,200 --> 00:24:57,440
+today. And that's why I've spent so much
+
+670
+00:24:55,200 --> 00:24:59,600
+time in this video talking about in
+
+671
+00:24:57,440 --> 00:25:01,279
+detail how these harnesses work. If you
+
+672
+00:24:59,600 --> 00:25:03,440
+lead an engineering team right now, the
+
+673
+00:25:01,279 --> 00:25:05,360
+decision you're making is not which tool
+
+674
+00:25:03,440 --> 00:25:07,600
+do you standardize on. It's which
+
+675
+00:25:05,360 --> 00:25:09,520
+architectural philosophy are you going
+
+676
+00:25:07,600 --> 00:25:11,679
+to organize the team around? And if
+
+677
+00:25:09,520 --> 00:25:13,919
+you're going to build a hybrid workflow,
+
+678
+00:25:11,679 --> 00:25:16,720
+how do you intelligently hand off work
+
+679
+00:25:13,919 --> 00:25:19,679
+across that boundary? That is very much
+
+680
+00:25:16,720 --> 00:25:22,000
+a process design problem, not a
+
+681
+00:25:19,679 --> 00:25:24,159
+procurement problem. How does your team
+
+682
+00:25:22,000 --> 00:25:26,159
+handle task routing right now? Do you
+
+683
+00:25:24,159 --> 00:25:28,320
+use one agent to check another's work?
+
+684
+00:25:26,159 --> 00:25:30,159
+Are you investing in cloud.mmarkdown
+
+685
+00:25:28,320 --> 00:25:32,240
+files? How do you handle the security
+
+686
+00:25:30,159 --> 00:25:34,720
+implications of claude code's full
+
+687
+00:25:32,240 --> 00:25:37,600
+access local execution versus codeex's
+
+688
+00:25:34,720 --> 00:25:40,640
+sandbox isolation? These questions don't
+
+689
+00:25:37,600 --> 00:25:42,480
+appear on any vendor comparison chart,
+
+690
+00:25:40,640 --> 00:25:44,640
+but they should be in the back of your
+
+691
+00:25:42,480 --> 00:25:46,880
+mind as an engineering leader. The
+
+692
+00:25:44,640 --> 00:25:48,720
+organizations that get this right will
+
+693
+00:25:46,880 --> 00:25:50,640
+not only treat the harness decision as
+
+694
+00:25:48,720 --> 00:25:52,559
+an architectural commitment, but I'm
+
+695
+00:25:50,640 --> 00:25:54,480
+just going to tell you, you're going to
+
+696
+00:25:52,559 --> 00:25:56,799
+be making decisions that will shape how
+
+697
+00:25:54,480 --> 00:25:59,039
+the rest of us non-technical knowledge
+
+698
+00:25:56,799 --> 00:26:01,279
+workers will experience the world in the
+
+699
+00:25:59,039 --> 00:26:04,000
+second half of 2026 because these
+
+700
+00:26:01,279 --> 00:26:05,919
+harnesses are leaking into the rest of
+
+701
+00:26:04,000 --> 00:26:08,320
+knowledge work. That's why I made the
+
+702
+00:26:05,919 --> 00:26:10,559
+reference to co-work in this video.
+
+703
+00:26:08,320 --> 00:26:12,559
+Claude code was the foundation for
+
+704
+00:26:10,559 --> 00:26:14,720
+co-work. Co-work is basically a skin
+
+705
+00:26:12,559 --> 00:26:16,559
+over clawed code for knowledge work and
+
+706
+00:26:14,720 --> 00:26:18,240
+it's becoming hugely popular for a
+
+707
+00:26:16,559 --> 00:26:20,720
+reason. So we should expect these
+
+708
+00:26:18,240 --> 00:26:22,480
+harnesses and these fundamentally
+
+709
+00:26:20,720 --> 00:26:24,960
+different architectural approaches to
+
+710
+00:26:22,480 --> 00:26:27,440
+leak into the rest of marketing and
+
+711
+00:26:24,960 --> 00:26:29,440
+product and customer success going into
+
+712
+00:26:27,440 --> 00:26:31,279
+the rest of 2026. If you're a
+
+713
+00:26:29,440 --> 00:26:32,880
+non-technical senior leader and you're
+
+714
+00:26:31,279 --> 00:26:35,039
+making budget decisions about these
+
+715
+00:26:32,880 --> 00:26:37,840
+tools, you got to understand your team
+
+716
+00:26:35,039 --> 00:26:40,159
+is not asking you to buy a wrench.
+
+717
+00:26:37,840 --> 00:26:42,240
+They're asking you to commit to a
+
+718
+00:26:40,159 --> 00:26:44,080
+workbench, one or two of them, and
+
+719
+00:26:42,240 --> 00:26:46,559
+really a way of organizing the
+
+720
+00:26:44,080 --> 00:26:48,720
+relationship between humans and AI
+
+721
+00:26:46,559 --> 00:26:50,240
+agents that will shape your velocity
+
+722
+00:26:48,720 --> 00:26:52,000
+across the business, that will shape
+
+723
+00:26:50,240 --> 00:26:54,080
+your security posture, that will shape
+
+724
+00:26:52,000 --> 00:26:56,159
+your ability to hire and your switching
+
+725
+00:26:54,080 --> 00:26:58,400
+costs for years to come. So, the right
+
+726
+00:26:56,159 --> 00:27:00,559
+question cannot be which tools the
+
+727
+00:26:58,400 --> 00:27:03,360
+cheapest. It needs to be which
+
+728
+00:27:00,559 --> 00:27:05,520
+architectural philosophy matches how the
+
+729
+00:27:03,360 --> 00:27:07,520
+team works and how much does it cost us
+
+730
+00:27:05,520 --> 00:27:09,600
+to change our mind. The answer to the
+
+731
+00:27:07,520 --> 00:27:11,279
+second question is typically a lot and
+
+732
+00:27:09,600 --> 00:27:12,960
+it goes up every quarter because every
+
+733
+00:27:11,279 --> 00:27:14,960
+quarter your team is building more
+
+734
+00:27:12,960 --> 00:27:16,799
+infrastructure around the current
+
+735
+00:27:14,960 --> 00:27:18,960
+architecture that you've chosen. Look,
+
+736
+00:27:16,799 --> 00:27:21,039
+the question everyone has been asking
+
+737
+00:27:18,960 --> 00:27:24,000
+which model is best. I keep saying it's
+
+738
+00:27:21,039 --> 00:27:26,080
+a 2022 or 2023 question. It has such a
+
+739
+00:27:24,000 --> 00:27:27,919
+short shelf life. The models keep
+
+740
+00:27:26,080 --> 00:27:29,919
+improving all the time. Yes, the
+
+741
+00:27:27,919 --> 00:27:32,159
+advantages that any models gain on a
+
+742
+00:27:29,919 --> 00:27:34,400
+given release are temporary. Yes. But
+
+743
+00:27:32,159 --> 00:27:36,080
+the real question that's underneath just
+
+744
+00:27:34,400 --> 00:27:37,840
+isn't getting asked enough. We're
+
+745
+00:27:36,080 --> 00:27:40,240
+watching two of the most important
+
+746
+00:27:37,840 --> 00:27:42,720
+companies in AI make genuinely different
+
+747
+00:27:40,240 --> 00:27:44,320
+bets about how humans and AI agents
+
+748
+00:27:42,720 --> 00:27:47,440
+should work together. And they believe
+
+749
+00:27:44,320 --> 00:27:49,760
+in them so strongly, they are literally
+
+750
+00:27:47,440 --> 00:27:52,240
+training their models to work within
+
+751
+00:27:49,760 --> 00:27:55,039
+those specific harnesses. You should
+
+752
+00:27:52,240 --> 00:27:57,840
+treat a harness decision as a strategic
+
+753
+00:27:55,039 --> 00:28:00,240
+commitment because it is one. And we're
+
+754
+00:27:57,840 --> 00:28:02,880
+all going to discover harness lock in
+
+755
+00:28:00,240 --> 00:28:05,200
+the hard way if we don't dig in and take
+
+756
+00:28:02,880 --> 00:28:06,799
+the time to understand harnesses the
+
+757
+00:28:05,200 --> 00:28:08,720
+easy way. And that's why I made this
+
+758
+00:28:06,799 --> 00:28:10,080
+video. And I have a lot more over on the
+
+759
+00:28:08,720 --> 00:28:11,440
+substack for this one, guys. I think
+
+760
+00:28:10,080 --> 00:28:13,360
+it's really important to understand
+
+761
+00:28:11,440 --> 00:28:17,039
+harnesses. I'm going to put a lot more
+
+762
+00:28:13,360 --> 00:28:19,919
+in there to give yourself a chance to
+
+763
+00:28:17,039 --> 00:28:21,840
+understand which harness works for you
+
+764
+00:28:19,919 --> 00:28:23,919
+in your workflow. And yes, even if
+
+765
+00:28:21,840 --> 00:28:25,440
+you're a non-coder or a non-technical
+
+766
+00:28:23,919 --> 00:28:26,799
+person, we're going to make sure that
+
+767
+00:28:25,440 --> 00:28:28,480
+there's pieces of that guide there for
+
+768
+00:28:26,799 --> 00:28:30,480
+you. Everyone else is going to discover
+
+769
+00:28:28,480 --> 00:28:32,480
+lock in the hard way. I want you to
+
+770
+00:28:30,480 --> 00:28:34,240
+discover it the easy way. And that's why
+
+771
+00:28:32,480 --> 00:28:36,320
+I made this video. I have a Substack
+
+772
+00:28:34,240 --> 00:28:38,000
+with more detail up there on how to
+
+773
+00:28:36,320 --> 00:28:40,000
+understand which harness works for you.
+
+774
+00:28:38,000 --> 00:28:41,760
+And if you're a non-coder, I've got
+
+775
+00:28:40,000 --> 00:28:44,559
+detail on that, too. I know this has
+
+776
+00:28:41,760 --> 00:28:46,559
+felt like a technical video. You have to
+
+777
+00:28:44,559 --> 00:28:49,600
+understand a little bit of the technical
+
+778
+00:28:46,559 --> 00:28:52,559
+details of the harness because that is
+
+779
+00:28:49,600 --> 00:28:55,120
+what is shaping all of our work heading
+
+780
+00:28:52,559 --> 00:28:57,840
+into the second half of 2026. These
+
+781
+00:28:55,120 --> 00:29:00,960
+models require a little bit more
+
+782
+00:28:57,840 --> 00:29:05,039
+technical fluency than we had to have
+
+783
+00:29:00,960 --> 00:29:08,240
+from about 1980 to 2018. And there's no
+
+784
+00:29:05,039 --> 00:29:11,120
+way to sugarcoat that. Understanding LLM
+
+785
+00:29:08,240 --> 00:29:12,399
+takes a willingness to dig in just a
+
+786
+00:29:11,120 --> 00:29:13,919
+little bit more than we're comfortable
+
+787
+00:29:12,399 --> 00:29:15,760
+with. And that's something that every
+
+788
+00:29:13,919 --> 00:29:17,200
+non-technical worker in tech is
+
+789
+00:29:15,760 --> 00:29:18,880
+wrestling with right now. And I just
+
+790
+00:29:17,200 --> 00:29:20,559
+want to tell you, I got you. We're going
+
+791
+00:29:18,880 --> 00:29:22,399
+to keep explaining this stuff. This will
+
+792
+00:29:20,559 --> 00:29:25,760
+not be the last video that explains
+
+793
+00:29:22,399 --> 00:29:28,720
+technical stuff in a way that you can
+
+794
+00:29:25,760 --> 00:29:31,200
+figure out because that's the reason why
+
+795
+00:29:28,720 --> 00:29:32,720
+I used all of these analogies all the
+
+796
+00:29:31,200 --> 00:29:34,320
+way through. That's the reason we talked
+
+797
+00:29:32,720 --> 00:29:36,960
+about the brain in the jar. That's the
+
+798
+00:29:34,320 --> 00:29:38,960
+reason we talked about the hands and the
+
+799
+00:29:36,960 --> 00:29:40,799
+feet and the Frankenstein monster. I
+
+800
+00:29:38,960 --> 00:29:43,840
+want you to not feel like something like
+
+801
+00:29:40,799 --> 00:29:46,159
+a harness is too abstract, too difficult
+
+802
+00:29:43,840 --> 00:29:48,480
+to understand. It's really not. It's
+
+803
+00:29:46,159 --> 00:29:50,880
+just giving the model hands and feet.
+
+804
+00:29:48,480 --> 00:29:52,559
+And it turns out that matters way more
+
+805
+00:29:50,880 --> 00:29:54,320
+than anybody's talking about. And so
+
+806
+00:29:52,559 --> 00:29:56,559
+that's why we covered it today. Best of
+
+807
+00:29:54,320 --> 00:29:56,559
+luck.
+

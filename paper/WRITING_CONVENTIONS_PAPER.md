@@ -47,6 +47,7 @@ Rules learned through editing the FCSM × NIST crosswalk article. Apply to all a
 - **No self-congratulation.** The results speak. Delete "remarkably," "notably," "strikingly," "importantly." If the result is remarkable, the numbers show it.
 - **Sentence length.** If a sentence exceeds 35 words, split it or find the clause that can become its own sentence. Technical precision is not an excuse for run-on syntax.
 - **Prefer active voice.** "We tested" not "It was tested." Passive is acceptable when the actor is irrelevant or unknown.
+- **Prefer short declarative sentences over compound joins.** Do not use semicolons or commas to jam two independent thoughts into one sentence. If two clauses can each stand as a sentence, they usually should. Compound sentences are acceptable when the clauses are genuinely interdependent, but defaulting to periods produces cleaner prose.
 - **One idea per paragraph.** If a paragraph covers two distinct points, it is two paragraphs.
 - **Minimum two sentences per paragraph in prose sections.** A single sentence standing alone as a paragraph is almost always either a transition that belongs attached to the preceding or following paragraph, or an underdeveloped idea. Definitional passages and labeled-list items are exempt.
 - **Avoid nominalizations.** "Explains" not "provides an explanation of." "Differs" not "exhibits a difference from." Convert noun constructions back to verbs wherever possible.

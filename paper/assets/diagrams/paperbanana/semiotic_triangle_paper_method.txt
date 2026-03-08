@@ -1,0 +1,77 @@
+DIAGRAM: The Semiotic Stack Applied to Federal Statistical Data (Paper Version)
+ASPECT RATIO: 4:3 (1100w × 650h logical units)
+STYLE: Publication-quality academic diagram. Clean serif font (Georgia or similar). White text on dark backgrounds. No drop shadows. Minimal decorative elements. NO title, NO subtitle, NO bottom annotation — these are handled by the figure caption in the paper.
+
+=== LAYOUT OVERVIEW ===
+Three isometric parallelogram layers stacked vertically (widest at bottom, narrowest at top), forming a visual pyramid/stack. Centered horizontally. Flanked by annotations on both sides. Tight vertical spacing — minimize whitespace above top layer and below bottom layer.
+
+=== LAYERS (bottom to top) ===
+
+LAYER 1 — SYNTAX (bottom, widest)
+- Shape: Wide isometric parallelogram, skewed rightward
+- Fill: Census grey #B0BEC5, stroke #78909C (2px)
+- Label center: "SYNTAX" (16px serif bold, dark text #333333)
+- Sublabel: "Structure, Format, APIs" (11px serif, dark)
+- Status (left side, dashed connector to layer): "✓ Solved" in green #2E7D32 (bold, 12px)
+- Example (right side, dashed connector): italic "CSV schemas, Census API endpoints, FIPS codes" (10px, muted #4B636E)
+
+LAYER 2 — SEMANTICS (middle)
+- Shape: Medium isometric parallelogram, same skew, narrower than Layer 1
+- Fill: Census navy #205493, stroke #112E51 (2px)
+- Label center: "SEMANTICS" (16px serif bold, white #FFFFFF)
+- Sublabel: "Meaning, Metadata, Definitions" (11px serif, white)
+- Status (left side, dashed connector): "✓ Solved" in green #2E7D32 (bold, 12px)
+- Example (right side, dashed connector): italic '"B19013_001E = Median Household Income"' (10px, muted #4B636E)
+
+LAYER 3 — PRAGMATICS (top, narrowest)
+- Shape: Narrow isometric parallelogram, same skew
+- Fill: Census orange #FF7043, stroke #E64A19 (3px, slightly heavier)
+- Label center: "PRAGMATICS" (16px serif bold, white #FFFFFF)
+- Sublabel: "Fitness-for-Use, Expert Judgment" (11px serif, white)
+- Status (left side, dashed connector): "✗ The Gap" in red #D32F2F (bold, 12px)
+- Example (right side, dashed connector): italic '"Don't use 1-yr ACS for populations under 65K"' (10px, muted #4B636E)
+
+=== LEFT SIDE: "This Paper" BRACKET ===
+- Vertical orange bracket (stroke #E64A19, 3px) spanning from top of PRAGMATICS layer to bottom of PRAGMATICS layer (i.e., bracketing only the top layer)
+- Small horizontal caps at top and bottom of bracket
+- Label: "This Paper" in orange #E64A19, bold serif, centered on the bracket, 11px
+
+=== DASHED CONNECTORS ===
+- Each layer has a dashed connector line extending to the left (status) and right (example)
+- Left connectors: grey/navy/orange matching layer stroke color, dash 5-3
+- Right connectors: same, dash 5-3
+- No arrowheads on connectors
+
+=== NO TITLE ===
+Do not render any title or subtitle. The paper caption handles this.
+
+=== NO BOTTOM ANNOTATION ===
+Do not render any bottom text or tagline. The paper prose handles this.
+
+=== COLOR PALETTE (Census xdgov) ===
+- Navy: #205493
+- Dark navy (border): #112E51
+- Orange: #FF7043
+- Dark orange (border): #E64A19
+- Grey: #B0BEC5
+- Dark grey (border): #78909C
+- Light blue: #DCEEFB
+- Green (solved): #2E7D32
+- Red (gap): #D32F2F
+- Muted text: #4B636E
+- Background: white
+
+=== TYPOGRAPHY ===
+- All text: serif (Georgia preferred)
+- Layer labels: 16px bold
+- Sublabels: 11px regular
+- Side annotations: 10px italic (examples), 12px bold (status)
+
+=== DO NOT ===
+- No gradients
+- No drop shadows
+- No decorative icons or clip art
+- No rounded corners on parallelograms
+- No vector DB, no embedding imagery
+- No title or subtitle
+- No bottom annotation or tagline

@@ -4,10 +4,10 @@
 Reads certified analysis JSONs and produces PDF figures using plotnine.
 
 Source data:
-  - talks/fcsm_2026/analysis/results/similarity_results_*.json (F2a, F2b)
-  - results/v2_redo/stage2/analysis/aggregate_statistics.json (F7)
-  - results/v2_redo/stage3/analysis/fidelity_summary.json (F8)
-  - results/v2_redo/stage1/analysis/cost_analysis.json (F9)
+  - talks/fcsm_2026/analysis/results/similarity_results_*.json (F2)
+  - results/v2_redo/stage2/analysis/aggregate_statistics.json (F8)
+  - results/v2_redo/stage3/analysis/fidelity_summary.json (F9)
+  - results/v2_redo/stage1/analysis/cost_analysis.json (F10)
 
 Usage:
   python paper/assets/generate_figures.py --all          # generate all figures
@@ -16,9 +16,9 @@ Usage:
 
 Output: paper/assets/figures/*.pdf
 
-Note on F2: F2 is split into two PDFs (F2a_similarity, F2b_discrimination) because
-plotnine does not natively support multi-panel composition. Both replace the single
-F2 placeholder as paired subfigures.
+Note on F2: F2 is a two-panel stacked figure (Panel A: similarity, Panel B: discrimination).
+plotnine does not natively support multi-panel composition; each panel is rendered to a
+PNG buffer at 300 DPI then composited into a single matplotlib PDF figure.
 """
 
 import argparse
@@ -85,8 +85,8 @@ def load_data() -> dict:
 # ---------------------------------------------------------------------------
 
 
-def make_F2a(data: dict):
-    """F2a: Mean pairwise similarity by representation (Panel A).
+def _make_F2a_panel(data: dict):
+    """Panel A of F2: Mean pairwise similarity by representation.
 
     Grouped bar chart: 3 representations × 2 models, faceted by model.
     Annotates % increase on Enriched bars.
@@ -94,68 +94,39 @@ def make_F2a(data: dict):
     ml = data["minilm"]["similarity"]
     rb = data["roberta"]["similarity"]
 
-    # % increase from Raw to Enriched
     ml_inc = (ml["enriched"]["mean"] - ml["raw"]["mean"]) / ml["raw"]["mean"] * 100
     rb_inc = (rb["enriched"]["mean"] - rb["raw"]["mean"]) / rb["raw"]["mean"] * 100
 
     rows = []
     for rep_key, rep_label in [("labels", "Labels"), ("raw", "Raw"), ("enriched", "Enriched")]:
-        rows.append({
-            "Model": "MiniLM-384",
-            "Representation": rep_label,
-            "Similarity": ml[rep_key]["mean"],
-        })
-        rows.append({
-            "Model": "RoBERTa-1024",
-            "Representation": rep_label,
-            "Similarity": rb[rep_key]["mean"],
-        })
+        rows.append({"Model": "MiniLM-384", "Representation": rep_label, "Similarity": ml[rep_key]["mean"]})
+        rows.append({"Model": "RoBERTa-1024", "Representation": rep_label, "Similarity": rb[rep_key]["mean"]})
     df = pd.DataFrame(rows)
     df["Representation"] = pd.Categorical(
         df["Representation"], categories=["Labels", "Raw", "Enriched"], ordered=True
     )
 
-    # Annotation rows for the Enriched bars
     ann_df = pd.DataFrame([
-        {
-            "Model": "MiniLM-384",
-            "Representation": "Enriched",
-            "Similarity": ml["enriched"]["mean"] + 0.03,
-            "label": f"+{ml_inc:.1f}%",
-        },
-        {
-            "Model": "RoBERTa-1024",
-            "Representation": "Enriched",
-            "Similarity": rb["enriched"]["mean"] + 0.03,
-            "label": f"+{rb_inc:.1f}%",
-        },
+        {"Model": "MiniLM-384", "Representation": "Enriched", "Similarity": ml["enriched"]["mean"] + 0.03, "label": f"+{ml_inc:.1f}%"},
+        {"Model": "RoBERTa-1024", "Representation": "Enriched", "Similarity": rb["enriched"]["mean"] + 0.03, "label": f"+{rb_inc:.1f}%"},
     ])
 
     p = (
         ggplot(df, aes("Representation", "Similarity", fill="Representation"))
         + geom_col(show_legend=False)
-        + geom_text(
-            aes(x="Representation", y="Similarity", label="label"),
-            data=ann_df,
-            size=9,
-            va="bottom",
-        )
+        + geom_text(aes(x="Representation", y="Similarity", label="label"), data=ann_df, size=9, va="bottom")
         + facet_wrap("~Model")
         + scale_fill_manual(values=COLORS_F2)
         + scale_y_continuous(limits=[0, 1.1], breaks=[0, 0.2, 0.4, 0.6, 0.8, 1.0])
-        + labs(
-            x="",
-            y="Mean Cosine Similarity",
-            title="Panel A: Mean Pairwise Similarity by Representation",
-        )
-        + paper_theme(figure_size=(6.5, 3.5))
+        + labs(x="", y="Mean Cosine Similarity", title="Panel A: Mean Pairwise Similarity by Representation")
+        + paper_theme(figure_size=(6.5, 3.2))
         + theme(legend_position="none")
     )
     return p
 
 
-def make_F2b(data: dict):
-    """F2b: Group discrimination collapse (Panel B).
+def _make_F2b_panel(data: dict):
+    """Panel B of F2: Group discrimination collapse.
 
     Within-group vs cross-group similarity for Raw and Enriched, faceted by model.
     Annotates discrimination gap (delta) above each condition pair.
@@ -168,48 +139,27 @@ def make_F2b(data: dict):
         for cond_key, cond_label in [("raw", "Raw"), ("enriched", "Enriched")]:
             d = disc[cond_key]
             rows.extend([
-                {
-                    "Model": model_label,
-                    "Condition": cond_label,
-                    "Type": "Within-Group",
-                    "Similarity": d["within_mean"],
-                },
-                {
-                    "Model": model_label,
-                    "Condition": cond_label,
-                    "Type": "Cross-Group",
-                    "Similarity": d["cross_mean"],
-                },
+                {"Model": model_label, "Condition": cond_label, "Type": "Within-Group", "Similarity": d["within_mean"]},
+                {"Model": model_label, "Condition": cond_label, "Type": "Cross-Group", "Similarity": d["cross_mean"]},
             ])
     df = pd.DataFrame(rows)
     df["Condition"] = pd.Categorical(df["Condition"], categories=["Raw", "Enriched"], ordered=True)
     df["Type"] = pd.Categorical(df["Type"], categories=["Within-Group", "Cross-Group"], ordered=True)
 
-    # Discrimination gap annotations (above the within-group bar for each condition)
     ml_red = data["minilm"]["discrimination"]["reduction_pct"]
     rb_red = data["roberta"]["discrimination"]["reduction_pct"]
 
     ann_rows = []
-    for model_label, disc, reduction in [
-        ("MiniLM-384", ml_disc, ml_red),
-        ("RoBERTa-1024", rb_disc, rb_red),
-    ]:
+    for model_label, disc, reduction in [("MiniLM-384", ml_disc, ml_red), ("RoBERTa-1024", rb_disc, rb_red)]:
         for cond_key, cond_label in [("raw", "Raw"), ("enriched", "Enriched")]:
             d = disc[cond_key]
             ann_rows.append({
-                "Model": model_label,
-                "Condition": cond_label,
-                "Type": "Within-Group",  # anchor to within-group bar
-                "Similarity": d["within_mean"] + 0.04,
-                "label": f"\u0394={d['delta']:.3f}",
+                "Model": model_label, "Condition": cond_label, "Type": "Within-Group",
+                "Similarity": d["within_mean"] + 0.04, "label": f"\u0394={d['delta']:.3f}",
             })
-        # Reduction annotation at midpoint
         ann_rows.append({
-            "Model": model_label,
-            "Condition": "Enriched",
-            "Type": "Cross-Group",
-            "Similarity": disc["enriched"]["within_mean"] + 0.10,
-            "label": f"\u2212{reduction:.1f}% disc.",
+            "Model": model_label, "Condition": "Enriched", "Type": "Cross-Group",
+            "Similarity": disc["enriched"]["within_mean"] + 0.10, "label": f"\u2212{reduction:.1f}% disc.",
         })
     ann_df = pd.DataFrame(ann_rows)
 
@@ -218,26 +168,54 @@ def make_F2b(data: dict):
     p = (
         ggplot(df, aes("Condition", "Similarity", fill="Type"))
         + geom_col(position="dodge")
-        + geom_text(
-            aes(x="Condition", y="Similarity", label="label"),
-            data=ann_df,
-            size=8,
-            va="bottom",
-        )
+        + geom_text(aes(x="Condition", y="Similarity", label="label"), data=ann_df, size=8, va="bottom")
         + facet_wrap("~Model")
-        + scale_fill_manual(
-            values=disc_colors,
-            name="Similarity Type",
-        )
+        + scale_fill_manual(values=disc_colors, name="Similarity Type")
         + scale_y_continuous(limits=[0, 1.05], breaks=[0, 0.2, 0.4, 0.6, 0.8, 1.0])
-        + labs(
-            x="",
-            y="Mean Cosine Similarity",
-            title="Panel B: Discrimination Collapse — Within vs. Cross-Group Similarity",
-        )
-        + paper_theme(figure_size=(6.5, 3.5))
+        + labs(x="", y="Mean Cosine Similarity", title="Panel B: Discrimination Collapse \u2014 Within vs. Cross-Group Similarity")
+        + paper_theme(figure_size=(6.5, 3.2))
     )
     return p
+
+
+def make_F2(data: dict):
+    """F2: Combined semantic smearing figure (Panel A on top, Panel B below).
+
+    Renders each panel to a PNG buffer at 300 DPI, then composites into a
+    single matplotlib figure saved as PDF.
+    """
+    import io
+    import matplotlib.pyplot as plt
+    import matplotlib.image as mpimg
+
+    p_a = _make_F2a_panel(data)
+    p_b = _make_F2b_panel(data)
+
+    fig_a = p_a.draw()
+    buf_a = io.BytesIO()
+    fig_a.savefig(buf_a, format="png", dpi=300, bbox_inches="tight")
+    buf_a.seek(0)
+    plt.close(fig_a)
+
+    fig_b = p_b.draw()
+    buf_b = io.BytesIO()
+    fig_b.savefig(buf_b, format="png", dpi=300, bbox_inches="tight")
+    buf_b.seek(0)
+    plt.close(fig_b)
+
+    img_a = mpimg.imread(buf_a)
+    img_b = mpimg.imread(buf_b)
+
+    fig, (ax_top, ax_bot) = plt.subplots(2, 1, figsize=(6.5, 7.0))
+    fig.subplots_adjust(hspace=0.08, top=0.98, bottom=0.02, left=0.0, right=1.0)
+
+    ax_top.imshow(img_a, aspect="auto")
+    ax_top.axis("off")
+
+    ax_bot.imshow(img_b, aspect="auto")
+    ax_bot.axis("off")
+
+    return fig  # matplotlib Figure (not plotnine)
 
 
 def make_F7(data: dict):
@@ -462,21 +440,14 @@ def make_F9(data: dict):
 
 
 FIGURES: dict = {
-    "F2a": {
-        "fn": make_F2a,
-        "filename": "F2a_semantic_smearing_similarity.pdf",
+    "F2": {
+        "fn": make_F2,
+        "filename": "F2_semantic_smearing.pdf",
         "width": 6.5,
-        "height": 3.5,
+        "height": 7.0,
+        "is_matplotlib": True,  # returns matplotlib Figure, not plotnine
         "placeholder_section": "02_semantic_smearing.md",
         "placeholder_key": "F2",
-    },
-    "F2b": {
-        "fn": make_F2b,
-        "filename": "F2b_semantic_smearing_discrimination.pdf",
-        "width": 6.5,
-        "height": 3.5,
-        "placeholder_section": None,  # replaced together with F2a
-        "placeholder_key": None,
     },
     "F8": {
         "fn": make_F7,
@@ -508,8 +479,7 @@ FIGURES: dict = {
 def apply_figures() -> None:
     """Replace [INSERT FIGURE Fn] placeholders with Quarto image references.
 
-    F2: replaced with TWO figure references (F2a and F2b subfigures).
-    F8, F9, F10: each replaced with one figure reference.
+    F2, F8, F9, F10: each replaced with one figure reference.
     """
     import re
 
@@ -517,12 +487,10 @@ def apply_figures() -> None:
 
     replacements = {
         "F2": (
-            "![Semantic smearing: mean pairwise similarity by representation.]"
-            "(assets/figures/F2a_semantic_smearing_similarity.pdf)"
-            "{#fig-smearing-similarity width=6.5in}\n\n"
-            "![Semantic smearing: group discrimination collapse.]"
-            "(assets/figures/F2b_semantic_smearing_discrimination.pdf)"
-            "{#fig-smearing-discrimination width=6.5in}"
+            "![Semantic smearing in federal statistical metadata. Panel A: mean pairwise similarity increases with enrichment. "
+            "Panel B: group discrimination collapses as within-group and cross-group similarity converge.]"
+            "(assets/figures/F2_semantic_smearing.pdf)"
+            "{#fig-smearing width=6.5in}"
         ),
         "F8": (
             "![Cohen's *d* effect sizes by dimension. Vertical lines: "
@@ -600,7 +568,7 @@ def main() -> None:
     group.add_argument(
         "--figure",
         metavar="FN",
-        help="Generate a single figure by ID (e.g. F7, F2a, F2b)",
+        help="Generate a single figure by ID (e.g. F2, F8, F9, F10)",
     )
     group.add_argument(
         "--preview",
@@ -617,12 +585,20 @@ def main() -> None:
     data = load_data()
 
     if args.all:
+        import matplotlib.pyplot as plt
         print("Generating all figures...")
         for key, cfg in FIGURES.items():
-            p = cfg["fn"](data)
-            save_figure(p, cfg["filename"], output_dir=FIGURES_DIR, width=cfg["width"], height=cfg["height"])
+            fig = cfg["fn"](data)
+            if cfg.get("is_matplotlib"):
+                out = FIGURES_DIR / cfg["filename"]
+                fig.savefig(str(out), bbox_inches="tight")
+                plt.close(fig)
+                print(f"  Saved {out}")
+            else:
+                save_figure(fig, cfg["filename"], output_dir=FIGURES_DIR, width=cfg["width"], height=cfg["height"])
 
     elif args.figure:
+        import matplotlib.pyplot as plt
         key = args.figure.upper()
         if key not in FIGURES:
             print(
@@ -632,16 +608,23 @@ def main() -> None:
             )
             sys.exit(1)
         cfg = FIGURES[key]
-        p = cfg["fn"](data)
-        save_figure(p, cfg["filename"], output_dir=FIGURES_DIR, width=cfg["width"], height=cfg["height"])
+        fig = cfg["fn"](data)
+        if cfg.get("is_matplotlib"):
+            out = FIGURES_DIR / cfg["filename"]
+            fig.savefig(str(out), bbox_inches="tight")
+            plt.close(fig)
+            print(f"  Saved {out}")
+        else:
+            save_figure(fig, cfg["filename"], output_dir=FIGURES_DIR, width=cfg["width"], height=cfg["height"])
 
     elif args.preview:
         import matplotlib.pyplot as plt
         print("Rendering all figures (preview mode, not saving)...")
         for key, cfg in FIGURES.items():
             print(f"  {key}: {cfg['filename']}")
-            p = cfg["fn"](data)
-            p.draw()
+            fig = cfg["fn"](data)
+            if not cfg.get("is_matplotlib"):
+                fig.draw()
         plt.show()
 
     elif args.apply:
