@@ -228,7 +228,7 @@ async def explore_variables(
 
     # Fetch all variables for the product/year
     try:
-        all_variables = await census_client.get_variables(year=year, product=product)
+        all_variables = await census_client.get_variables(dataset=product, year=year)
     except CensusAPIError as e:
         raise CensusAPIError(
             f"Failed to fetch variables for {product} {year}: {str(e)}"
@@ -241,7 +241,9 @@ async def explore_variables(
     matching_vars = []
     tables_seen = set()
 
-    for var_name, var_info in all_variables.items():
+    # Census variables.json wraps the variable map under a top-level
+    # "variables" key. Iterate the inner dict, not the outer envelope.
+    for var_name, var_info in all_variables.get("variables", {}).items():
         # Skip margin of error and annotation variables for initial search
         if var_name.endswith(("M", "MA", "EA")):
             continue

@@ -343,30 +343,77 @@ async def call_tool_handler(name: str, arguments: dict) -> list[types.TextConten
             all_variables = await _census_client.get_variables(year=year, dataset=product)
 
             concept_lower = concept.lower()
-            keywords = concept_lower.split()
+            keywords = [k for k in concept_lower.split() if k]
+            n_keywords = max(len(keywords), 1)
 
-            matching_vars = []
+            def _normalize(text: str) -> str:
+                # Strip ACS label punctuation so "median household income" matches
+                # "Estimate!!Median household income in the past 12 months (in 2023 ...)".
+                t = text.lower()
+                for ch in ("!!", "(", ")", ",", ":", ";", "/"):
+                    t = t.replace(ch, " ")
+                return t
+
+            scored = []
             tables_seen = set()
 
-            for var_name, var_info in all_variables.items():
+            # Census variables.json wraps the variable map under a top-level
+            # "variables" key. Iterate the inner dict, not the outer envelope.
+            for var_name, var_info in all_variables.get("variables", {}).items():
                 if var_name.endswith(("M", "MA", "EA")):
                     continue
+                # Skip geography/metadata variables (GEO_ID, NAME, ucgid, state,
+                # county, ...). Real data variables follow B19013_001E pattern:
+                # group-code, underscore, digits, single letter suffix. The
+                # `group` field is a single table code; metadata like GEO_ID
+                # has a comma-joined "group" listing every table that uses it.
+                group = var_info.get("group", "")
+                if "," in group or not group:
+                    continue
+                if "_" not in var_name or not var_name.split("_", 1)[1][:1].isdigit():
+                    continue
 
-                label = var_info.get("label", "").lower()
-                var_concept = var_info.get("concept", "").lower()
+                label_raw = var_info.get("label", "")
+                concept_raw = var_info.get("concept", "")
+                label_n = _normalize(label_raw)
+                concept_n = _normalize(concept_raw)
 
-                if any(kw in label or kw in var_concept for kw in keywords):
-                    matching_vars.append({
-                        "name": var_name,
-                        "label": var_info.get("label", ""),
-                        "concept": var_info.get("concept", ""),
-                        "group": var_info.get("group", ""),
-                    })
-                    if "group" in var_info:
-                        tables_seen.add((
-                            var_info["group"],
-                            var_info.get("concept", ""),
-                        ))
+                # Token-coverage score: fraction of query keywords found in
+                # either the label or the concept (Census table description).
+                hits = sum(1 for kw in keywords if kw in label_n or kw in concept_n)
+                if hits == 0:
+                    continue
+                coverage = hits / n_keywords
+
+                # Boosts: exact phrase in concept (table title), then in label.
+                phrase_concept_boost = 0.5 if concept_lower in concept_n else 0.0
+                phrase_label_boost = 0.25 if concept_lower in label_n else 0.0
+
+                # Light penalty for very long labels (deeply nested cross-tabs)
+                # so top-line table totals rank above 12-deep crosstab cells.
+                depth_penalty = min(label_raw.count("!!") * 0.02, 0.20)
+
+                score = coverage + phrase_concept_boost + phrase_label_boost - depth_penalty
+
+                scored.append((score, var_name, var_info))
+                if "group" in var_info:
+                    tables_seen.add((
+                        var_info["group"],
+                        concept_raw,
+                    ))
+
+            # Highest score first; tiebreak by variable name for determinism.
+            scored.sort(key=lambda r: (-r[0], r[1]))
+            matching_vars = [
+                {
+                    "name": var_name,
+                    "label": var_info.get("label", ""),
+                    "concept": var_info.get("concept", ""),
+                    "group": var_info.get("group", ""),
+                    "score": round(score, 3),
+                }
+                for score, var_name, var_info in scored
+            ]
 
             tables = [
                 {"code": code, "description": desc}
