@@ -13,8 +13,11 @@ packs/*.db
 results/
 
 # Working directories (gitignored by convention)
-handoffs/
-cc_tasks/
+# AD-039: cc_tasks/ and handoffs/ are TRACKED; only data blobs under them are ignored, by size. Handoffs are secret-scanned before commit (FC-02).
+cc_tasks/*.json
+cc_tasks/*.jsonl
+handoffs/*.json
+handoffs/*.jsonl
 tmp/
 
 # Private notes (unredacted, strategic, not for public)
